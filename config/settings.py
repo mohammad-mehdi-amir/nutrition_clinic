@@ -137,3 +137,20 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+#static & media config
+
+STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+#USER MODEL CONFIG
+AUTH_USER_MODEL = "accounts.User"
+
+#template config
+TEMPLATES[0]["DIRS"] = [BASE_DIR / "templates"]
