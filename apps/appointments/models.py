@@ -86,6 +86,7 @@ class DoctorAvailability(models.Model):
     
 
     
+    
 class Appointment(models.Model):
     STATUS_CHOICES = [
         ("pending", "در انتظار پرداخت"),

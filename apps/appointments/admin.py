@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Doctor, WorkingSchedule, Appointment
+from .models import Doctor, DoctorAvailability, Appointment
 
 
 @admin.register(Doctor)
@@ -9,17 +9,16 @@ class DoctorAdmin(admin.ModelAdmin):
     search_fields = ("name", "specialty")
 
 
-@admin.register(WorkingSchedule)
+@admin.register(DoctorAvailability)
 class WorkingScheduleAdmin(admin.ModelAdmin):
     list_display = (
         "doctor",
         "day_of_week",
-        "start_time",
-        "end_time",
-        "slot_duration",
-        "is_active",
+        "time",
     )
-    list_filter = ("day_of_week", "is_active", "doctor")
+    list_filter = ("day_of_week", "time", "doctor")
+
+
 
 
 @admin.register(Appointment)
