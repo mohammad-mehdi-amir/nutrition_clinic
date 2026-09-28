@@ -7,6 +7,7 @@ robots.txt
 media/
 staticfiles/
 db.sqlite3__pycache__/
+db.sqlite3
 *.py[cod]
 .env
 __pycache__/
