@@ -4,36 +4,64 @@ from .models import Doctor, DoctorAvailability, Appointment
 
 @admin.register(Doctor)
 class DoctorAdmin(admin.ModelAdmin):
-    list_display = ("name", "specialty", "is_active")
-    list_filter = ("is_active",)
-    search_fields = ("name", "specialty")
+    list_display = (
+        "name",
+        "specialty",
+        "is_active",
+    )
+
+    list_filter = (
+        "is_active",
+    )
+
+    search_fields = (
+        "name",
+        "specialty",
+    )
 
 
 @admin.register(DoctorAvailability)
-class WorkingScheduleAdmin(admin.ModelAdmin):
+class DoctorAvailabilityAdmin(admin.ModelAdmin):
     list_display = (
         "doctor",
         "day_of_week",
         "time",
     )
-    list_filter = ("day_of_week", "time", "doctor")
 
-
+    list_filter = (
+        "doctor",
+        "day_of_week",
+    )
 
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
     list_display = (
-        "doctor",
         "patient",
+        "get_doctor",
+        "get_time",
         "date",
-        "start_time",
         "status",
         "created_at",
     )
 
-    list_filter = ("status", "date", "doctor")
-    search_fields = (
-        "doctor__name",
-        "patient__username",
+    list_filter = (
+        "status",
+        "date",
+        "availability__doctor",
     )
+
+    search_fields = (
+        "patient__username",
+        "patient__first_name",
+        "patient__last_name",
+        "availability__doctor__name",
+    )
+
+    @admin.display(description="دکتر")
+    def get_doctor(self, obj):
+        return obj.availability.doctor
+
+    @admin.display(description="ساعت")
+    def get_time(self, obj):
+        return obj.availability.time

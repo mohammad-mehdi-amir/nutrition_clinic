@@ -85,7 +85,7 @@ class DoctorAvailability(models.Model):
         )
     
 
-    
+     
     
 class Appointment(models.Model):
     STATUS_CHOICES = [
@@ -95,38 +95,45 @@ class Appointment(models.Model):
         ("completed", "انجام شده"),
     ]
 
-    doctor = models.ForeignKey(
-        Doctor,
-        on_delete=models.CASCADE,
-        related_name="appointments"
+    availability = models.ForeignKey(
+        DoctorAvailability,
+        on_delete=models.PROTECT,
+        related_name="appointments",
+        blank=True,
     )
 
     patient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="appointments"
+        on_delete=models.PROTECT,
+        related_name="appointments",
+        blank=True,
     )
 
-    date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    date = models.DateField(blank=True,)
 
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default="pending"
+        default="pending",
+        blank=True,
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True,blank=True,)
 
     class Meta:
-        ordering = ["-date", "-start_time"]
+        ordering = ["-date", "-created_at"]
+
         constraints = [
             models.UniqueConstraint(
-                fields=["doctor", "date", "start_time"],
-                name="unique_doctor_appointment"
+                fields=["availability", "date"],
+                name="unique_appointment_slot"
             )
         ]
 
     def __str__(self):
-        return f"{self.doctor} - {self.patient} - {self.date}"
+        return (
+            f"{self.patient} - "
+            f"{self.availability.doctor} - "
+            f"{self.date} - "
+            f"{self.availability.time}"
+        )
