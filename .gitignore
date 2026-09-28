@@ -1,0 +1,17 @@
+/.vscode
+/venv
+robots.txt
+.env
+.DS_Store 
+.vscode/
+media/
+staticfiles/
+db.sqlite3__pycache__/
+*.py[cod]
+.env
+__pycache__/
+*.pyc
+venv/
+media/
+staticfiles/
+.DS_Store
