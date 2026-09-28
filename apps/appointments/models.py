@@ -1,12 +1,12 @@
 from django.conf import settings
 from django.db import models
-
+from utils.fields import WebPImageField
 
 class Doctor(models.Model):
     name = models.CharField(max_length=100)
     specialty = models.CharField(max_length=100)
     bio = models.TextField(blank=True)
-    image = models.ImageField(
+    image = WebPImageField(
         upload_to="doctors/",
         blank=True,
         null=True
