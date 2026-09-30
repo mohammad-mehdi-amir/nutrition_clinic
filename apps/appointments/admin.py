@@ -26,11 +26,13 @@ class DoctorAvailabilityAdmin(admin.ModelAdmin):
         "doctor",
         "day_of_week",
         "time",
+        "is_active",
     )
 
     list_filter = (
         "doctor",
         "day_of_week",
+        "is_active",
     )
 
 
