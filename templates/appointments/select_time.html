@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h2>
+        انتخاب زمان نوبت
+    </h2>
+
+    <p class="mt-3">
+        {{ doctor.name }}
+    </p>
+
+    <p>
+        تاریخ:
+        {{ selected_date }}
+    </p>
+
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <div class="row mt-4">
+
+            {% for slot in slots %}
+
+                <div class="col-md-3 mb-3">
+
+                    <label class="w-100">
+
+                        <input
+                            type="radio"
+                            name="availability"
+                            value="{{ slot.availability.id }}"
+                            {% if slot.is_booked %}
+                                disabled
+                            {% endif %}
+                            required
+                        >
+
+                        <span>
+                            {{ slot.availability.time|time:"H:i" }}
+
+                            {% if slot.is_booked %}
+                                - رزرو شده
+                            {% else %}
+                                - قابل رزرو
+                            {% endif %}
+                        </span>
+
+                    </label>
+
+                </div>
+
+            {% empty %}
+
+                <p>
+                    برای این تاریخ زمان خالی وجود ندارد.
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+
+        {% if slots %}
+
+            <button
+                type="submit"
+                class="btn btn-success mt-3"
+            >
+                ثبت نوبت
+            </button>
+
+        {% endif %}
+
+    </form>
+
+</div>
+
+{% endblock %}

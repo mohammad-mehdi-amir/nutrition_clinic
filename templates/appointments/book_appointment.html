@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h2>رزرو نوبت</h2>
+
+    <form method="post" class="mt-4">
+
+        {% csrf_token %}
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                پزشک
+            </label>
+
+            <select
+                name="doctor"
+                class="form-select"
+                required
+            >
+
+                <option value="">
+                    انتخاب پزشک
+                </option>
+
+                {% for doctor in doctors %}
+
+                    <option value="{{ doctor.id }}">
+                        {{ doctor.name }}
+                        - {{ doctor.specialty }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <div class="mb-3">
+
+            <label class="form-label">
+                تاریخ
+            </label>
+
+            <input
+                type="date"
+                name="date"
+                class="form-control"
+                required
+            >
+
+        </div>
+
+
+        <button
+            type="submit"
+            class="btn btn-primary"
+        >
+            تأیید
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

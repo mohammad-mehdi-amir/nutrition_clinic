@@ -2,10 +2,12 @@ from datetime import datetime, time, timedelta
 
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Doctor, DoctorAvailability
+from .services import book_appointment ,get_available_slots
 
 
 @staff_member_required
@@ -150,4 +152,162 @@ def schedule(request):
         request,
         "appointments/schedule.html",
         context
+    )
+    
+    
+
+
+@login_required
+def book_appointment_view(request):
+
+    doctors = Doctor.objects.filter(is_active=True)
+
+    if request.method == "POST":
+
+        doctor_id = request.POST.get("doctor")
+        selected_date = request.POST.get("date")
+
+        if not doctor_id or not selected_date:
+            messages.error(
+                request,
+                "لطفاً پزشک و تاریخ را انتخاب کنید."
+            )
+
+            return redirect(
+                "appointments:book_appointment"
+            )
+
+        return redirect(
+            "appointments:select_time",
+            doctor_id=doctor_id,
+            date=selected_date,
+        )
+
+    return render(
+        request,
+        "appointments/book_appointment.html",
+        {
+            "doctors": doctors,
+        },
+    )
+    
+    
+@login_required
+
+def select_time(request, doctor_id, date):
+
+    doctor = get_object_or_404(
+
+        Doctor,
+
+        id=doctor_id,
+
+        is_active=True,
+
+    )
+
+    try:
+
+        selected_date = datetime.strptime(
+
+            date,
+
+            "%Y-%m-%d",
+
+        ).date()
+
+    except ValueError:
+
+        messages.error(
+
+            request,
+
+            "تاریخ انتخاب شده معتبر نیست."
+
+        )
+
+        return redirect(
+
+            "appointments:book_appointment"
+
+        )
+
+    slots = get_available_slots(
+
+        doctor=doctor,
+
+        selected_date=selected_date,
+
+    )
+
+    if request.method == "POST":
+
+        availability_id = request.POST.get(
+
+            "availability"
+
+        )
+
+        try:
+
+            book_appointment(
+
+                patient=request.user,
+
+                availability_id=availability_id,
+
+                selected_date=selected_date,
+
+            )
+
+        except ValueError as error:
+
+            messages.error(
+
+                request,
+
+                str(error),
+
+            )
+
+            return redirect(
+
+                "appointments:select_time",
+
+                doctor_id=doctor.id,
+
+                date=date,
+
+            )
+
+        messages.success(
+
+            request,
+
+            "نوبت شما با موفقیت ثبت شد."
+
+        )
+
+        return redirect(
+
+            "appointments:book_appointment"
+
+        )
+
+    return render(
+
+        request,
+
+        "appointments/select_time.html",
+
+        {
+
+            "doctor": doctor,
+
+            "selected_date": selected_date,
+
+            "slots": slots,
+
+        },
+
     )

@@ -59,7 +59,15 @@ class AppointmentAdmin(admin.ModelAdmin):
         "patient__last_name",
         "availability__doctor__name",
     )
+    actions = ["go_to_schedule"]
+    @admin.action(description="ساخت شیفت پزشکان")
 
+    def go_to_schedule(self, request, queryset):
+
+        from django.shortcuts import redirect
+
+        return redirect("appointments:schedule")
+    
     @admin.display(description="دکتر")
     def get_doctor(self, obj):
         return obj.availability.doctor
