@@ -34,6 +34,14 @@ class DoctorAvailabilityAdmin(admin.ModelAdmin):
         "day_of_week",
         "is_active",
     )
+    actions = ["go_to_schedule"]
+    @admin.action(description="ساخت شیفت پزشکان")
+    
+    def go_to_schedule(self, request, queryset):
+
+        from django.shortcuts import redirect
+
+        return redirect("appointments:schedule")
 
 
 @admin.register(Appointment)
@@ -59,14 +67,8 @@ class AppointmentAdmin(admin.ModelAdmin):
         "patient__last_name",
         "availability__doctor__name",
     )
-    actions = ["go_to_schedule"]
-    @admin.action(description="ساخت شیفت پزشکان")
-
-    def go_to_schedule(self, request, queryset):
-
-        from django.shortcuts import redirect
-
-        return redirect("appointments:schedule")
+    
+    
     
     @admin.display(description="دکتر")
     def get_doctor(self, obj):
