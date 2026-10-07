@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h2>نوبت‌های من</h2>
+
+    {% if appointments %}
+
+        <div class="table-responsive mt-4">
+
+            <table class="table table-bordered text-center">
+
+                <thead>
+                    <tr>
+                        <th>پزشک</th>
+                        <th>تخصص</th>
+                        <th>تاریخ</th>
+                        <th>ساعت</th>
+                        <th>وضعیت</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for appointment in appointments %}
+
+                        <tr>
+
+                            <td>
+                                {{ appointment.availability.doctor.name }}
+                            </td>
+
+                            <td>
+                                {{ appointment.availability.doctor.specialty }}
+                            </td>
+
+                            <td>
+                                {{ appointment.date }}
+                            </td>
+
+                            <td>
+                                {{ appointment.availability.time|time:"H:i" }}
+                            </td>
+
+                            <td>
+                                {{ appointment.get_status_display }}
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="alert alert-info mt-4">
+            شما هنوز نوبتی ندارید.
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

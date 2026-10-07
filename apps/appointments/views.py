@@ -7,7 +7,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Doctor, DoctorAvailability
-from .services import book_appointment ,get_available_slots
+from .services import book_appointment ,get_available_slots ,expire_pending_appointments
 
 
 @staff_member_required
@@ -310,4 +310,25 @@ def select_time(request, doctor_id, date):
 
         },
 
+    )
+    
+    
+@login_required
+def my_appointments(request):
+    expire_pending_appointments()
+    appointments = (
+        request.user.appointments
+        .select_related(
+            "availability",
+            "availability__doctor",
+        )
+        .order_by("-date", "-availability__time")
+    )
+
+    return render(
+        request,
+        "appointments/my_appointments.html",
+        {
+            "appointments": appointments,
+        },
     )

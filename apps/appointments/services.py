@@ -4,6 +4,10 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from .models import Appointment, DoctorAvailability
+from datetime import timedelta
+from apps.core.models import SiteSettings
+
+
 
 
 ACTIVE_APPOINTMENT_STATUSES = [
@@ -13,11 +17,20 @@ ACTIVE_APPOINTMENT_STATUSES = [
 ]
 
 
+def get_payment_timeout():
+    settings = SiteSettings.objects.first()
+
+    if not settings:
+        return 10
+
+    return settings.payment_timeout_minutes
+
 def book_appointment(
     patient,
     availability_id,
     selected_date,
 ):
+    expire_pending_appointments()
     today = timezone.localdate()
 
     if selected_date < today:
@@ -84,6 +97,7 @@ def book_appointment(
                 patient=patient,
                 date=selected_date,
                 status="pending",
+                payment_deadline=timezone.now() + timedelta(seconds=10),
             )
 
     except IntegrityError:
@@ -94,11 +108,15 @@ def book_appointment(
     return appointment
 
 
-
+def expire_pending_appointments():
+    now = timezone.now()
+    timeout_minutes = get_payment_timeout()
+    expire_before = now - timedelta(minutes=timeout_minutes)
+    Appointment.objects.filter(status="pending",created_at__lte=expire_before,).update(status="cancelled",)
 
 
 def get_available_slots(doctor, selected_date):
-
+    expire_pending_appointments()
     today = timezone.localdate()
 
     if selected_date < today:

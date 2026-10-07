@@ -93,6 +93,11 @@ class Appointment(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True,blank=True,)
+    
+    payment_deadline = models.DateTimeField(
+    null=True,
+    blank=True,
+)
 
     class Meta:
         ordering = ["-date", "-created_at"]
