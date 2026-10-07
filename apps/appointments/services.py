@@ -151,3 +151,38 @@ def get_available_slots(doctor, selected_date):
         })
 
     return slots
+
+def cancel_appointment(patient, appointment_id):
+    appointment = (
+        Appointment.objects
+        .filter(
+            id=appointment_id,
+            patient=patient,
+        )
+        .first()
+    )
+
+    if not appointment:
+        raise ValueError(
+            "نوبت مورد نظر پیدا نشد."
+        )
+
+    if appointment.status != "confirmed":
+        raise ValueError(
+            "فقط نوبت‌های تایید شده قابل لغو هستند."
+        )
+
+    appointment.status = "cancelled"
+    appointment.payment_deadline = None
+
+    appointment.save(
+        update_fields=[
+            "status",
+            "payment_deadline",
+        ]
+    )
+
+    return appointment
+
+def can_cancel_appointment(appointment):
+    return appointment.status == "confirmed"

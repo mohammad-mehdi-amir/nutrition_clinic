@@ -7,8 +7,14 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Doctor, DoctorAvailability
-from .services import book_appointment ,get_available_slots ,expire_pending_appointments
-
+from .services import (
+    get_available_slots,
+    book_appointment,
+    cancel_appointment,
+    expire_pending_appointments,
+    can_cancel_appointment
+)
+from django.views.decorators.http import require_POST
 
 @staff_member_required
 def schedule(request):
@@ -324,11 +330,43 @@ def my_appointments(request):
         )
         .order_by("-date", "-availability__time")
     )
+    for appointment in appointments:
 
+        appointment.can_cancel = can_cancel_appointment(
+
+            appointment
+
+        )
     return render(
         request,
         "appointments/my_appointments.html",
         {
             "appointments": appointments,
         },
+    )
+    
+@login_required
+@require_POST
+def cancel_appointment_view(request, appointment_id):
+
+    try:
+        cancel_appointment(
+            patient=request.user,
+            appointment_id=appointment_id,
+        )
+
+    except ValueError as error:
+        messages.error(
+            request,
+            str(error),
+        )
+
+    else:
+        messages.success(
+            request,
+            "نوبت با موفقیت لغو شد.",
+        )
+
+    return redirect(
+        "appointments:my_appointments"
     )
