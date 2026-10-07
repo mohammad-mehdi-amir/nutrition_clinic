@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 from utils.fields import WebPImageField
-
+from jalali_date import date2jalali
 class Doctor(models.Model):
     name = models.CharField(max_length=100)
     specialty = models.CharField(max_length=100)
@@ -110,9 +110,10 @@ class Appointment(models.Model):
         ]
 
     def __str__(self):
+        jalali_date = date2jalali(self.date)
         return (
             f"{self.patient} - "
             f"{self.availability.doctor} - "
-            f"{self.date} - "
+            f"{jalali_date.strftime('%Y/%m/%d %H:%M')} - "
             f"{self.availability.time}"
         )

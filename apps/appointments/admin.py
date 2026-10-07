@@ -1,4 +1,6 @@
 from django.contrib import admin
+from jalali_date.admin import ModelAdminJalaliMixin
+
 from .models import Doctor, DoctorAvailability, Appointment
 
 
@@ -25,7 +27,7 @@ class DoctorAvailabilityAdmin(admin.ModelAdmin):
     list_display = (
         "doctor",
         "day_of_week",
-        "time",
+        "get_time",
         "is_active",
     )
 
@@ -34,18 +36,22 @@ class DoctorAvailabilityAdmin(admin.ModelAdmin):
         "day_of_week",
         "is_active",
     )
-    actions = ["go_to_schedule"]
-    @admin.action(description="ساخت شیفت پزشکان")
-    
-    def go_to_schedule(self, request, queryset):
 
+    actions = ["go_to_schedule"]
+
+    @admin.action(description="ساخت شیفت پزشکان")
+    def go_to_schedule(self, request, queryset):
         from django.shortcuts import redirect
 
         return redirect("appointments:schedule")
 
+    @admin.display(description="ساعت")
+    def get_time(self, obj):
+        return obj.time.strftime("%H:%M")
+
 
 @admin.register(Appointment)
-class AppointmentAdmin(admin.ModelAdmin):
+class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     list_display = (
         "patient",
         "get_doctor",
@@ -67,13 +73,11 @@ class AppointmentAdmin(admin.ModelAdmin):
         "patient__last_name",
         "availability__doctor__name",
     )
-    
-    
-    
+
     @admin.display(description="دکتر")
     def get_doctor(self, obj):
         return obj.availability.doctor
 
     @admin.display(description="ساعت")
     def get_time(self, obj):
-        return obj.availability.time
+        return obj.availability.time.strftime("%H:%M")

@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
+    "jalali_date",
+    
     "apps.core",
 
     "apps.accounts",
@@ -154,3 +156,11 @@ AUTH_USER_MODEL = "accounts.User"
 
 #template config
 TEMPLATES[0]["DIRS"] = [BASE_DIR / "templates"]
+
+JALALI_DATE_DEFAULTS = {
+    "LIST_DISPLAY_AUTO_CONVERT": True,
+    "Strftime": {
+        "date": "%Y/%m/%d",
+        "datetime": "%Y/%m/%d - %H:%M:%S",
+    },
+}

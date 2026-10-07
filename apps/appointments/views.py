@@ -7,15 +7,10 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .models import Doctor, DoctorAvailability
-from .services import (
-    get_available_slots,
-    book_appointment,
-    cancel_appointment,
-    expire_pending_appointments,
-    can_cancel_appointment
-)
+from .services import (get_available_slots,book_appointment,cancel_appointment,expire_pending_appointments,can_cancel_appointment)
 from django.views.decorators.http import require_POST
-
+from utils.jalali import (jalali_to_gregorian,format_jalali,)
+from .forms import AppointmentDateForm
 @staff_member_required
 def schedule(request):
 
@@ -162,7 +157,6 @@ def schedule(request):
     
     
 
-
 @login_required
 def book_appointment_view(request):
 
@@ -170,152 +164,131 @@ def book_appointment_view(request):
 
     if request.method == "POST":
 
-        doctor_id = request.POST.get("doctor")
-        selected_date = request.POST.get("date")
+        form = AppointmentDateForm(request.POST)
 
-        if not doctor_id or not selected_date:
+        doctor_id = request.POST.get("doctor")
+
+        if not doctor_id:
             messages.error(
                 request,
-                "لطفاً پزشک و تاریخ را انتخاب کنید."
+                "لطفاً پزشک را انتخاب کنید."
             )
+
+        elif form.is_valid():
+
+            selected_date = form.cleaned_data["date"]
 
             return redirect(
-                "appointments:book_appointment"
+                "appointments:select_time",
+                doctor_id=doctor_id,
+                date=selected_date.strftime("%Y-%m-%d"),
             )
 
-        return redirect(
-            "appointments:select_time",
-            doctor_id=doctor_id,
-            date=selected_date,
-        )
+    else:
+        form = AppointmentDateForm()
 
     return render(
         request,
         "appointments/book_appointment.html",
         {
             "doctors": doctors,
+            "form": form,
         },
     )
     
-    
 @login_required
-
 def select_time(request, doctor_id, date):
 
     doctor = get_object_or_404(
-
         Doctor,
-
         id=doctor_id,
-
         is_active=True,
-
     )
 
     try:
+        selected_date = jalali_to_gregorian(date)
 
-        selected_date = datetime.strptime(
-
-            date,
-
-            "%Y-%m-%d",
-
-        ).date()
-
-    except ValueError:
-
+    except (ValueError, TypeError):
         messages.error(
-
             request,
-
             "تاریخ انتخاب شده معتبر نیست."
-
         )
 
         return redirect(
-
             "appointments:book_appointment"
-
         )
 
     slots = get_available_slots(
-
         doctor=doctor,
-
         selected_date=selected_date,
-
     )
 
     if request.method == "POST":
 
         availability_id = request.POST.get(
-
             "availability"
-
         )
+
+        if not availability_id:
+            messages.error(
+                request,
+                "لطفاً یک ساعت را انتخاب کنید."
+            )
+
+            return redirect(
+                "appointments:select_time",
+                doctor_id=doctor.id,
+                date=date,
+            )
 
         try:
 
             book_appointment(
-
                 patient=request.user,
-
                 availability_id=availability_id,
-
                 selected_date=selected_date,
-
             )
 
         except ValueError as error:
 
             messages.error(
-
                 request,
-
-                str(error),
-
+                str(error)
             )
 
             return redirect(
-
                 "appointments:select_time",
-
                 doctor_id=doctor.id,
-
                 date=date,
-
             )
 
         messages.success(
-
             request,
-
             "نوبت شما با موفقیت ثبت شد."
-
         )
 
         return redirect(
-
-            "appointments:book_appointment"
-
+            "appointments:my_appointments"
         )
 
+    has_available_slots = any(
+        not slot["is_booked"]
+        for slot in slots
+    )
+
     return render(
-
         request,
-
         "appointments/select_time.html",
-
         {
-
             "doctor": doctor,
-
             "selected_date": selected_date,
-
+            "selected_date_jalali": format_jalali(
+                selected_date
+            ),
             "slots": slots,
-
+            "has_available_slots": has_available_slots,
+            
         },
-
     )
     
     

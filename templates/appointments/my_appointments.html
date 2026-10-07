@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load jalali_tags %}
 {% block title %}
     نوبت‌های من
 {% endblock %}
@@ -78,7 +78,7 @@
 
                             <!-- Date -->
                             <td>
-                                {{ appointment.date }}
+                                {{ appointment.date|to_jalali:"%Y/%m/%d" }}
                             </td>
 
 

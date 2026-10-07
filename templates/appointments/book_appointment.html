@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load jalali_tags %}
 {% block content %}
 
 <div class="container mt-5">
@@ -41,30 +41,50 @@
 
 
         <div class="mb-3">
-
-            <label class="form-label">
-                تاریخ
-            </label>
-
-            <input
-                type="date"
-                name="date"
-                class="form-control"
-                required
-            >
-
+            {{ form.date.label_tag }}
+            {{ form.date }}
+            
+            {% if form.date.errors %}
+                <div class="text-danger small mt-1">
+                    {{ form.date.errors }}
+                </div>
+            {% endif %}
         </div>
-
-
         <button
             type="submit"
             class="btn btn-primary"
         >
             تأیید
         </button>
+    </form>
+</div>
+
+
+
 
     </form>
 
 </div>
+
+
+<script>
+
+    $(document).ready(function () {
+
+        $("#appointment-date").pDatepicker({
+
+            format: "YYYY/MM/DD",
+
+            autoClose: true,
+
+            initialValue: false,
+
+            observer: true,
+
+        });
+
+    });
+
+</script>
 
 {% endblock %}
