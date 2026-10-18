@@ -1,18 +1,40 @@
-/.vscode
-/venv
-robots.txt
-.env
-.DS_Store 
-.vscode/
-media/
-staticfiles/
-db.sqlite3__pycache__/
-db.sqlite3
-*.py[cod]
-.env
+# --- Python ---
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Virtual environments ---
 venv/
+.venv/
+env/
+
+# --- Secrets / environment ---
+.env
+.env.*
+!.env.example
+
+# --- Local data ---
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
 media/
 staticfiles/
+*.log
+
+# --- Frontend build ---
+node_modules/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+*.swp
 .DS_Store
+Thumbs.db
+
+# --- Purchased template package (licensed; local design reference only) ---
+/Tailwind-ClinicMaster-Dieting-v1.1-06_July_2026/
