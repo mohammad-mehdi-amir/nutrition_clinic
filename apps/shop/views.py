@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 
 from .cart import Cart
 from .forms import CheckoutForm
+from .locations import get_locations
 from .models import Category, Order, Product
 from .services import OrderError, calculate_totals, cancel_order, create_order
 
@@ -174,7 +175,12 @@ def checkout(request):
     return render(
         request,
         "shop/checkout.html",
-        {"form": form, "lines": lines, "totals": totals},
+        {
+            "form": form,
+            "lines": lines,
+            "totals": totals,
+            "iran_locations": get_locations() if totals.needs_shipping else None,
+        },
     )
 
 

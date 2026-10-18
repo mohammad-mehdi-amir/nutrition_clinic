@@ -2,6 +2,7 @@ from django import forms
 
 from utils.forms import StyledFormMixin
 from utils.validators import iran_mobile_validator, normalize_digits
+from .locations import city_choices, is_valid_city, province_choices
 
 
 class CheckoutForm(StyledFormMixin, forms.Form):
@@ -11,8 +12,16 @@ class CheckoutForm(StyledFormMixin, forms.Form):
         max_length=11,
         widget=forms.TextInput(attrs={"inputmode": "numeric", "dir": "ltr", "placeholder": "09xxxxxxxxx"}),
     )
-    province = forms.CharField(label="استان", max_length=50, required=False)
-    city = forms.CharField(label="شهر", max_length=50, required=False)
+    province = forms.ChoiceField(
+        label="استان",
+        required=False,
+        widget=forms.Select(attrs={"data-province-select": ""}),
+    )
+    city = forms.ChoiceField(
+        label="شهر",
+        required=False,
+        widget=forms.Select(attrs={"data-city-select": ""}),
+    )
     address = forms.CharField(label="نشانی کامل", required=False, widget=forms.Textarea(attrs={"rows": 3}))
     postal_code = forms.CharField(
         label="کد پستی",
@@ -31,6 +40,11 @@ class CheckoutForm(StyledFormMixin, forms.Form):
         if needs_shipping:
             for name in self.SHIPPING_FIELDS:
                 self.fields[name].required = True
+
+            # شهرها وابسته به استان انتخاب‌شده (در JS هم با تغییر استان به‌روز می‌شوند)
+            selected_province = self.data.get(self.add_prefix("province")) or self.initial.get("province", "")
+            self.fields["province"].choices = [("", "انتخاب استان")] + province_choices()
+            self.fields["city"].choices = [("", "ابتدا استان را انتخاب کنید" if not selected_province else "انتخاب شهر")] + city_choices(selected_province)
         else:
             for name in self.SHIPPING_FIELDS:
                 del self.fields[name]
@@ -39,6 +53,18 @@ class CheckoutForm(StyledFormMixin, forms.Form):
         phone = normalize_digits(self.cleaned_data["recipient_phone"])
         iran_mobile_validator(phone)
         return phone
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if self.needs_shipping:
+            province = cleaned_data.get("province")
+            city = cleaned_data.get("city")
+
+            if province and city and not is_valid_city(province, city):
+                self.add_error("city", "شهر انتخاب‌شده متعلق به این استان نیست.")
+
+        return cleaned_data
 
     def clean_postal_code(self):
         code = normalize_digits(self.cleaned_data.get("postal_code", ""))

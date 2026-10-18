@@ -244,3 +244,51 @@ class CheckoutTests(TestCase):
         order = Order.objects.get()
         self.assertContains(self.client.get(reverse("shop:order_list")), f"#{order.pk}")
         self.assertContains(self.client.get(order.get_absolute_url()), "مکمل")
+
+
+class CheckoutLocationTests(TestCase):
+
+    def setUp(self):
+        from .forms import CheckoutForm
+        self.Form = CheckoutForm
+
+    def _data(self, **overrides):
+        return {**SHIPPING, **overrides}
+
+    def test_locations_data_loaded(self):
+        from .locations import get_locations, is_valid_city
+        locations = get_locations()
+        self.assertEqual(len(locations), 31)
+        self.assertTrue(is_valid_city("خراسان رضوی", "مشهد"))
+        self.assertTrue(is_valid_city("سیستان و بلوچستان", "زاهدان"))
+        self.assertFalse(is_valid_city("تهران", "مشهد"))
+
+    def test_valid_province_and_city(self):
+        form = self.Form(self._data(province="خراسان رضوی", city="مشهد"))
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_city_from_another_province_rejected(self):
+        form = self.Form(self._data(province="تهران", city="مشهد"))
+        self.assertFalse(form.is_valid())
+        self.assertIn("city", form.errors)
+
+    def test_unknown_province_rejected(self):
+        form = self.Form(self._data(province="استان ناموجود", city="تهران"))
+        self.assertFalse(form.is_valid())
+        self.assertIn("province", form.errors)
+
+    def test_city_choices_follow_selected_province(self):
+        form = self.Form(self._data(province="قم", city=""))
+        cities = [value for value, _ in form.fields["city"].choices if value]
+        self.assertIn("قم", cities)
+        self.assertNotIn("تهران", cities)
+
+    def test_checkout_page_embeds_locations_json(self):
+        user = get_user_model().objects.create_user(username="u1")
+        self.client.force_login(user)
+        product = make_physical()
+        self.client.post(reverse("shop:cart_add", args=[product.pk]))
+        response = self.client.get(reverse("shop:checkout"))
+        self.assertContains(response, 'id="iran-locations"')
+        self.assertContains(response, "data-province-select")
+        self.assertContains(response, "js/province-city.js")

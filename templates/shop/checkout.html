@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load clinic_tags %}
+{% load static clinic_tags %}
 
 {% block title %}تسویه‌حساب{% endblock %}
 {% block meta_robots %}noindex, nofollow{% endblock %}
@@ -47,4 +47,11 @@
         </form>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+{% if iran_locations %}
+{{ iran_locations|json_script:"iran-locations" }}
+<script src="{% static 'js/province-city.js' %}"></script>
+{% endif %}
 {% endblock %}
