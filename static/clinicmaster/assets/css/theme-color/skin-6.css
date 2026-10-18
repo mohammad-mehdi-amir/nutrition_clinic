@@ -1,0 +1,24 @@
+html[data-theme-color="skin-6"]{
+    --primary: #71B606;
+    --primarydark: #609b05;
+    --primary-rgb: 113, 182, 6;
+    
+    --primarylight: #ccf2f9;
+    --body-color: #666666;
+    --body-bg: #FFFFFF;
+    --heading-color: #23281C;
+    --secondary: #23281C;
+    --secondarydark: #031742;
+    --secondary-rgb: 35, 40, 28;
+    --light: #F4F8E9;
+
+    --btn-radius: 15px;
+    --accordion-shadow: inset 0 calc(-1 * 1px) 0 #E1EBF1;
+
+    --font-base: "Montserrat";
+    --font-title: "Montserrat";
+
+    --service-card-gradient: linear-gradient(90deg, rgb(113 182 6 / 60%) 0%, rgb(35 40 28 / 80%) 100%);
+    --icon-bx-gradient: 180deg, #FFFFFF 0%, #edffd2 100%;
+    --shadow-20: 0px 20px 40px rgba(0, 176, 208, 0.1);
+}

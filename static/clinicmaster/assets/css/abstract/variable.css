@@ -1,0 +1,16 @@
+:root {
+    --primary: #00BDE0;
+    --primarydark: #00a1be;
+    --primary-rgb: 0, 189, 224;
+    
+    --primarylight: #ccf2f9;
+    --body-color: #566593;
+    --heading-color: #031B4E;
+    --secondary: #0A3366;
+    --secondarydark: #031742;
+    --light: #ecf5fb;
+
+    --gl-star-size: 18px;
+
+    --box-header-img: url('data:image/svg+xml,<svg viewBox="0 0 561 160" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H561L494.82 132.361C486.35 149.3 469.037 160 450.098 160H0V0Z" fill="white"/></svg>');
+}

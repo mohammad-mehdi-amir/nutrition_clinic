@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "description": "Frontend build for the clinic site (Tailwind CSS v4, ClinicMaster template)",
+  "scripts": {
+    "build:css": "tailwindcss -i ./static/clinicmaster/assets/css/clinic.css -o ./static/clinicmaster/assets/css/clinic.build.css --minify",
+    "watch:css": "tailwindcss -i ./static/clinicmaster/assets/css/clinic.css -o ./static/clinicmaster/assets/css/clinic.build.css --watch"
+  },
+  "devDependencies": {
+    "@majidh1/jalalidatepicker": "1.0.0",
+    "@tailwindcss/cli": "4.3.1",
+    "tailwindcss": "4.3.1",
+    "vazirmatn": "33.0.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

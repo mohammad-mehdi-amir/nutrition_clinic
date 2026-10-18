@@ -1,0 +1,68 @@
+.xmenu-search.show {
+    top: 0;
+}
+
+.header-nav li.open i.fa-chevron-right:before{
+    content: "\f078";
+}
+
+.header-nav.show {
+    left: 0;
+}
+[dir="rtl"] .header-nav.show {
+    right: 0;
+    left: auto;
+}
+.header-nav.right.show {
+    right: 0;
+    left: auto;
+}
+
+.sub-menu-down.open>a:after {
+    content: "\f078";
+}
+
+.menu-overlay .hamburger-links li.has-submenu .submenu {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 0 0 20px;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+.menu-overlay .hamburger-links li.has-submenu.open > .submenu {
+    max-height: 500px;
+    padding: 5px 0px 5px 20px;
+}
+.menu-overlay .hamburger-links li.has-submenu.open > a:after {
+    content: "−";
+}
+.menu-overlay.open {
+    @apply lg:right-7.5 right-3.75;
+}
+
+.xmenu-toggler.open span:nth-child(1) {
+    top: 23px;
+    -webkit-transform: rotate(135deg);
+    -moz-transform: rotate(135deg);
+    -o-transform: rotate(135deg);
+    transform: rotate(135deg);
+}
+
+.xmenu-toggler.open span:nth-child(2) {
+    opacity: 0;
+    left: -60px;
+}
+
+.xmenu-toggler.open span:nth-child(3) {
+    top: 23px;
+    width: 23px;
+    -webkit-transform: rotate(-135deg);
+    -moz-transform: rotate(-135deg);
+    -o-transform: rotate(-135deg);
+    transform: rotate(-135deg);
+}
+
+.xmenu-toggler.open ~ .menu-close.fade-overlay {
+    opacity: 0.5;
+    visibility: visible;
+    pointer-events: auto;
+}

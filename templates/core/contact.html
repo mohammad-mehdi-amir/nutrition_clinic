@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}تماس با ما{% endblock %}
+{% block meta_description %}راه‌های ارتباط با {{ site_settings.clinic_name }}: تلفن، نشانی و فرم تماس.{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="تماس با ما" %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 xl:17.5 md:py-12.5 sm:py-10 py-7.5">
+    <div class="container">
+        <div class="row">
+            <div class="xl:w-2/3 w-full order-2 xl:order-1">
+                <div class="form-body bg-white">
+                    <h2 class="text-2xxl font-bold mb-2.5">پیام بگذارید</h2>
+                    <p class="mb-7.5">سؤال یا درخواست خود را بنویسید؛ همکاران ما در ساعات کاری با شما تماس می‌گیرند.</p>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% include "includes/form_errors.html" %}
+                        <div class="row">
+                            <div class="sm:w-1/2 w-full">{% include "includes/form_field.html" with field=form.name %}</div>
+                            <div class="sm:w-1/2 w-full">{% include "includes/form_field.html" with field=form.phone %}</div>
+                            <div class="w-full">{% include "includes/form_field.html" with field=form.email %}</div>
+                            <div class="w-full">{% include "includes/form_field.html" with field=form.message %}</div>
+                            <div class="w-full">
+                                <button type="submit" class="btn btn-lg btn-icon btn-primary btn-shadow">
+                                    ارسال پیام <span class="size-11 min-w-11 bg-white rounded-2lg text-heading inline-flex items-center justify-center -my-2.75 -me-4.5 ms-3"><i class="feather icon-arrow-left"></i></span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="xl:w-1/3 w-full mb-7.5 order-1 xl:order-2">
+                <div class="md:py-10.5 md:px-7.5 py-7.5 px-6.25 rounded-2xl bg-light">
+                    {% if site_settings.address %}
+                    <div class="flex gap-3.75 text-start relative items-center mb-5">
+                        <div class="lg:size-15 lg:min-w-15 size-12.5 min-w-12.5 bg-primary text-white lg:text-2xl text-lg rounded-full flex items-center justify-center"><span class="icon-cell"><i class="feather icon-map-pin flex"></i></span></div>
+                        <div class="overflow-hidden">
+                            <h3 class="text-lg mb-0 font-semibold">نشانی</h3>
+                            <p class="text-base font-light mb-0 leading-[1.9]">{{ site_settings.address }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if site_settings.phone %}
+                    <div class="flex gap-3.75 text-start relative items-center mb-5">
+                        <div class="lg:size-15 lg:min-w-15 size-12.5 min-w-12.5 bg-primary text-white lg:text-2xl text-lg rounded-full flex items-center justify-center"><span class="icon-cell"><i class="feather icon-phone flex"></i></span></div>
+                        <div class="overflow-hidden">
+                            <h3 class="text-lg mb-0 font-semibold">تلفن</h3>
+                            <p class="text-base font-light mb-0"><a href="tel:{{ site_settings.phone }}" class="ltr-text">{{ site_settings.phone }}</a></p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if site_settings.email %}
+                    <div class="flex gap-3.75 text-start relative items-center mb-5">
+                        <div class="lg:size-15 lg:min-w-15 size-12.5 min-w-12.5 bg-primary text-white lg:text-2xl text-lg rounded-full flex items-center justify-center"><span class="icon-cell"><i class="feather icon-mail flex"></i></span></div>
+                        <div class="overflow-hidden">
+                            <h3 class="text-lg mb-0 font-semibold">ایمیل</h3>
+                            <p class="text-base font-light mb-0"><a href="mailto:{{ site_settings.email }}" class="ltr-text">{{ site_settings.email }}</a></p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if site_settings.working_days or site_settings.open_at %}
+                    <div class="flex gap-3.75 text-start relative items-center">
+                        <div class="lg:size-15 lg:min-w-15 size-12.5 min-w-12.5 bg-primary text-white lg:text-2xl text-lg rounded-full flex items-center justify-center"><span class="icon-cell"><i class="feather icon-clock flex"></i></span></div>
+                        <div class="overflow-hidden">
+                            <h3 class="text-lg mb-0 font-semibold">ساعات کاری</h3>
+                            <p class="text-base font-light mb-0">
+                                {{ site_settings.working_days }}
+                                {% if site_settings.open_at and site_settings.close_at %}<br>ساعت {{ site_settings.open_at|time:"H:i" }} تا {{ site_settings.close_at|time:"H:i" }}{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

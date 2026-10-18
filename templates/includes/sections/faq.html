@@ -1,0 +1,48 @@
+{% load static clinic_tags %}
+{% comment %}
+آکاردئون سؤالات متداول. ورودی: faqs (QuerySet)، show_all_link (bool)
+{% endcomment %}
+{% if faqs %}
+<section class="2xxl:pt-25 2xxl:pb-17.5 md:pt-17.5 sm:pt-12.5 pt-10 pb-10 bg-white">
+    <div class="container">
+        <div class="row content-wrapper style-5 items-center">
+            <div class="2xl:w-5/12 lg:w-1/2 w-full mb-7.5">
+                <div class="relative wow fadeInUp" data-wow-delay="0.4s" data-wow-duration="0.8s">
+                    <div class="rounded-2xl relative overflow-hidden">
+                        <img src="{% site_image site_settings.faq_image 'clinicmaster/src/images/about/image.webp' %}" alt="" class="w-full" loading="lazy">
+                    </div>
+                </div>
+            </div>
+            <div class="2xl:w-7/12 lg:w-1/2 w-full mb-7.5 self-center">
+                <div class="xl:ps-7.5">
+                    <div class="sm:mb-7.5 mb-5 wow fadeInUp" data-wow-delay="0.2s" data-wow-duration="0.8s">
+                        <h2 class="2xxl:text-4xxl lg:text-[38px] sm:text-[32px] text-2xxl font-bold mb-3.75">سؤالات متداول</h2>
+                        <p class="xl:text-lg sm:text-base text-sm font-light">پاسخ پرسش‌های رایج درباره‌ی خدمات، رزرو نوبت و روند مشاوره.</p>
+                    </div>
+                    <div class="myAccordion style-3 mb-8.75 wow fadeInUp" data-wow-delay="0.4s" data-wow-duration="0.8s">
+                        {% for faq in faqs %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header{% if forloop.first %} open{% endif %}">
+                                <button class="accordion-button" type="button">{{ faq.question }}</button>
+                                <span class="arrow{% if forloop.first %} active{% endif %}">
+                                    <i class="icon feather icon-chevron-left [.arrow.active_&]:hidden block"></i>
+                                    <i class="icon feather icon-chevron-down [.arrow.active_&]:block hidden"></i>
+                                </span>
+                            </h2>
+                            <div class="accordion-content{% if forloop.first %} show{% endif %}">
+                                <div class="content-inner">
+                                    <p class="mb-0 leading-[1.9]">{{ faq.answer|linebreaksbr }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if show_all_link %}
+                    <a href="{% url 'core:faqs' %}" class="btn btn-primary">همه‌ی سؤالات</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}

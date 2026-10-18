@@ -1,0 +1,20 @@
+{% comment %}
+variant: "menu" (منوی موبایل) | "footer"
+{% endcomment %}
+{% if site_settings.instagram_url or site_settings.telegram_url or site_settings.whatsapp_url %}
+{% if variant == "menu" %}
+<div class="lg:hidden block max-lg:p-5 text-center">
+    <ul>
+        {% if site_settings.instagram_url %}<li class="inline-block mx-0.5"><a class="size-10 !leading-10 border border-black/10 text-center text-secondary fab fa-instagram" target="_blank" rel="noopener" href="{{ site_settings.instagram_url }}" aria-label="اینستاگرام"></a></li>{% endif %}
+        {% if site_settings.telegram_url %}<li class="inline-block mx-0.5"><a class="size-10 !leading-10 border border-black/10 text-center text-secondary fab fa-telegram-plane" target="_blank" rel="noopener" href="{{ site_settings.telegram_url }}" aria-label="تلگرام"></a></li>{% endif %}
+        {% if site_settings.whatsapp_url %}<li class="inline-block mx-0.5"><a class="size-10 !leading-10 border border-black/10 text-center text-secondary fab fa-whatsapp" target="_blank" rel="noopener" href="{{ site_settings.whatsapp_url }}" aria-label="واتس‌اپ"></a></li>{% endif %}
+    </ul>
+</div>
+{% else %}
+<ul class="flex gap-6">
+    {% if site_settings.instagram_url %}<li><a href="{{ site_settings.instagram_url }}" target="_blank" rel="noopener" class="text-primary" aria-label="اینستاگرام"><i class="fa-brands fa-instagram"></i></a></li>{% endif %}
+    {% if site_settings.telegram_url %}<li><a href="{{ site_settings.telegram_url }}" target="_blank" rel="noopener" class="text-primary" aria-label="تلگرام"><i class="fa-brands fa-telegram"></i></a></li>{% endif %}
+    {% if site_settings.whatsapp_url %}<li><a href="{{ site_settings.whatsapp_url }}" target="_blank" rel="noopener" class="text-primary" aria-label="واتس‌اپ"><i class="fa-brands fa-whatsapp"></i></a></li>{% endif %}
+</ul>
+{% endif %}
+{% endif %}

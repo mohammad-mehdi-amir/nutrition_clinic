@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}سؤالات متداول{% endblock %}
+{% block meta_description %}پاسخ سؤالات رایج درباره‌ی خدمات و رزرو نوبت در {{ site_settings.clinic_name }}.{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="سؤالات متداول" %}
+{% endblock %}
+
+{% block content %}
+{% if faqs %}
+{% include "includes/sections/faq.html" with faqs=faqs %}
+{% else %}
+<section class="py-17.5 bg-white">
+    <div class="container text-center">
+        <p class="text-lg">هنوز سؤالی ثبت نشده است. برای پرسش‌های خود از صفحه‌ی <a class="text-primary" href="{% url 'core:contact' %}">تماس با ما</a> استفاده کنید.</p>
+    </div>
+</section>
+{% endif %}
+
+{% include "includes/sections/cta.html" %}
+{% endblock %}

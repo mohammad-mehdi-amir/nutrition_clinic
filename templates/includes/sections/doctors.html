@@ -1,0 +1,44 @@
+{% comment %}
+کارت‌های پزشکان. ورودی: doctors (QuerySet)، show_heading (bool)
+{% endcomment %}
+<section class="2xxl:py-25 xl:17.5 md:py-12.5 sm:py-10 py-7.5 bg-white">
+    <div class="container">
+        {% if show_heading %}
+        <div class="sm:mb-7.5 mb-5 text-center">
+            {% include "includes/sections/label.html" with text="متخصصان ما" %}
+            <h2 class="2xxl:text-5xxl lg:text-[38px] sm:text-[32px] text-2xxl font-bold leading-[1.4] mb-0">با متخصصان تغذیه‌ی ما آشنا شوید</h2>
+        </div>
+        {% endif %}
+        <div class="row box-hover-wrapper">
+            {% for doctor in doctors %}
+            <div class="xl:w-1/4 sm:w-1/2 w-full mb-7.5 wow fadeInUp" data-wow-delay="0.2s" data-wow-duration="0.8s">
+                <div class="relative overflow-hidden box-hover h-full">
+                    <div class="relative overflow-hidden z-0 after:absolute after:bg-light after:border after:border-primary/10 after:border-b-0 after:rounded-t-3xl after:bottom-0 ltr:after:left-0 rtl:after:right-0 after:h-[80%] after:-z-1 after:w-full after:bg-cover">
+                        {% if doctor.image %}
+                        <img src="{{ doctor.image.url }}" alt="{{ doctor.name }}" class="w-full aspect-[4/5] object-cover" loading="lazy">
+                        {% else %}
+                        <div class="w-full aspect-[4/5] flex items-center justify-center"><i class="feather icon-user text-[96px] text-primary/40"></i></div>
+                        {% endif %}
+                    </div>
+                    <div class="p-5 border-t-0 border border-primary/10 rounded-b-2lg">
+                        <h3 class="text-2xl font-semibold mb-0">{{ doctor.name }}</h3>
+                        <span class="text-sm text-primary font-poppins block">{{ doctor.specialty }}</span>
+                    </div>
+                    <div class="absolute bottom-0 p-5 bg-primary rounded-2xl h-full w-full flex flex-col duration-500 rotate-z-180 translate-y-full [.box-hover.active_&]:translate-0 [.box-hover.active_&]:rotate-z-0">
+                        <p class="text-white text-[17px] leading-[1.8] mb-5">{{ doctor.bio|default:"برای دریافت مشاوره‌ی تخصصی تغذیه نوبت بگیرید."|truncatewords:30 }}</p>
+                        <div class="mt-auto">
+                            <h3 class="text-2xl font-semibold mb-0 text-white">{{ doctor.name }}</h3>
+                            <span class="text-sm text-white font-poppins block mb-3.75">{{ doctor.specialty }}</span>
+                            <a href="{% url 'appointments:book_appointment' %}" class="btn btn-white btn-sm">رزرو نوبت</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="w-full text-center py-10">
+                <p class="text-lg">اطلاعات متخصصان به‌زودی در این بخش قرار می‌گیرد.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>

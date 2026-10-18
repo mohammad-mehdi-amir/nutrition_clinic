@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load clinic_tags %}
+
+{% block title %}سبد خرید{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="سبد خرید" %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-light">
+    <div class="container">
+        {% if lines %}
+        <div class="grid grid-cols-12 gap-7.5">
+            <div class="lg:col-span-8 col-span-12 bg-white rounded-xxl sm:p-7.5 p-5">
+                <ul>
+                    {% for line in lines %}
+                    <li class="flex max-sm:flex-wrap items-center gap-5 py-5 {% if not forloop.last %}border-b border-black/5{% endif %}">
+                        <a href="{{ line.product.get_absolute_url }}" class="size-20 min-w-20 rounded-2lg overflow-hidden bg-light flex items-center justify-center">
+                            {% if line.product.image %}<img src="{{ line.product.image.url }}" alt="" class="size-full object-cover">{% else %}<i class="feather icon-shopping-bag text-3xl text-primary/40"></i>{% endif %}
+                        </a>
+                        <div class="flex-1 min-w-40">
+                            <h2 class="text-lg font-semibold mb-1"><a href="{{ line.product.get_absolute_url }}">{{ line.product.name }}</a></h2>
+                            <p class="text-sm mb-0">{{ line.unit_price|price }}{% if line.product.is_package %} — پکیج {{ line.product.duration_days }} روزه{% endif %}</p>
+                        </div>
+                        {% if line.product.is_package %}
+                        <span class="text-sm">۱ عدد</span>
+                        {% else %}
+                        <form method="post" action="{% url 'shop:cart_update' line.product.pk %}" class="flex items-center gap-2.5">
+                            {% csrf_token %}
+                            {% include "includes/quantity_input.html" with value=line.quantity max=line.product.max_quantity label=line.product.name %}
+                            <button type="submit" class="text-primary text-sm font-semibold cursor-pointer hover:underline">به‌روزرسانی</button>
+                        </form>
+                        {% endif %}
+                        <span class="font-semibold text-secondary min-w-30 text-end">{{ line.line_total|price }}</span>
+                        <form method="post" action="{% url 'shop:cart_remove' line.product.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="text-danger text-xl cursor-pointer" aria-label="حذف {{ line.product.name }}"><i class="feather icon-trash-2"></i></button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="lg:col-span-4 col-span-12">
+                <div class="bg-white rounded-xxl sm:p-7.5 p-5 lg:sticky lg:top-30">
+                    <h2 class="text-xl font-bold mb-3.75">خلاصه‌ی سفارش</h2>
+                    {% include "shop/_totals.html" %}
+                    <a href="{% url 'shop:checkout' %}" class="btn btn-lg btn-primary w-full justify-center mt-3.75">ادامه‌ی خرید و ثبت سفارش</a>
+                    <a href="{% url 'shop:product_list' %}" class="block text-center text-sm text-primary mt-3.75">بازگشت به فروشگاه</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-white rounded-xxl text-center py-17.5 px-5">
+            <i class="feather icon-shopping-cart text-6xl text-primary/50"></i>
+            <h2 class="text-2xl font-bold mt-5 mb-2.5">سبد خرید شما خالی است</h2>
+            <p class="mb-7.5">محصولات و پکیج‌های رژیم را از فروشگاه انتخاب کنید.</p>
+            <a href="{% url 'shop:product_list' %}" class="btn btn-primary">رفتن به فروشگاه</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

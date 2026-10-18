@@ -1,0 +1,21 @@
+html[data-theme-color="skin-9"]{
+
+    --primary: #EBF800;
+    --primarydark: #eaf700;
+    --primary-rgb: 235, 248, 0;
+    
+    --primarylight: #C3D3D9;
+    --body-color: rgba(0, 0, 0, 0.6);
+    --body-bg: #FFFFFF;
+    --heading-color: #010101;
+    --secondary: #010101;
+    --secondarydark: #000;
+    --secondary-rgb: 1, 1, 1;
+    --light: #FCFFBF;
+    
+    --btn-radius: 50px;
+    --accordion-shadow: 2px 2px 0 rgb(240 88 141 / 20%);
+    
+    --font-base: "DM Sans";
+    --font-title: "DM Sans";
+}

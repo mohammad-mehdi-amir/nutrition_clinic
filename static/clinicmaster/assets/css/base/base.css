@@ -1,0 +1,7 @@
+@import "./grid.css";
+@import "./global.css";
+@import "./keyframes.css";
+/* نسخه‌ی پروژه: فونت‌های لاتین قالب حذف شد؛ فونت سایت (Vazirmatn) در clinic.css تعریف می‌شود. */
+/* @import "./fonts.css"; */
+@import "./preloader.css";
+@import "./rtl.css";

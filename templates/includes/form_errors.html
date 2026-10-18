@@ -1,0 +1,5 @@
+{% if form.non_field_errors %}
+<div class="py-3.75 px-5 text-base rounded relative mb-6 text-danger bg-danger-light">
+    {% for error in form.non_field_errors %}{{ error }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+</div>
+{% endif %}

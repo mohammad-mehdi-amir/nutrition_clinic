@@ -1,4 +1,5 @@
 from io import BytesIO
+from pathlib import Path
 
 from django.core.files.base import ContentFile
 from django.db import models
@@ -6,19 +7,37 @@ from PIL import Image
 
 
 class WebPImageField(models.ImageField):
+    """
+    ImageField که فایل آپلودشده را قبل از ذخیره به WEBP تبدیل می‌کند.
+
+    تبدیل فقط روی فایل جدید (commit‌نشده) انجام می‌شود، پس:
+    - فایل اصلی (jpg/png) هرگز در storage ذخیره نمی‌شود؛
+    - upload_to فقط یک بار اعمال می‌شود (بدون مسیر تودرتو)؛
+    - ذخیره‌ی دوباره‌ی مدل، تصویر را دوباره پردازش نمی‌کند.
+    """
 
     def pre_save(self, model_instance, add):
-        file = super().pre_save(model_instance, add)
+        file = getattr(model_instance, self.attname)
 
-        if not file:
-            return file
+        if file and not file._committed:
+            self._convert_to_webp(file)
 
+        return super().pre_save(model_instance, add)
+
+    @staticmethod
+    def _convert_to_webp(file):
+        file.seek(0)
         image = Image.open(file)
 
         if image.format == "WEBP":
-            return file
+            file.seek(0)
+            return
 
-        image = image.convert("RGB")
+        # WEBP از شفافیت پشتیبانی می‌کند؛ کانال alpha را نگه می‌داریم
+        has_alpha = image.mode in ("RGBA", "LA") or (
+            image.mode == "P" and "transparency" in image.info
+        )
+        image = image.convert("RGBA" if has_alpha else "RGB")
 
         output = BytesIO()
 
@@ -29,12 +48,5 @@ class WebPImageField(models.ImageField):
             optimize=True
         )
 
-        filename = file.name.rsplit(".", 1)[0] + ".webp"
-
-        file.save(
-            filename,
-            ContentFile(output.getvalue()),
-            save=False
-        )
-
-        return file
+        file.file = ContentFile(output.getvalue())
+        file.name = f"{Path(file.name).stem}.webp"

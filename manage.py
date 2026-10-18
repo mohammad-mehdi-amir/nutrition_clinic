@@ -15,6 +15,16 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
+
+    import django
+
+    if django.VERSION < (5, 2):
+        sys.exit(
+            f"Django {django.get_version()} from {sys.executable} is too old; "
+            "this project needs Django 5.2 (see requirements.txt).\n"
+            "Activate the project virtualenv first:  source venv/bin/activate"
+        )
+
     execute_from_command_line(sys.argv)
 
 

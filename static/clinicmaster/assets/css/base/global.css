@@ -1,0 +1,59 @@
+@layer base {
+    * {
+        scrollbar-width: thin;
+    }
+    html {
+      overflow: unset !important;
+    }
+    body {
+        @apply selection:bg-primary selection:text-white bg-bodybg font-base text-bodycolor !overflow-x-clip !overflow-y-scroll sm:text-base text-sm;
+    }
+    section {
+        @apply relative;
+    }
+    h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+        @apply font-semibold text-heading font-title mb-2;
+    }
+    p {
+        @apply text-bodycolor mb-4;
+    }
+    .h1, h1 {
+      line-height: 1.2;
+    }
+    
+}
+a{
+    @apply duration-500;
+}
+button{
+    @apply cursor-pointer;
+}
+
+#videoContainer iframe {
+  @apply  w-full rounded-xxl xl:h-150 md:h-100 h-70;
+}
+textarea ,
+input {
+  @apply outline-0 outline-none;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.dzSubscribeMsg .alert-success ,
+.dzFormMsg .alert-success {
+  @apply text-green-900 bg-green-200 p-5 mb-2.5;
+}
+.link-hover {
+  @apply relative hover:after:w-full hover:after:left-0 hover:after:right-auto;
+}
+.link-hover::after {
+  @apply content-[''] absolute h-px bg-primary bottom-0 right-0 w-0 duration-500 ;
+}

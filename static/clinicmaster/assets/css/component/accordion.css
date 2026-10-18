@@ -1,0 +1,88 @@
+.myAccordion .accordion-button{
+    @apply text-start;
+}
+.myAccordion .accordion-content {
+    @apply max-h-0 overflow-hidden duration-500;
+}
+.myAccordion .accordion-header.open + .accordion-content {
+    @apply max-h-full;
+}
+.myAccordion .arrow .fa-chevron-up {
+    @apply hidden;
+}
+.myAccordion .arrow .fa-chevron-down {
+    @apply block;
+}
+.myAccordion .arrow.active .fa-chevron-up {
+    @apply block;
+}
+.myAccordion .arrow.active .fa-chevron-down {
+    @apply hidden;
+}
+
+.myAccordion.style-1 .accordion-item:first-of-type {
+    @apply rounded-t-md;
+}
+.myAccordion.style-1 .accordion-item:last-of-type {
+    @apply rounded-b-md;
+}
+.myAccordion.style-1 .accordion-item:not(:first-of-type) {
+    @apply border-t-0;
+}
+.myAccordion.style-1 .accordion-header {
+    @apply relative py-4 px-6 flex items-center justify-between w-full cursor-pointer mb-0 shadow-accordion bg-light text-secondary;
+}
+.myAccordion.style-1 .content-inner {
+    @apply p-6.25 border border-gray-200 rounded-md;
+}
+.myAccordion.style-1 .accordion-header.open + .accordion-content::before {
+    @apply content-[''] block h-2;
+}
+.myAccordion.style-1 .accordion-button {
+    @apply text-start;
+}
+
+.myAccordion.style-2 .accordion-header {
+    @apply relative sm:py-5.75 sm:px-6.25 py-3.75 px-5 flex items-center justify-between w-full cursor-pointer mb-0 text-secondary bg-white xl:text-lg text-base font-medium rounded-md;
+}
+.myAccordion.style-2 .accordion-header.open {
+    @apply text-white bg-primary mb-2;
+}
+.myAccordion.style-2 .accordion-header.open .accordion-button {
+    @apply text-white!;
+}
+.myAccordion.style-2 .content-inner {
+    @apply py-6.25 px-7.5 bg-white rounded-md;
+}
+
+.myAccordion.style-3 .accordion-header {
+    @apply relative py-5.75 flex items-center justify-between w-full cursor-pointer mb-0 text-secondary text-lg border-b border-black/10 font-medium;
+}
+.myAccordion.style-3 .content-inner {
+    @apply pt-3.75 pb-6.25 border-b border-gray-200 rounded-md;
+}
+
+.myAccordion.style-4 {
+    @apply [counter-reset:accordion-item];
+}
+.myAccordion.style-4 .accordion-header {
+    @apply bg-secondary text-white rounded-xxl duration-200 xl:py-8.5 xl:px-7.5 py-5 px-6.25 leading-[1.7] relative before:![content:'0'_counter(accordion-item)] before:[counter-increment:accordion-item] before:bg-none before:text-6xl before:font-bold before:text-white before:opacity-10 before:absolute before:right-5 before:top-3.75 before:leading-[1.15];
+}
+[dir="rtl"] .myAccordion.style-4 .accordion-header {
+    @apply before:left-5 before:right-auto;
+}
+.myAccordion.style-4 .accordion-item .accordion-header::before {
+    @apply ![content:'0'_counter(accordion-item)] [counter-increment:accordion-item];
+}
+.myAccordion.style-4 .accordion-header.open {
+    @apply p-0 h-0 overflow-hidden shadow-none opacity-0;
+}
+.myAccordion.style-4 .accordion-header .accordion-button {
+    @apply text-white xl:text-xl text-lg font-normal;
+}
+.myAccordion.style-4 .accordion-header + .accordion-content .content-inner {
+    @apply border-2 border-primary rounded-xxl p-5 xl:ps-7.5 bg-white;
+}
+html[data-theme-color="skin-3"] .myAccordion.style-1 .content-inner{
+    @apply border-none bg-light;
+}

@@ -1,0 +1,55 @@
+
+<DOCTYPE! html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>flatpickr quick start</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css" integrity="sha512-MQXduO8IQnJVq1qmySpN87QQkiR1bZHtorbJBD0tzy7/0U9+YIC93QWHeGTEoojMVHWWNkoCp8V6OzVSYrX0oQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <style type="text/css">
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Roboto", "Oxygen", "Ubuntu", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    label > div {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div style="padding:15vw">
+    <div>
+      <label>
+        <div>Date 1</div>
+        <input placeholder="Select Date..." class="date" />
+        <input placeholder="Select Date..." class="date" />
+        <input placeholder="Select Date..." class="date" />
+        <input placeholder="Select Date..." class="date" />
+        <input placeholder="Select Date..." class="date" />
+        <input placeholder="Select Date..." class="date" />
+      </label>
+
+      <--!
+      <label>
+        <div>Date 2</div>
+        <input placeholder="Select Date..." class=date id=input2 />
+      </label>
+      -->
+    </div>
+  </div>
+  
+  <--! classList polyfill for IE9 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.2.20171210/classList.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js" integrity="sha512-K/oyQtMXpxI4+K0W7H25UopjM8pzq0yrVdFdG21Fh5dBe91I40pDd9A4lzNlHPHBIP2cwZuoxaUSX0GJSObvGA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script>
+    var fp = flatpickr(".date", {})
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,4 @@
+{% if order.status == "pending_payment" %}<span class="inline-block rounded-full px-3 py-1 text-sm text-warning bg-warning-light">{{ order.get_status_display }}</span>
+{% elif order.status == "cancelled" %}<span class="inline-block rounded-full px-3 py-1 text-sm text-danger bg-danger-light">{{ order.get_status_display }}</span>
+{% elif order.status == "paid" or order.status == "completed" %}<span class="inline-block rounded-full px-3 py-1 text-sm text-success bg-success-light">{{ order.get_status_display }}</span>
+{% else %}<span class="inline-block rounded-full px-3 py-1 text-sm text-info bg-info-light">{{ order.get_status_display }}</span>{% endif %}

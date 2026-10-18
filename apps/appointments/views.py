@@ -1,187 +1,41 @@
-from datetime import datetime, time, timedelta
-
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Doctor, DoctorAvailability
-from .services import (get_available_slots,book_appointment,cancel_appointment,expire_pending_appointments,can_cancel_appointment)
+from .models import Doctor
+from .services import (
+    book_appointment,
+    can_cancel_appointment,
+    cancel_appointment,
+    expire_pending_appointments,
+    get_available_slots,
+)
 from django.views.decorators.http import require_POST
-from utils.jalali import (jalali_to_gregorian,format_jalali,)
+from utils.jalali import format_jalali, jalali_to_gregorian
 from .forms import AppointmentDateForm
-@staff_member_required
-def schedule(request):
 
-    doctors = Doctor.objects.filter(is_active=True)
 
-    doctor_id = request.GET.get("doctor") or request.POST.get("doctor")
-
-    doctor = None
-
-    if doctor_id:
-        doctor = get_object_or_404(
-            Doctor,
-            id=doctor_id,
-            is_active=True
-        )
-
-    time_slots = []
-
-    current = datetime.combine(
-        datetime.today(),
-        time(8, 0)
-    )
-
-    end = datetime.combine(
-        datetime.today(),
-        time(21, 0)
-    )
-
-    while current <= end:
-
-        time_slots.append(
-            current.time()
-        )
-
-        current += timedelta(minutes=30)
-
-    # ساخت جدول برای Template
-    schedule_rows = []
-
-    for slot_time in time_slots:
-
-        cells = []
-
-        for day in range(7):
-
-            cells.append({
-                "day": day,
-                "time": slot_time,
-                "key": f"{day}_{slot_time.strftime('%H:%M')}",
-            })
-
-        schedule_rows.append({
-            "time": slot_time,
-            "cells": cells,
-        })
-
-    if request.method == "POST" and doctor:
-
-        selected_slots = set(
-            request.POST.getlist("slots")
-        )
-
-        with transaction.atomic():
-
-            for day in range(7):
-
-                for slot_time in time_slots:
-
-                    key = f"{day}_{slot_time.strftime('%H:%M')}"
-
-                    availability = (
-                        DoctorAvailability.objects
-                        .filter(
-                            doctor=doctor,
-                            day_of_week=day,
-                            time=slot_time
-                        )
-                        .first()
-                    )
-
-                    if key in selected_slots:
-
-                        if availability:
-
-                            if not availability.is_active:
-
-                                availability.is_active = True
-
-                                availability.save(
-                                    update_fields=["is_active"]
-                                )
-
-                        else:
-
-                            DoctorAvailability.objects.create(
-                                doctor=doctor,
-                                day_of_week=day,
-                                time=slot_time,
-                                is_active=True
-                            )
-
-                    else:
-
-                        if availability and availability.is_active:
-
-                            availability.is_active = False
-
-                            availability.save(
-                                update_fields=["is_active"]
-                            )
-
-        messages.success(
-            request,
-            "برنامه کاری پزشک با موفقیت ذخیره شد."
-        )
-
-        return redirect(
-            f"{request.path}?doctor={doctor.id}"
-        )
-
-    active_slots = set()
-
-    if doctor:
-
-        active_slots = {
-            f"{item.day_of_week}_{item.time.strftime('%H:%M')}"
-            for item in doctor.availabilities.filter(
-                is_active=True
-            )
-        }
-
-    context = {
-        "doctors": doctors,
-        "doctor": doctor,
-        "schedule_rows": schedule_rows,
-        "active_slots": active_slots,
-    }
-
+def doctor_list(request):
     return render(
         request,
-        "appointments/schedule.html",
-        context
+        "appointments/doctors.html",
+        {"doctors": Doctor.objects.filter(is_active=True)},
     )
-    
-    
+
 
 @login_required
 def book_appointment_view(request):
-
-    doctors = Doctor.objects.filter(is_active=True)
 
     if request.method == "POST":
 
         form = AppointmentDateForm(request.POST)
 
-        doctor_id = request.POST.get("doctor")
-
-        if not doctor_id:
-            messages.error(
-                request,
-                "لطفاً پزشک را انتخاب کنید."
-            )
-
-        elif form.is_valid():
-
-            selected_date = form.cleaned_data["date"]
+        if form.is_valid():
 
             return redirect(
                 "appointments:select_time",
-                doctor_id=doctor_id,
-                date=selected_date.strftime("%Y-%m-%d"),
+                doctor_id=form.cleaned_data["doctor"].id,
+                date=format_jalali(form.cleaned_data["date"], "-"),
             )
 
     else:
@@ -190,12 +44,10 @@ def book_appointment_view(request):
     return render(
         request,
         "appointments/book_appointment.html",
-        {
-            "doctors": doctors,
-            "form": form,
-        },
+        {"form": form},
     )
-    
+
+
 @login_required
 def select_time(request, doctor_id, date):
 

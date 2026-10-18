@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load clinic_tags %}
+
+{% block title %}{{ product.name }}{% endblock %}
+{% block meta_description %}{{ product.short_description }}{% endblock %}
+{% block og_title %}{{ product.name }}{% endblock %}
+{% block og_description %}{{ product.short_description }}{% endblock %}
+
+{% block banner %}
+{% if product.is_package %}{% url 'shop:packages' as parent_url %}{% include "includes/page_banner.html" with title=product.name parent_title="پکیج‌های رژیم" parent_url=parent_url %}
+{% else %}{% url 'shop:product_list' as parent_url %}{% include "includes/page_banner.html" with title=product.name parent_title="فروشگاه" parent_url=parent_url %}{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-white">
+    <div class="container">
+        <div class="grid grid-cols-12 gap-7.5 lg:gap-12.5">
+            <div class="lg:col-span-5 col-span-12">
+                <div class="rounded-xxl overflow-hidden bg-light">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full aspect-square object-cover">
+                    {% else %}
+                    <div class="w-full aspect-square flex items-center justify-center"><i class="feather {% if product.is_package %}icon-clipboard{% else %}icon-shopping-bag{% endif %} text-[120px] text-primary/40"></i></div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="lg:col-span-7 col-span-12">
+                {% if product.category %}
+                <a href="{{ product.category.get_absolute_url }}" class="text-primary text-sm font-semibold">{{ product.category.name }}</a>
+                {% endif %}
+                <h2 class="2xl:text-4xxl text-3xl font-bold leading-[1.4] mt-1.25 mb-3.75">{{ product.name }}</h2>
+                <p class="text-lg leading-[1.9] mb-5">{{ product.short_description }}</p>
+
+                <div class="flex items-center gap-3.75 mb-5">
+                    <span class="text-3xl font-bold text-secondary">{{ product.final_price|price }}</span>
+                    {% if product.has_discount %}
+                    <del class="text-lg text-bodycolor">{{ product.price|price }}</del>
+                    <span class="px-2.5 py-0.75 rounded-md text-xs font-semibold bg-secondary text-white">{{ product.discount_percent }}٪ تخفیف</span>
+                    {% endif %}
+                </div>
+
+                <ul class="mb-7.5 flex flex-wrap gap-3.75 text-sm">
+                    <li class="bg-light rounded-2lg px-3.75 py-2">نوع: {{ product.get_product_type_display }}</li>
+                    {% if product.is_package %}
+                    <li class="bg-light rounded-2lg px-3.75 py-2">مدت اعتبار: {{ product.duration_days }} روز</li>
+                    {% elif product.in_stock %}
+                    <li class="bg-success-light text-success rounded-2lg px-3.75 py-2">موجود در انبار</li>
+                    {% else %}
+                    <li class="bg-danger-light text-danger rounded-2lg px-3.75 py-2">ناموجود</li>
+                    {% endif %}
+                </ul>
+
+                {% if product.in_stock %}
+                <form method="post" action="{% url 'shop:cart_add' product.pk %}" class="flex flex-wrap items-center gap-3.75 mb-7.5">
+                    {% csrf_token %}
+                    {% if not product.is_package %}
+                    {% include "includes/quantity_input.html" with value=1 max=product.max_quantity %}
+                    {% endif %}
+                    <button type="submit" class="btn btn-lg btn-primary">
+                        <i class="fa-solid fa-cart-shopping me-2"></i>{% if in_cart %}افزودن دوباره به سبد{% else %}افزودن به سبد خرید{% endif %}
+                    </button>
+                </form>
+                {% if in_cart %}<p class="text-sm mb-7.5">{{ in_cart }} عدد از این محصول در <a href="{% url 'shop:cart' %}" class="text-primary">سبد خرید</a> شماست.</p>{% endif %}
+                {% endif %}
+
+                {% if product.is_package and product.feature_list %}
+                <h3 class="text-xl font-semibold mb-3.75">این پکیج شامل:</h3>
+                <ul class="mb-7.5">
+                    {% for feature in product.feature_list %}
+                    <li class="w-full relative p-0.75 ps-7.5 text-base before:absolute ltr:before:left-0 rtl:before:right-0 before:font-black before:content-['\f109'] before:font-['flaticon'] before:text-primary before:top-2">{{ feature }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if product.description %}
+                <h3 class="text-xl font-semibold mb-3.75">توضیحات</h3>
+                <div class="text-base leading-[2]">{{ product.description|linebreaks }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if related_products %}
+<section class="md:pb-17.5 pb-10 bg-white">
+    <div class="container">
+        <h2 class="text-2xxl font-bold mb-7.5">محصولات مرتبط</h2>
+        <div class="grid grid-cols-12 gap-5">
+            {% for item in related_products %}
+            <div class="xl:col-span-3 sm:col-span-6 col-span-12">{% include "includes/sections/product_card.html" with product=item %}</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}متخصصان{% endblock %}
+{% block meta_description %}آشنایی با متخصصان تغذیه و رژیم‌درمانی {{ site_settings.clinic_name }} و رزرو آنلاین نوبت.{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="متخصصان ما" %}
+{% endblock %}
+
+{% block content %}
+{% include "includes/sections/doctors.html" with doctors=doctors %}
+
+{% include "includes/sections/cta.html" %}
+{% endblock %}

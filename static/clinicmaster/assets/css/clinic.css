@@ -1,0 +1,73 @@
+/*
+ * ورودی Tailwind پروژه.
+ * فایل‌های قالب ClinicMaster بدون تغییر import می‌شوند و همه‌ی شخصی‌سازی‌های
+ * سایت (رنگ، فونت، جزئیات RTL) فقط در همین فایل انجام می‌شود.
+ *
+ * Build:  npx -p node@22 npm run build:css
+ * خروجی: clinic.build.css (در base.html لود می‌شود)
+ */
+@import "./tailwind.css";
+
+/* کلاس‌های استفاده‌شده در قالب‌های Django و JS قالب */
+@source "../../../../templates";
+@source "../js";
+
+/* ---------- فونت فارسی (self-hosted) ---------- */
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("../../../fonts/vazirmatn/Vazirmatn-Variable.woff2") format("woff2-variations"),
+         url("../../../fonts/vazirmatn/Vazirmatn-Variable.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ---------- توکن‌های ظاهری سایت (تنها محل تغییر رنگ و فونت) ----------
+ * پایه: skin-6 قالب (سبز، مناسب کلینیک تغذیه).
+ * برای تغییر هویت بصری فقط مقادیر زیر را عوض کنید.
+ */
+html[data-theme-color="skin-6"] {
+    --primary: #71B606;
+    --primarydark: #609b05;
+    --primary-rgb: 113, 182, 6;
+    --primarylight: #e6f3cf;
+    --secondary: #23281C;
+    --secondary-rgb: 35, 40, 28;
+    --heading-color: #23281C;
+    --body-color: #555555;
+    --body-bg: #FFFFFF;
+    --light: #F4F8E9;
+
+    --font-base: "Vazirmatn", Tahoma, sans-serif;
+    --font-title: "Vazirmatn", Tahoma, sans-serif;
+    --font-sub-title: "Vazirmatn", Tahoma, sans-serif;
+    --font-poppins: "Vazirmatn", Tahoma, sans-serif;
+    --font-arizonia: "Vazirmatn", Tahoma, sans-serif;
+    --font-montserrat: "Vazirmatn", Tahoma, sans-serif;
+}
+
+/* ---------- تنظیمات فارسی ---------- */
+[dir="rtl"] body {
+    font-feature-settings: "ss01"; /* ارقام فارسی در Vazirmatn */
+    letter-spacing: 0;
+}
+
+/* حروف بزرگ و فاصله‌ی حروف لاتین برای متن فارسی بی‌معناست */
+[dir="rtl"] .uppercase {
+    letter-spacing: 0;
+}
+
+/* شماره تلفن و ایمیل همیشه چپ‌به‌راست */
+.ltr-text {
+    direction: ltr;
+    unicode-bidi: isolate;
+    display: inline-block;
+}
+
+/* ---------- Datepicker جلالی (jalalidatepicker) ----------
+ * CSS خود datepicker بعد از این فایل لود می‌شود؛ selector باید specificity بیشتری داشته باشد. */
+body jdp-container {
+    --jdp-primary: var(--primary);
+    font-family: var(--font-base);
+    border-radius: 15px;
+}

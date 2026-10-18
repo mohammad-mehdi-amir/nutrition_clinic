@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load clinic_tags jalali_tags %}
+
+{% block title %}سفارش‌های من{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="سفارش‌های من" %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-light">
+    <div class="container">
+        <div class="bg-white sm:rounded-3xl rounded-xxl sm:p-10 p-6.25">
+            {% if orders %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-center border-collapse min-w-180">
+                    <thead>
+                        <tr class="bg-light text-secondary">
+                            <th class="py-3.75 px-3 font-semibold">شماره</th>
+                            <th class="py-3.75 px-3 font-semibold">تاریخ</th>
+                            <th class="py-3.75 px-3 font-semibold">اقلام</th>
+                            <th class="py-3.75 px-3 font-semibold">مبلغ</th>
+                            <th class="py-3.75 px-3 font-semibold">وضعیت</th>
+                            <th class="py-3.75 px-3 font-semibold"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr class="border-b border-black/5">
+                            <td class="py-3.75 px-3 font-semibold text-secondary">#{{ order.pk }}</td>
+                            <td class="py-3.75 px-3">{{ order.created_at|to_jalali:"%Y/%m/%d" }}</td>
+                            <td class="py-3.75 px-3">{{ order.items.all|length }} قلم</td>
+                            <td class="py-3.75 px-3">{{ order.total|price }}</td>
+                            <td class="py-3.75 px-3">{% include "shop/_status_badge.html" %}</td>
+                            <td class="py-3.75 px-3"><a href="{{ order.get_absolute_url }}" class="text-primary font-semibold">جزئیات</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-10">
+                <h2 class="text-xl font-bold mb-3.75">هنوز سفارشی ثبت نکرده‌اید</h2>
+                <a href="{% url 'shop:product_list' %}" class="btn btn-primary">رفتن به فروشگاه</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

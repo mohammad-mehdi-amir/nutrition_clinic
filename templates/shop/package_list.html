@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load clinic_tags %}
+
+{% block title %}پکیج‌های رژیم{% endblock %}
+{% block meta_description %}پکیج‌های رژیم و برنامه‌ی تغذیه‌ی {{ site_settings.clinic_name }}.{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="پکیج‌های رژیم" %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-white">
+    <div class="container">
+        <div class="row text-start">
+            {% for package in packages %}
+            <div class="xl:w-1/2 w-full mb-7.5 wow fadeInUp" data-wow-delay="0.2s" data-wow-duration="0.8s">
+                <div class="p-7.5 max-md:!pt-15 relative z-1 rounded-xxl bg-light h-full overflow-hidden">
+                    <div class="flex h-full">
+                        {% if package.image %}
+                        <div class="relative overflow-hidden 2xl:w-70 2xl:min-w-70 w-60 min-w-60 flex self-end -mb-7.5 me-7.5 max-md:hidden">
+                            <img src="{{ package.image.url }}" alt="{{ package.name }}" class="object-cover" loading="lazy">
+                        </div>
+                        {% endif %}
+                        <div class="flex flex-col flex-1">
+                            <h2 class="text-2xl font-bold mb-2.5"><a href="{{ package.get_absolute_url }}">{{ package.name }}</a></h2>
+                            <div class="mb-2.5">
+                                <span class="text-3xl font-semibold text-heading leading-[1.4]">{{ package.final_price|price }}</span>
+                                <small class="text-2sm font-medium text-bodycolor ms-1.25">/ {{ package.duration_days }} روز</small>
+                                {% if package.has_discount %}<del class="block text-sm text-bodycolor">{{ package.price|price }}</del>{% endif %}
+                            </div>
+                            <p class="mb-3.75 leading-[1.8]">{{ package.short_description }}</p>
+                            {% if package.feature_list %}
+                            <h3 class="text-lg font-semibold pb-2.5 relative mb-3 after:absolute after:bottom-0 ltr:after:left-0 rtl:after:right-0 ltr:after:right-0 rtl:after:left-0 after:h-px after:bg-size-[10px_1px] after:bg-repeat-x after:bg-linear-(--title-gradient)">شامل:</h3>
+                            <ul class="mb-5">
+                                {% for feature in package.feature_list %}
+                                <li class="w-full relative p-0.75 ps-7.5 xl:text-base text-2sm before:absolute ltr:before:left-0 rtl:before:right-0 before:font-black before:content-['\f109'] before:font-['flaticon'] before:text-primary before:top-2">{{ feature }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                            <form method="post" action="{% url 'shop:cart_add' package.pk %}" class="mt-auto">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary w-full justify-center">انتخاب پکیج</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% if package.has_discount %}
+                    <span class="md:text-base text-sm leading-[1.6] ltr:md:rounded-ss-2lg ltr:md:rounded-se-2lg rtl:md:rounded-tl-2lg rtl:md:rounded-bl-2lg max-md:rounded-b-2lg bg-primary md:px-3.75 md:py-1.25 py-2 px-3.75 absolute md:top-5 top-0 md:[writing-mode:tb-rl] z-1 ltr:md:left-0 ltr:left-7.5 rtl:md:right-0 rtl:right-7.5 text-white font-medium">{{ package.discount_percent }}٪ تخفیف</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="w-full text-center py-15 bg-light rounded-xxl">
+                <p class="text-lg mb-0">به‌زودی پکیج‌های رژیم در این بخش معرفی می‌شوند.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% include "includes/sections/cta.html" %}
+{% endblock %}

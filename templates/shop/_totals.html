@@ -1,0 +1,8 @@
+{% load clinic_tags %}
+<ul class="text-base">
+    <li class="flex justify-between py-2.5 border-b border-black/5"><span>جمع اقلام</span><span class="font-semibold">{{ totals.subtotal|price }}</span></li>
+    {% if totals.needs_shipping %}
+    <li class="flex justify-between py-2.5 border-b border-black/5"><span>هزینه‌ی ارسال</span><span class="font-semibold">{% if totals.shipping_cost %}{{ totals.shipping_cost|price }}{% else %}رایگان{% endif %}</span></li>
+    {% endif %}
+    <li class="flex justify-between py-3.75 text-lg"><span class="font-semibold text-secondary">مبلغ قابل پرداخت</span><span class="font-bold text-primary">{{ totals.total|price }}</span></li>
+</ul>

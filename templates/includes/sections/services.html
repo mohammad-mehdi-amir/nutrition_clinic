@@ -1,0 +1,40 @@
+{% load static %}
+{% comment %}
+کارت‌های خدمات. ورودی: services (QuerySet)، show_heading (bool)
+{% endcomment %}
+<section class="2xxl:py-25 xl:17.5 md:py-12.5 sm:py-10 py-7.5 bg-light">
+    <div class="container">
+        <div class="3xl:-mx-22.5 2xxl:-mx-15 xl:-mx-5">
+            {% if show_heading %}
+            <div class="sm:mb-7.5 mb-5 text-center">
+                {% include "includes/sections/label.html" with text="خدمات ما" %}
+                <h2 class="2xxl:text-5xxl lg:text-[38px] sm:text-[32px] text-2xxl font-bold leading-[1.4] mb-0">خدمات تخصصی تغذیه<br> برای هر هدف</h2>
+            </div>
+            {% endif %}
+            <div class="row box-hover-wrapper">
+                {% for service in services %}
+                <div class="xl:w-1/4 md:w-1/2 w-full mb-7.5 wow fadeInUp">
+                    <div class="rounded-xxl h-full relative flex flex-col bg-white duration-700 box-hover [.box-hover.active]:bg-primary{% if forloop.counter == 2 %} active{% endif %}">
+                        <div class="relative overflow-hidden rounded-t-xxl">
+                            {% if service.image %}
+                            <img src="{{ service.image.url }}" alt="{{ service.title }}" class="w-full aspect-[4/3] object-cover" loading="lazy">
+                            {% else %}
+                            <img src="{% static 'clinicmaster/src/images/services/img1.webp' %}" alt="" class="w-full aspect-[4/3] object-cover" loading="lazy">
+                            {% endif %}
+                        </div>
+                        <div class="p-7.5 flex-1 flex-col flex">
+                            <h3 class="text-xl mb-2.5 duration-700 [.box-hover.active_&]:text-white">{{ service.title }}</h3>
+                            <p class="mb-6.25 duration-700 [.box-hover.active_&]:text-white">{{ service.summary }}</p>
+                            <a href="{{ service.get_absolute_url }}" class="mt-auto font-medium text-primary duration-700 [.box-hover.active_&]:text-white">مشاهده‌ی جزئیات <i class="feather icon-arrow-left-circle inline-block text-base"></i></a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="w-full text-center py-10">
+                    <p class="text-lg">به‌زودی خدمات کلینیک در این بخش معرفی می‌شوند.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>

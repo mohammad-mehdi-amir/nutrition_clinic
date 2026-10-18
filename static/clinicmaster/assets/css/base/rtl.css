@@ -1,0 +1,42 @@
+[dir="rtl"] {
+    --mask-shape1: url("../images/shape/shape1-rtl.svg");
+
+    --icon-bx-footer-gradient: to left, rgba(86, 101, 147, 0.3) 50%, rgba(255, 255, 255, 0) 0%;
+    --icon-bx-footer-white-gradient: to left, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0) 0%;
+    --content-wrapper-2-gradient: to left, rgba(30, 87, 153, 0) 0%, rgb(255, 255, 255) 100%;
+    --content-wrapper-3-gradient: to right, rgba(0, 0, 0, 0) 0%, var(--color-light) 20%;
+    --content-bx-2-gradient: 315deg, rgba(var(--secondary-rgb), 0.1), transparent 80%;
+    --content-bx-3-gradient: 245deg, rgba(var(--primary-rgb), 0.1), transparent 80%;
+    --bg3-gradient: 250deg,rgba(var(--color-white-rgb),1) 50%,transparent;
+    --title-gradient: to left, rgba(0, 0, 0, 0.2) 50%, rgba(255, 255, 255, 0) 0%;
+    --title2-gradient: to left, var(--color-secondary) 0, rgba(0, 0, 0, 0) 100%;
+    --title3-gradient: to left, #fff 0, rgba(0, 0, 0, 0) 100%;
+    --title4-gradient: 260deg, #ECDFC6 0%, rgba(247, 243, 235, 0) 100%;
+    --title5-gradient: 260deg, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0) 100%;
+    --sub-title-gradient: 235deg, rgba(var(--primary-rgb), 0.2), transparent;
+    --banner-4-gradient: 90deg, rgba(6, 29, 71, 0) 0%, rgba(6, 29, 71, 0.6) 100%;
+
+}
+@media only screen and (min-width: 1400px) {
+    [dir="rtl"] .container-left {
+        margin-right: calc((100% - 1330px) / 2);
+        margin-left: auto;
+    }
+    [dir="rtl"] .lg-container {
+        direction: ltr;
+    }   
+}
+[dir="rtl"] .headline .line,
+[dir="rtl"] .animate-ticker,
+[dir="rtl"] .swiper {
+    direction: ltr;
+}
+[dir="rtl"] .headline .line {
+    text-align: right !important;
+}
+[dir="rtl"] .text-center .headline .line {
+    text-align: center !important;
+}
+[dir="rtl"] .swiper-slide {
+    direction: rtl;
+}

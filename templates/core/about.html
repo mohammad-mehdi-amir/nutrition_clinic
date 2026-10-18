@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}درباره ما{% endblock %}
+{% block meta_description %}آشنایی با {{ site_settings.clinic_name }}، رویکرد درمانی و متخصصان کلینیک.{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="درباره ما" %}
+{% endblock %}
+
+{% block content %}
+{% include "includes/sections/about.html" %}
+
+{% if site_settings.about_text %}
+<section class="md:pb-17.5 pb-10 bg-white">
+    <div class="container">
+        <div class="max-w-225 mx-auto text-lg leading-[2.1]">
+            {{ site_settings.about_text|linebreaks }}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% include "includes/sections/faq.html" with faqs=faqs show_all_link=True %}
+
+{% include "includes/sections/bmi.html" %}
+
+{% include "includes/sections/cta.html" %}
+{% endblock %}

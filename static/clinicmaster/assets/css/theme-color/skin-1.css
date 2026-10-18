@@ -1,0 +1,21 @@
+html[data-theme-color="skin-1"]{
+    --primary: #00b0d0;
+    --primarydark: #00a1be;
+    --primary-rgb: 0, 189, 224;
+    
+    --primarylight: #ccf2f9;
+    --body-color: #566593;
+    --body-bg: #ffffff;
+    --heading-color: #031B4E;
+    --secondary: #031b4e;
+    --secondarydark: #031742;
+    --secondary-rgb: 3, 27, 78;
+    --light: #ecf5fb;
+
+    --btn-radius: 15px;
+    --accordion-shadow: 2px 2px 0 rgba(0, 189, 224, 0.2);
+
+    --service-card-gradient: linear-gradient(90deg, rgba(0, 176, 208, 0.85) 0%, rgba(3, 23, 66, 0.65) 100%);
+    --icon-bx-gradient: 180deg, #FFFFFF 0%, #dbf9ff 100%;
+    --shadow-20: 0px 20px 40px rgba(0, 176, 208, 0.1);
+}

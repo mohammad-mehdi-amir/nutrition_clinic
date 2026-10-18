@@ -1,195 +1,79 @@
 {% extends "base.html" %}
 {% load jalali_tags %}
-{% block title %}
-    نوبت‌های من
+
+{% block title %}نوبت‌های من{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="نوبت‌های من" %}
 {% endblock %}
 
 {% block content %}
-
-<div class="container py-5">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold mb-1">نوبت‌های من</h2>
-            <p class="text-muted mb-0">
-                لیست نوبت‌های ثبت‌شده شما
-            </p>
-        </div>
-
-        <a href="{% url 'appointments:book_appointment' %}"
-           class="btn btn-primary">
-            رزرو نوبت جدید
-        </a>
-    </div>
-
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show"
-                 role="alert">
-
-                {{ message }}
-
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="alert"
-                        aria-label="بستن">
-                </button>
-
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-light">
+    <div class="container">
+        <div class="bg-white sm:rounded-3xl rounded-xxl sm:p-10 p-6.25 shadow-[0_10px_30px_rgba(var(--secondary-rgb),0.08)]">
+            <div class="flex flex-wrap gap-5 justify-between items-center mb-7.5">
+                <div>
+                    <h2 class="text-2xxl font-bold mb-1.25">نوبت‌های من</h2>
+                    <p class="mb-0">فهرست نوبت‌های ثبت‌شده‌ی شما</p>
+                </div>
+                <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary">رزرو نوبت جدید</a>
             </div>
-        {% endfor %}
-    {% endif %}
 
-
-    {% if appointments %}
-
-        <div class="table-responsive">
-
-            <table class="table table-bordered table-hover align-middle text-center">
-
-                <thead class="table-light">
-                    <tr>
-                        <th>پزشک</th>
-                        <th>تخصص</th>
-                        <th>تاریخ</th>
-                        <th>ساعت</th>
-                        <th>وضعیت</th>
-                        <th>عملیات</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-
-                    {% for appointment in appointments %}
-
-                        <tr>
-
-                            <!-- Doctor -->
-                            <td class="fw-semibold">
-                                {{ appointment.availability.doctor.name }}
-                            </td>
-
-
-                            <!-- Specialty -->
-                            <td>
-                                {{ appointment.availability.doctor.specialty }}
-                            </td>
-
-
-                            <!-- Date -->
-                            <td>
-                                {{ appointment.date|to_jalali:"%Y/%m/%d" }}
-                            </td>
-
-
-                            <!-- Time -->
-                            <td>
-                                {{ appointment.availability.time|time:"H:i" }}
-                            </td>
-
-
-                            <!-- Status -->
-                            <td>
-
-                                {% if appointment.status == "pending" %}
-
-                                    <span class="badge bg-warning text-dark">
-                                        در انتظار پرداخت
-                                    </span>
-
-                                {% elif appointment.status == "confirmed" %}
-
-                                    <span class="badge bg-success">
-                                        تایید شده
-                                    </span>
-
-                                {% elif appointment.status == "cancelled" %}
-
-                                    <span class="badge bg-secondary">
-                                        لغو شده
-                                    </span>
-
-                                {% elif appointment.status == "completed" %}
-
-                                    <span class="badge bg-primary">
-                                        انجام شده
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <!-- Actions -->
-                            <td>
-
-                                {% if appointment.can_cancel %}
-
-    <form method="post"
-
-          action="{% url 'appointments:cancel_appointment' appointment.id %}"
-
-          class="d-inline">
-
-        {% csrf_token %}
-
-        <button type="submit"
-
-                class="btn btn-sm btn-outline-danger"
-
-                onclick="return confirm('آیا از لغو این نوبت مطمئن هستید؟');">
-
-            لغو نوبت
-
-        </button>
-
-    </form>
-
-{% else %}
-
-    <span class="text-muted small">
-
-        -
-
-    </span>
-
-{% endif %}
-
-                            </td>
-
+            {% if appointments %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-center border-collapse min-w-180">
+                    <thead>
+                        <tr class="bg-light text-secondary">
+                            <th class="py-3.75 px-3 font-semibold">پزشک</th>
+                            <th class="py-3.75 px-3 font-semibold">تخصص</th>
+                            <th class="py-3.75 px-3 font-semibold">تاریخ</th>
+                            <th class="py-3.75 px-3 font-semibold">ساعت</th>
+                            <th class="py-3.75 px-3 font-semibold">وضعیت</th>
+                            <th class="py-3.75 px-3 font-semibold">عملیات</th>
                         </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr class="border-b border-black/5">
+                            <td class="py-3.75 px-3 font-semibold text-secondary">{{ appointment.availability.doctor.name }}</td>
+                            <td class="py-3.75 px-3">{{ appointment.availability.doctor.specialty }}</td>
+                            <td class="py-3.75 px-3">{{ appointment.date|to_jalali:"%Y/%m/%d" }}</td>
+                            <td class="py-3.75 px-3">{{ appointment.availability.time|time:"H:i" }}</td>
+                            <td class="py-3.75 px-3">
+                                {% if appointment.status == "pending" %}
+                                <span class="inline-block rounded-full px-3 py-1 text-sm text-warning bg-warning-light">{{ appointment.get_status_display }}</span>
+                                {% elif appointment.status == "confirmed" %}
+                                <span class="inline-block rounded-full px-3 py-1 text-sm text-success bg-success-light">{{ appointment.get_status_display }}</span>
+                                {% elif appointment.status == "cancelled" %}
+                                <span class="inline-block rounded-full px-3 py-1 text-sm text-danger bg-danger-light">{{ appointment.get_status_display }}</span>
+                                {% else %}
+                                <span class="inline-block rounded-full px-3 py-1 text-sm text-info bg-info-light">{{ appointment.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3.75 px-3">
+                                {% if appointment.can_cancel %}
+                                <form method="post" action="{% url 'appointments:cancel_appointment' appointment.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-danger text-sm font-semibold cursor-pointer hover:underline" onclick="return confirm('آیا از لغو این نوبت مطمئن هستید؟');">لغو نوبت</button>
+                                </form>
+                                {% else %}
+                                <span class="text-sm">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-10">
+                <h3 class="text-xl font-bold mb-3.75">هنوز نوبتی ثبت نکرده‌اید</h3>
+                <p class="mb-5">برای دریافت نوبت، پزشک و زمان موردنظر خود را انتخاب کنید.</p>
+                <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary">رزرو نوبت</a>
+            </div>
+            {% endif %}
         </div>
-
-    {% else %}
-
-        <div class="text-center py-5">
-
-            <h4 class="fw-bold mb-3">
-                هنوز نوبتی ثبت نکرده‌اید
-            </h4>
-
-            <p class="text-muted mb-4">
-                برای دریافت نوبت، پزشک و زمان مورد نظر خود را انتخاب کنید.
-            </p>
-
-            <a href="{% url 'appointments:book_appointment' %}"
-               class="btn btn-primary">
-
-                رزرو نوبت
-
-            </a>
-
-        </div>
-
-    {% endif %}
-
-</div>
-
+    </div>
+</section>
 {% endblock %}

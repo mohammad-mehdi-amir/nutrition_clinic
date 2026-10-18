@@ -1,0 +1,6 @@
+{# ورودی تعداد با دکمه‌های +/- (handleTouchSpin در custom.js قالب). ورودی: value، max، label #}
+<div class="input-group inline-flex items-center rounded-2lg bg-light overflow-hidden">
+    <button type="button" class="button-minus size-11 flex items-center justify-center text-secondary cursor-pointer hover:text-primary" data-field="quantity" aria-label="کم کردن"><i class="feather icon-minus"></i></button>
+    <input type="number" name="quantity" value="{{ value|default:1 }}" min="0" max="{{ max }}" aria-label="{{ label|default:'تعداد' }}" class="w-14 h-11 text-center bg-transparent outline-none text-secondary font-semibold [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none">
+    <button type="button" class="button-plus size-11 flex items-center justify-center text-secondary cursor-pointer hover:text-primary" data-field="quantity" aria-label="زیاد کردن"><i class="feather icon-plus"></i></button>
+</div>

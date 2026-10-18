@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}ورود{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="ورود به حساب" %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-light">
+    <div class="container">
+        <div class="max-w-130 mx-auto bg-white sm:rounded-3xl rounded-xxl sm:p-10 p-6.25 shadow-[0_10px_30px_rgba(var(--secondary-rgb),0.08)]">
+            <h2 class="text-2xxl font-bold mb-2.5 text-center">ورود به حساب کاربری</h2>
+            <p class="text-center mb-7.5">برای رزرو و پیگیری نوبت‌ها وارد شوید.</p>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next }}">
+                {% include "includes/form_errors.html" %}
+                {% include "includes/form_field.html" with field=form.username %}
+                {% include "includes/form_field.html" with field=form.password %}
+                <p class="text-sm -mt-3 mb-6 text-end"><a href="{% url 'accounts:password_reset' %}" class="text-primary">رمز عبور را فراموش کرده‌اید؟</a></p>
+                <button type="submit" class="btn btn-lg btn-primary w-full justify-center">ورود</button>
+            </form>
+            <p class="text-center mt-7.5 mb-0">حساب کاربری ندارید؟
+                <a href="{% url 'accounts:register' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="text-primary font-semibold">ثبت‌نام کنید</a>
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

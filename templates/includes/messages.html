@@ -1,0 +1,10 @@
+{% if messages %}
+<div class="container pt-7.5" role="status">
+    {% for message in messages %}
+    <div class="py-3.75 px-5 text-base rounded relative mb-4 {% if message.tags == 'error' %}text-danger bg-danger-light{% elif message.tags == 'warning' %}text-warning bg-warning-light{% elif message.tags == 'info' %}text-info bg-info-light{% else %}text-success bg-success-light{% endif %}">
+        {{ message }}
+        <button type="button" class="float-end text-black/50 text-2xl cursor-pointer remove-alert" aria-label="بستن"><i class="feather icon-x"></i></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

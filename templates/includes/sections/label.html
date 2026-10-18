@@ -1,0 +1,17 @@
+{# برچسب بالای عنوان بخش‌ها (آیکون برگ قالب) — usage: {% include "includes/sections/label.html" with text="..." %} #}
+<span class="text-primary font-semibold leading-5 text-lg inline-flex gap-1.25 items-center">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#leaf-clip)">
+                            <path d="M10.2201 4.75678L7.26892 6.20938C5.43504 7.11203 3.34137 6.35712 2.43872 4.52319L2.28418 4.20923L5.11059 2.75663C6.94448 1.85398 9.1629 2.60889 10.0655 4.44282L10.2201 4.75678Z" stroke="var(--primary)" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M10.2202 4.75609V3.63537C10.2202 2.22374 11.152 0.981554 12.5072 0.586426" stroke="var(--primary)" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="13.2289" cy="14.7057" r="0.586417" fill="var(--primary)"/>
+                            <circle cx="11.3483" cy="15.9028" r="0.586417" fill="var(--primary)"/>
+                            <path d="M4.55515 6.4092C3.23681 7.78575 2.38721 9.69267 2.38721 11.7492C2.38721 15.9821 5.81865 19.4136 10.0515 19.4136C14.2969 19.4136 17.7159 15.9946 17.7159 11.7492C17.7159 7.58238 14.3907 4.19219 10.249 4.08741C10.1265 4.08433 10.0039 4.09273 9.88307 4.11263" stroke="var(--primary)" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                            </g>
+                            <defs>
+                            <clipPath id="leaf-clip">
+                            <rect width="20" height="20" fill="white"/>
+                            </clipPath>
+                            </defs>
+                        </svg>                                  
+{{ text }}</span>

@@ -1,0 +1,102 @@
+.custom-select {
+    position: relative;
+}
+
+.custom-select .select-selected {
+    @apply py-3.75 text-lg text-start text-white border-b-2 border-white duration-300 focus:border-yellow-500 placeholder:text-white/0 w-full cursor-pointer;
+}
+.custom-select.dark .select-selected {
+    @apply text-bodycolor border-b-2 border-bodycolor;
+}
+.custom-select.style-2 .select-selected {
+    @apply text-bodycolor rounded-xxl py-3.75 px-5 text-base border-2 border-primary/20;
+}
+.custom-select.style-2.white .select-selected {
+    @apply text-white border-white/50;
+}
+.custom-select.style-3 .select-selected {
+    @apply text-bodycolor rounded-xxl py-3.75 px-5 text-base border border-bodycolor;
+}
+
+.custom-select.style-4 .select-selected {
+    @apply text-bodycolor rounded-5xl py-3.75 px-5 text-base border-2 border-secondary/30;
+}
+.custom-select.style-4.white .select-selected {
+    @apply text-secondary/60 border-secondary/30;
+}
+.icon-select.custom-select .select-selected {
+    @apply ps-10;
+}
+.custom-select.height-50 .select-selected {
+    @apply py-2.5 h-12.5;
+}
+.custom-select.secondary .select-selected {
+    @apply border-secondary;
+}
+.custom-select.secondary .select-item:hover,
+.custom-select.secondary .select-item.active {
+    @apply bg-black text-white;
+}
+.select-selected span {
+    display: none;
+}
+
+.select-selected:after {
+    content: "\e842";
+    font-family: "feather";
+    position: absolute;
+    right: 28px;
+    width: 8px;
+    height: 8px;
+    transition: .3s all;
+}
+[dir="rtl"] .select-selected:after {
+    left: 28px;
+    right: auto;
+}
+.select-items {
+    background-color: white;
+}
+
+.select-items {
+    position: absolute;
+    width: 100%;
+    z-index: 99;
+    max-height: 320px;
+    overflow-y: auto;
+    display: block;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0px);
+    min-width: 200px;
+    scrollbar-width: thin;
+    transition: .3s all;
+    padding: 10px 0;
+    box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
+    right: 0;
+    border-radius: 0.375rem;
+    margin-top: 4px;
+}
+
+.custom-select.right .select-items {
+    right: auto;
+    left: 0;
+}
+
+.select-item {
+    padding: 9px 20px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.select-item:hover,
+.select-item.active {
+    background-color: var(--color-light);
+    color: var(--color-primary);
+}
+
+.select-items.select-hide {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(15px);
+}

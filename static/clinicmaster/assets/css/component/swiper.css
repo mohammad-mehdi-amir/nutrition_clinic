@@ -1,0 +1,24 @@
+.swiper-pagination-bullets .swiper-pagination-bullet {
+    @apply size-2.5 bg-white;
+}
+.style-2.swiper-pagination-bullets .swiper-pagination-bullet {
+    @apply size-2.5 bg-secondary;
+}
+.style-2.swiper-pagination-bullets .swiper-pagination-bullet.swiper-pagination-bullet-active {
+    @apply w-6.25 rounded-5xl;
+}
+.style-3.swiper-pagination-bullets .swiper-pagination-bullet {
+    @apply h-1 w-8 bg-secondary rounded;
+}
+.style-3.swiper-pagination-bullets .swiper-pagination-bullet.swiper-pagination-bullet-active {
+    @apply bg-primary;
+}
+.swiper-pagination-progressbar .swiper-pagination-progressbar-fill {
+    @apply !bg-primary;
+}
+.team-image-swiper-2 .swiper-slide.swiper-slide-next + .swiper-slide ,
+.team-image-swiper .swiper-slide.swiper-slide-next + .swiper-slide ,
+.team-image-swiper-2 .swiper-slide.swiper-slide-next ,
+.team-image-swiper .swiper-slide.swiper-slide-next {
+    @apply !w-37.5 bg-bodybg after:absolute after:inset-0 after:size-full after:bg-black/10 after:rounded-2xl;
+}

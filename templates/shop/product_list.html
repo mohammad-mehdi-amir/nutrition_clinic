@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{% if category %}{{ category.name }}{% else %}فروشگاه{% endif %}{% endblock %}
+{% block meta_description %}محصولات تغذیه‌ای و پکیج‌های رژیم {{ site_settings.clinic_name }}.{% endblock %}
+{% block meta_robots %}{% if query or page_obj.number > 1 %}noindex, follow{% else %}index, follow{% endif %}{% endblock %}
+
+{% block banner %}
+{% if category %}
+{% url 'shop:product_list' as shop_url %}
+{% include "includes/page_banner.html" with title=category.name parent_title="فروشگاه" parent_url=shop_url %}
+{% else %}
+{% include "includes/page_banner.html" with title="فروشگاه" %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-white">
+    <div class="container">
+        <div class="flex max-lg:flex-col gap-7.5">
+
+            <!-- Sidebar -->
+            <aside class="lg:w-75 lg:min-w-75 w-full">
+                <form method="get" action="{% if category %}{{ category.get_absolute_url }}{% else %}{% url 'shop:product_list' %}{% endif %}" class="bg-light rounded-xxl p-6.25 mb-5">
+                    <label for="shop-search" class="block text-sm font-semibold text-secondary mb-2">جست‌وجو</label>
+                    <div class="relative mb-5">
+                        <input id="shop-search" type="search" name="q" value="{{ query }}" placeholder="نام محصول…" class="py-2.5 ps-5 pe-12 bg-white w-full outline-none text-black rounded-2lg h-12.5">
+                        <button type="submit" class="absolute top-0 ltr:right-0 rtl:left-0 h-full px-4 text-primary cursor-pointer" aria-label="جست‌وجو"><i class="feather icon-search"></i></button>
+                    </div>
+
+                    <label for="shop-type" class="block text-sm font-semibold text-secondary mb-2">نوع</label>
+                    <select id="shop-type" name="type" class="py-2.5 px-5 bg-white w-full outline-none text-black rounded-2lg h-12.5 mb-5 cursor-pointer" onchange="this.form.submit()">
+                        <option value="">همه</option>
+                        {% for value, label in type_choices %}
+                        <option value="{{ value }}" {% if product_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="shop-sort" class="block text-sm font-semibold text-secondary mb-2">مرتب‌سازی</label>
+                    <select id="shop-sort" name="sort" class="py-2.5 px-5 bg-white w-full outline-none text-black rounded-2lg h-12.5 cursor-pointer" onchange="this.form.submit()">
+                        {% for value, label in sort_options %}
+                        <option value="{{ value }}" {% if sort == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <noscript><button type="submit" class="btn btn-primary w-full justify-center mt-5">اعمال</button></noscript>
+                </form>
+
+                {% if categories %}
+                <div class="bg-light rounded-xxl p-6.25">
+                    <h2 class="text-lg font-semibold mb-3.75">دسته‌بندی‌ها</h2>
+                    <ul class="list-hover1">
+                        <li class="py-1.5"><a href="{% url 'shop:product_list' %}" class="{% if not category %}text-primary font-semibold{% endif %}">همه‌ی محصولات</a></li>
+                        {% for item in categories %}
+                        <li class="py-1.5"><a href="{{ item.get_absolute_url }}" class="{% if category == item %}text-primary font-semibold{% endif %}">{{ item.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </aside>
+
+            <!-- Products -->
+            <div class="flex-1">
+                {% if query %}
+                <p class="mb-5">نتایج جست‌وجو برای «<strong class="text-secondary">{{ query }}</strong>»: {{ page_obj.paginator.count }} مورد</p>
+                {% endif %}
+                <div class="grid grid-cols-12 gap-5">
+                    {% for product in products %}
+                    <div class="xl:col-span-4 sm:col-span-6 col-span-12">
+                        {% include "includes/sections/product_card.html" with product=product %}
+                    </div>
+                    {% empty %}
+                    <div class="col-span-12 text-center py-15 bg-light rounded-xxl">
+                        <i class="feather icon-package text-5xl text-primary/50"></i>
+                        <p class="text-lg mt-3.75 mb-0">محصولی یافت نشد.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if page_obj.has_other_pages %}
+                <nav class="mt-10 flex justify-center" aria-label="صفحه‌بندی">
+                    <ul class="flex gap-2.5">
+                        {% for number in page_obj.paginator.page_range %}
+                        <li>
+                            <a href="?{% if query %}q={{ query|urlencode }}&{% endif %}{% if product_type %}type={{ product_type }}&{% endif %}sort={{ sort }}&page={{ number }}"
+                               class="size-11 flex items-center justify-center rounded-2lg {% if number == page_obj.number %}bg-primary text-white{% else %}bg-light text-secondary hover:bg-primary hover:text-white{% endif %}"
+                               {% if number == page_obj.number %}aria-current="page"{% endif %}>{{ number }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,99 @@
+.info-widget .widget-media::after, .info-widget .widget-media::before {
+    @apply content-[''] absolute size-5 bg-[length:100%];
+    background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50' fill='none'><path fill-rule='evenodd' clip-rule='evenodd' d='M0 0V50H50C22.3858 50 0 27.6142 0 0Z' fill='white'/></svg>");
+}
+.info-widget .widget-media::before{
+    @apply bottom-0 -right-5;
+}
+.info-widget .widget-media::after{
+    @apply -bottom-5 right-0 rotate-180;
+}
+[dir="rtl"] .info-widget .widget-media::before{
+    @apply right-auto -left-5 -rotate-90;
+}
+[dir="rtl"] .info-widget .widget-media::after{
+    @apply right-auto left-0 rotate-90;
+}
+.awards-swiper .swiper-slide:not(.swiper-slide-active) .dz-img-box {
+    transform: scale(0.75);
+    box-shadow: none;
+}
+.awards-swiper .swiper-slide-active ~ .swiper-slide {
+    @apply -me-10;
+}
+.tab-content {
+    @apply hidden;
+}
+.tab-content.active {
+    @apply block;
+}
+.word-rotate-box .text-char {
+    display: block;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    height: 80px;
+    width: 160px;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 16px;
+    transform-origin: bottom center;
+    transform: rotate(var(--char-rotate));
+    color: #000;
+}
+.word-rotate-box.style-1 .text-char {
+    top: 5px;
+    left: 5px;
+    height: 70px;
+    width: 140px;
+    font-family: "Inter";
+    font-weight: 300;
+    text-transform: inherit;
+}
+.word-rotate-box.light .text-char {
+    color: #fff;
+}
+@media only screen and (max-width: 1199px) {
+    .word-rotate-box .text-char {
+        font-size: 13px;
+        height: 65px;
+        width: 130px;
+    }
+}
+@media only screen and (max-width: 991px) {
+    .word-rotate-box .text-char {
+        font-size: 12px;
+        height: 55px;
+        width: 110px;
+        top: 5px;
+        left: 5px;
+    }
+}
+.alert {
+    @apply py-2.5 px-5;
+}
+.alert-danger {
+    @apply bg-red-100 border-red-200 text-red-700;
+}
+.alert-sucess {
+    @apply bg-green-100 border-green-200 text-green-700;
+}
+.image-tooltip {
+    @apply absolute opacity-100 ltr:xl:left-1/5! ltr:left-0! rtl:xl:right-1/5! rtl:right-0! z-8;
+}
+
+.split-title .word {
+    display: inline-block;
+    opacity: 0.2;
+}
+
+.dz-hover-img canvas {
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute;
+    border-radius: 10px;
+    object-fit: contain;
+}
+

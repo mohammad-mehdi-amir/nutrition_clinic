@@ -1,13 +1,52 @@
 {% extends "base.html" %}
+{% load static clinic_tags %}
 
-{% block title %}
-صفحه اصلی
-{% endblock %}
+{% block title %}{{ site_settings.clinic_name }}{% endblock %}
+{% block title_suffix %}{% endblock %}
 
 {% block content %}
+<!-- Hero -->
+<div class="relative z-1 bg-linear-(--banner-2-gradient) overflow-hidden sm:bg-center bg-left bgxl-cover 2xl:h-237.5 xl:h-205 lg:h-170 md:h-150 h-auto" style="background-image: url({% static 'clinicmaster/src/images/hero-banner/banner-1.webp' %});">
+    <div class="container h-full">
+        <div class="h-full xl:pt-0 lg:pt-7.5 sm:pt-33.75 pt-30">
+            <div class="row items-end h-full">
+                <div class="md:w-1/2 w-full self-center">
+                    <div class="relative ms-2.5 z-1">
+                        <span class="2xxl:text-5xl 2xl:text-4xl text-2xl relative text-primary-second font-arizonia font-bold before:absolute before:top-[-65%] ltr:before:right-[105%] rtl:before:left-[105%] before:w-8 before:h-12.5 before:animate-move4 before:bg-no-repeat before:bg-bottom before:bg-contain before:bg-sub-title-before after:absolute after:-bottom-1.25 ltr:after:left-0 rtl:after:right-0 after:size-full after:bg-no-repeat after:bg-bottom after:bg-contain after:bg-sub-title-after max-xl:before:hidden rtl:before:rotate-180">تغذیه‌ی سالم</span>
+                        <h1 class="2xxl:text-7xl xl:text-5xxl md:text-[36px] sm:text-3xxl text-2xxl font-bold leading-[1.35] mt-2.5 mb-3.75 text-white wow fadeInUp" data-wow-delay="0.2s" data-wow-duration="0.8s">بدنت را تغذیه کن، زندگی‌ات را بساز</h1>
+                        <p class="xl:text-xl lg:text-lg text-base font-medium leading-[1.9] lg:mb-7.5 mb-5 text-white">{{ site_settings.tagline|default:"برنامه‌ی غذایی علمی و شخصی‌سازی‌شده، زیر نظر متخصصان تغذیه؛ برای کاهش وزن، افزایش انرژی و سبک زندگی سالم‌تر." }}</p>
+                        <div class="flex flex-wrap items-center gap-3.75 wow fadeInUp" data-wow-delay="0.8s" data-wow-duration="0.8s">
+                            <a href="{% url 'appointments:book_appointment' %}" class="btn btn-lg btn-white hover-secondary group">
+                                رزرو نوبت
+                                <span class="size-11 min-w-11 bg-secondary rounded-2lg text-white inline-flex items-center justify-center -my-2.75 -me-4.5 ms-3 group-hover:bg-white group-hover:text-heading"><i class="feather icon-arrow-left"></i></span>
+                            </a>
+                            <a href="{% url 'core:services' %}" class="btn btn-lg btn-primary">خدمات ما</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 w-full">
+                    <div class="2xxl:ms-7.5 2xxl:w-180 2xl:w-162.5 xl:w-145 lg:w-120 sm:w-92.5 w-75 max-md:mx-auto">
+                        <img src="{% site_image site_settings.hero_image 'clinicmaster/src/images/hero-banner/1.png' %}" alt="{{ site_settings.clinic_name }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="absolute animate-move4 h-auto md:top-1/4 top-[65%] ltr:md:right-2/5 ltr:sm:right-1/5 ltr:right-[10%] rtl:md:left-2/5 rtl:sm:left-1/5 rtl:left-[10%] max-xl:w-15 max-lg:!w-12.5"><img src="{% static 'clinicmaster/src/images/hero-banner/item1.png' %}" alt=""></div>
+    <div class="absolute animate-move4 h-auto bottom-[33%] ltr:left-[5%] rtl:right-[5%] max-2xxl:hidden"><img src="{% static 'clinicmaster/src/images/hero-banner/item2.png' %}" alt=""></div>
+    <div class="absolute animate-move4 h-auto sm:bottom-[10%] bottom-[22%] ltr:lg:left-[30%] ltr:md:left-2/5 ltr:left-[5%] rtl:lg:right-[30%] rtl:md:right-2/5 rtl:right-[5%] max-xl:w-17.5 max-sm:!w-12.5"><img src="{% static 'clinicmaster/src/images/hero-banner/item3.png' %}" alt=""></div>
+</div>
+<!-- Hero End -->
 
-<h1>کلینیک تغذیه</h1>
+{% include "includes/sections/about.html" with show_more=True %}
 
-<p>به وب‌سایت کلینیک تغذیه خوش آمدید.</p>
+{% include "includes/sections/services.html" with services=services show_heading=True %}
 
+{% include "includes/sections/bmi.html" %}
+
+{% if doctors %}
+{% include "includes/sections/doctors.html" with doctors=doctors show_heading=True %}
+{% endif %}
+
+{% include "includes/sections/cta.html" %}
 {% endblock %}

@@ -1,0 +1,131 @@
+.separator.no-highlight {
+	background: transparent;
+}
+
+.appointment-wrapper .form-control {
+	color: var(--color-bodycolor);
+	border: 1px solid var(--color-bodycolor);
+	border-radius: 10px;
+	padding: 15px 20px !important;
+	font-size: 16px;
+
+	&.show {
+		border-color: rgba(var(--primary-rgb), 0.6);
+		border-width: 2px;
+		box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.3);
+	}
+}
+
+.controls {
+	display: flex;
+	gap: 1rem;
+	margin-bottom: 35px;
+}
+
+.calendar-section {
+	display: flex;
+	gap: 2rem;
+
+}
+
+.calendar-info {
+	flex: 1;
+}
+
+.title {
+	margin-bottom: 15px;
+	font-weight: 500;
+}
+
+.calendar {
+	flex: 1;
+}
+
+.days-header {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 5px;
+}
+
+.days-header>div {
+	text-align: center;
+	padding: 0.8rem 0;
+	border-radius: 10px;
+	cursor: pointer;
+	background-color: var(--color-secondary);
+	transition: background 0.2s;
+	color: #fff;
+}
+
+.days-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 5px;
+	padding: 5px 0;
+
+
+}
+
+.days-grid .day {
+	text-align: center;
+	padding: 0.7rem 0;
+	border-radius: 10px;
+	cursor: pointer;
+	background-color: rgba(var(--color-light-rgb), 0.4);
+	transition: background 0.2s;
+	font-size: 16px;
+	color: var(--color-secondary);
+	border: 1px solid transparent;
+}
+
+.day.selected {
+	border-color: rgba(var(--primary-rgb), 0.7);
+	background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+.day.disabled {
+	color: #ccc;
+	pointer-events: none;
+}
+
+.timezone {
+	font-size: 0.9rem;
+	margin-bottom: 1rem;
+}
+
+.time-slots {
+	flex: 1;
+}
+
+#selected-date {
+	margin-bottom: 15px;
+	font-size: 1.125rem;
+	font-weight: 500;
+}
+
+.slots-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 10px;
+}
+
+.slot {
+	padding: 0.75rem;
+	background-color: rgba(var(--color-light-rgb), 0.4);
+	border-radius: 10px;
+	font-size: 16px;
+	text-align: center;
+	cursor: pointer;
+	transition: background 0.2s;
+	border: 1px solid transparent;
+	color: var(--color-secondary);
+}
+
+.slot:hover {
+	background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+.slot.selected {
+	border-color: rgba(var(--primary-rgb), 0.7);
+	background-color: rgba(var(--primary-rgb), 0.1);
+}

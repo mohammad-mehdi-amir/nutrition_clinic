@@ -1,0 +1,97 @@
+$flaticon-font: "flaticon";
+
+@font-face {
+    font-family: $flaticon-font;
+    src: url("./flaticon.woff2?3d45b69369877d41727d5ce676aa99ad") format("woff2"),
+url("./flaticon.woff?3d45b69369877d41727d5ce676aa99ad") format("woff"),
+url("./flaticon.eot?3d45b69369877d41727d5ce676aa99ad#iefix") format("embedded-opentype"),
+url("./flaticon.ttf?3d45b69369877d41727d5ce676aa99ad") format("truetype"),
+url("./flaticon.svg?3d45b69369877d41727d5ce676aa99ad#flaticon") format("svg");
+}
+
+i[class^="flaticon-"]:before, i[class*=" flaticon-"]:before {
+    font-family: flaticon !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+$flaticon-map: (
+    "medical-symbol": "\f101",
+    "drugs": "\f102",
+    "doctor": "\f103",
+    "root-canal": "\f104",
+    "right-quote": "\f105",
+    "left-quote": "\f106",
+    "clock": "\f107",
+    "phone-call": "\f108",
+    "check": "\f109",
+    "list": "\f10a",
+    "stethoscope": "\f10b",
+    "hand-holding-usd": "\f10c",
+    "date": "\f10d",
+    "pin": "\f10e",
+    "phone-flip": "\f10f",
+    "telephone": "\f110",
+    "email": "\f111",
+    "message": "\f112",
+);
+
+.flaticon-medical-symbol:before {
+    content: map-get($flaticon-map, "medical-symbol");
+}
+.flaticon-drugs:before {
+    content: map-get($flaticon-map, "drugs");
+}
+.flaticon-doctor:before {
+    content: map-get($flaticon-map, "doctor");
+}
+.flaticon-root-canal:before {
+    content: map-get($flaticon-map, "root-canal");
+}
+.flaticon-right-quote:before {
+    content: map-get($flaticon-map, "right-quote");
+}
+.flaticon-left-quote:before {
+    content: map-get($flaticon-map, "left-quote");
+}
+.flaticon-clock:before {
+    content: map-get($flaticon-map, "clock");
+}
+.flaticon-phone-call:before {
+    content: map-get($flaticon-map, "phone-call");
+}
+.flaticon-check:before {
+    content: map-get($flaticon-map, "check");
+}
+.flaticon-list:before {
+    content: map-get($flaticon-map, "list");
+}
+.flaticon-stethoscope:before {
+    content: map-get($flaticon-map, "stethoscope");
+}
+.flaticon-hand-holding-usd:before {
+    content: map-get($flaticon-map, "hand-holding-usd");
+}
+.flaticon-date:before {
+    content: map-get($flaticon-map, "date");
+}
+.flaticon-pin:before {
+    content: map-get($flaticon-map, "pin");
+}
+.flaticon-phone-flip:before {
+    content: map-get($flaticon-map, "phone-flip");
+}
+.flaticon-telephone:before {
+    content: map-get($flaticon-map, "telephone");
+}
+.flaticon-email:before {
+    content: map-get($flaticon-map, "email");
+}
+.flaticon-message:before {
+    content: map-get($flaticon-map, "message");
+}

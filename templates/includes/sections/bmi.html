@@ -1,0 +1,34 @@
+{% load static clinic_tags %}
+<section class="bg-light content-wrapper style-35">
+    <div class="row gx-0">
+        <div class="lg:w-7/12 w-full">
+            <div class="relative h-full">
+                <img src="{% site_image site_settings.bmi_image 'clinicmaster/src/images/background/img.png' %}" alt="" class="h-full object-cover" loading="lazy">
+            </div>
+        </div>
+        <div class="lg:w-5/12 w-full">
+            <div class="bg-secondary h-full xl:py-31.25 xl:px-20 sm:py-21.25 sm:px-12.5 py-12.5 px-7.5 wow fadeInUp" data-wow-delay="0.4s">
+                <div class="2xl:w-105 w-full">
+                    <div class="mb-10">
+                        <h2 class="2xxl:text-5xl lg:text-[38px] sm:text-[32px] text-2xxl font-bold leading-[1.4] mb-3.75 text-white">محاسبه‌ی شاخص <br class="hidden lg:block">توده‌ی بدنی (BMI)</h2>
+                        <p class="text-white/60 text-sm leading-[1.8] mb-0">این عدد فقط یک شاخص کلی است و جایگزین ارزیابی تخصصی متخصص تغذیه نیست.</p>
+                    </div>
+                    <form id="BmiCalculatorMetric" class="bmi-form" novalidate>
+                        <div class="relative mb-5">
+                            <label for="heightMetric" class="absolute ltr:right-0 rtl:left-0 top-0 z-1 p-4.5 text-base text-white font-medium">قد</label>
+                            <input type="number" id="heightMetric" placeholder="سانتی‌متر" class="h-15 py-3.75 px-6.25 rounded-2xl border border-white/50 bg-white/8 text-white text-2sm block w-full" min="50" max="300" inputmode="decimal">
+                        </div>
+                        <div class="relative mb-5">
+                            <label for="weightMetric" class="absolute ltr:right-0 rtl:left-0 top-0 z-1 p-4.5 text-base text-white font-medium">وزن</label>
+                            <input type="number" id="weightMetric" placeholder="کیلوگرم" class="h-15 py-3.75 px-6.25 rounded-2xl border border-white/50 bg-white/8 text-white text-2sm block w-full" min="10" max="300" inputmode="decimal">
+                        </div>
+                        <button type="submit" class="btn btn-lg btn-icon btn-primary">محاسبه
+                            <span class="size-11 min-w-11 bg-white rounded-2lg text-heading inline-flex items-center justify-center -my-2.75 -me-4.5 ms-3"><i class="feather icon-arrow-left"></i></span>
+                        </button>
+                    </form>
+                    <div class="dzFormBmiMetric" aria-live="polite"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

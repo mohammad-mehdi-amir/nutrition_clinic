@@ -1,0 +1,34 @@
+{% load static clinic_tags %}
+{% comment %}
+Usage: {% include "includes/page_banner.html" with title="..." parent_title="..." parent_url="..." %}
+{% endcomment %}
+<div class="lg:min-h-125 md:min-h-100 sm:min-h-87.5 min-h-75 bg-cover bg-center bg-light relative z-1 w-full overflow-hidden flex" style="background-image:url({% static 'clinicmaster/src/images/banner/bnr1.webp' %});">
+    <div class="container relative z-1 h-auto table">
+        <div class="row">
+            <div class="lg:w-2/3 w-full">
+                <div class="lg:table-cell lg:h-125 md:h-100 sm:h-87.5 h-75 align-middle pt-17.5 pb-5 xl:ps-17.5 max-lg:text-center flex flex-col justify-center items-center">
+                    <h1 class="2xxl:text-7xl xl:text-6xxl md:text-[48px] text-4xl font-bold mb-1.25 leading-[1.3] break-word !text-white wow fadeInUp" data-wow-delay="0.2s" data-wow-duration="0.8s">{{ title }}</h1>
+                    <nav class="wow fadeInUp" data-wow-delay="0.4s" data-wow-duration="0.8s" aria-label="مسیر صفحه">
+                        <ul class="inline-block rounded-5xl lg:py-2.5 py-1.5 lg:px-7.5 px-5 bg-white shadow-breadcrumb">
+                            <li class="inline-block lg:text-base text-sm font-normal text-primary"><a href="{% url 'core:home' %}">خانه</a></li>
+                            {% if parent_title %}
+                            <li class="inline-block lg:text-base text-sm font-normal text-primary"><i class="fas fa-angles-right text-xs mx-2" aria-hidden="true"></i><a href="{{ parent_url }}">{{ parent_title }}</a></li>
+                            {% endif %}
+                            <li class="inline-block lg:text-base text-sm font-normal text-primary"><i class="fas fa-angles-right text-xs mx-2" aria-hidden="true"></i>{{ title }}</li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <div class="absolute ltr:right-[-2%] rtl:left-[-2%] bottom-[-2%] float-end max-3xl:w-130 max-lg:hidden">
+            <img src="{% site_image site_settings.page_banner_image 'clinicmaster/src/images/rtl/banner/bnr-pic.webp' %}" alt="" class="wow fadeInUp" data-wow-delay="0.2s" data-wow-duration="0.8s">
+        </div>
+    </div>
+    <div class="absolute z-9 bottom-[5%] ltr:right-[45%] rtl:left-[45%] max-xl:hidden"><img class="animate-move1" src="{% static 'clinicmaster/src/images/banner/item1.png' %}" alt=""></div>
+    <div class="absolute z-9 3xl:top-[30%] top-2/5 ltr:right-[35%] rtl:left-[35%] max-xl:hidden"><img class="animate-move2" src="{% static 'clinicmaster/src/images/banner/item2.png' %}" alt=""></div>
+    <div class="absolute z-9 3xl:bottom-[20%] ltr:right-[10%] rtl:left-[10%] bottom-[30%] max-xl:hidden"><img class="animate-move3" src="{% static 'clinicmaster/src/images/banner/item3.png' %}" alt=""></div>
+    <div class="absolute z-9 bottom-[20%] ltr:3xl:right-[18%] ltr:right-[5%] rtl:3xl:left-[18%] rtl:left-[5%] max-xl:hidden"><img class="animate-move3" src="{% static 'clinicmaster/src/images/banner/item4.png' %}" alt=""></div>
+    <div class="h-full w-25 min-w-25 absolute bottom-0 flex justify-end items-center flex-col py-6.25 px-3.75 ltr:left-0 rtl:right-0 border-e border-white/10 z-1 max-xl:hidden">
+        <a href="{% url 'core:contact' %}" class="btn btn-white btn-sm !py-2 !px-4 shadow-btn [writing-mode:sideways-lr] rounded-2xl!">مشاوره بگیرید</a>
+    </div>
+</div>

@@ -1,0 +1,60 @@
+.sticky-header-wrapper.is-fixed:not(.sticky-no) .main-bar{
+	@apply fixed top-0 left-0 bg-white animate-headerSlideDown;
+}
+[dir="rtl"] .sticky-header-wrapper.is-fixed:not(.sticky-no) .main-bar{
+	@apply right-0  left-auto;
+}
+.main-bar {
+    transition: all .3s cubic-bezier(.39,.575,.565,1) 0s;
+}
+.header-nav .nav>li>a {
+    @apply text-white text-lg py-7 px-3.75 cursor-pointer font-medium inline-block relative leading-[24px];
+}
+.header-nav .nav>li.menu-item-has-children>a:after, .header-nav .nav>li.sub-menu-down>a:after {
+    @apply content-['+'] ms-1.25 -mt-1.25 inline-block size-3 text-primary;
+}
+.header-nav .nav>li .mega-menu, .header-nav .nav>li .sub-menu{
+    @apply bg-white block left-0 opacity-0 py-5 absolute invisible z-10 mt-5 text-start duration-500 pointer-events-none shadow-[0_20px_40px_rgba(0,0,0,.05)];
+}
+[dir="rtl"] .header-nav .nav>li .mega-menu, .header-nav .nav>li .sub-menu{
+    @apply right-0 left-auto;
+}
+.header-nav .nav>li .sub-menu{
+    @apply w-55;
+}
+.header-nav .nav>li:hover>.mega-menu, .header-nav .nav>li:hover>.sub-menu {
+    @apply opacity-100 visible mt-0 z-11 pointer-events-auto;
+}
+.header-nav .nav>li .mega-menu li, .header-nav .nav>li .sub-menu li {
+    @apply relative;
+}
+.header-nav .nav>li .mega-menu li a, .header-nav .nav>li .sub-menu li a {
+    @apply text-bodycolor block text-sm py-1.25 px-7.5 leading-20 capitalize relative duration-500 font-normal;
+}
+.header-nav .nav>li{
+    @apply relative;
+}
+.header-nav .nav>li.has-mega-menu {
+    position: inherit;
+}
+.header-nav .nav>li.has-mega-menu.homedemo .mega-menu {
+    @apply left-0 w-auto max-w-none;
+}
+[dir="rtl"] .header-nav .nav>li.has-mega-menu.homedemo .mega-menu {
+    @apply right-0 left-auto;
+}
+.header-nav .nav>li>.mega-menu{
+    @apply right-20;
+}
+[dir="rtl"] .header-nav .nav>li>.mega-menu{
+    @apply left-20 right-auto;
+}
+.header-nav .nav>li .mega-menu {
+    @apply p-12.5;
+}
+.w3menu .mega-menu>ul{
+    @apply -mx-3.75 px-5;
+}
+.header-nav .nav>li.has-mega-menu .demo-menu a span {
+    @apply block text-center font-semibold py-3.75 text-secondary;
+}

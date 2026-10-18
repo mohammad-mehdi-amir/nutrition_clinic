@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}خدمات{% endblock %}
+{% block meta_description %}خدمات تخصصی تغذیه و رژیم‌درمانی {{ site_settings.clinic_name }}.{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="خدمات" %}
+{% endblock %}
+
+{% block content %}
+{% include "includes/sections/services.html" with services=services show_heading=True %}
+
+{% include "includes/sections/cta.html" %}
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load clinic_tags %}
+
+{% block title %}تسویه‌حساب{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block banner %}
+{% url 'shop:cart' as cart_url %}
+{% include "includes/page_banner.html" with title="تسویه‌حساب" parent_title="سبد خرید" parent_url=cart_url %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-light">
+    <div class="container">
+        <form method="post" novalidate class="grid grid-cols-12 gap-7.5">
+            {% csrf_token %}
+            <div class="lg:col-span-8 col-span-12 bg-white rounded-xxl sm:p-7.5 p-5">
+                <h2 class="text-xl font-bold mb-5">{% if form.needs_shipping %}اطلاعات گیرنده و ارسال{% else %}اطلاعات خریدار{% endif %}</h2>
+                {% include "includes/form_errors.html" %}
+                <div class="row">
+                    <div class="sm:w-1/2 w-full">{% include "includes/form_field.html" with field=form.recipient_name %}</div>
+                    <div class="sm:w-1/2 w-full">{% include "includes/form_field.html" with field=form.recipient_phone %}</div>
+                    {% if form.needs_shipping %}
+                    <div class="sm:w-1/3 w-full">{% include "includes/form_field.html" with field=form.province %}</div>
+                    <div class="sm:w-1/3 w-full">{% include "includes/form_field.html" with field=form.city %}</div>
+                    <div class="sm:w-1/3 w-full">{% include "includes/form_field.html" with field=form.postal_code %}</div>
+                    <div class="w-full">{% include "includes/form_field.html" with field=form.address %}</div>
+                    {% else %}
+                    <p class="w-full text-sm mb-5">سبد شما فقط شامل پکیج رژیم است و نیازی به نشانی ارسال نیست.</p>
+                    {% endif %}
+                    <div class="w-full">{% include "includes/form_field.html" with field=form.note %}</div>
+                </div>
+            </div>
+            <div class="lg:col-span-4 col-span-12">
+                <div class="bg-white rounded-xxl sm:p-7.5 p-5 lg:sticky lg:top-30">
+                    <h2 class="text-xl font-bold mb-3.75">سفارش شما</h2>
+                    <ul class="mb-2.5 text-sm">
+                        {% for line in lines %}
+                        <li class="flex justify-between gap-3 py-2"><span>{{ line.product.name }} × {{ line.quantity }}</span><span>{{ line.line_total|price }}</span></li>
+                        {% endfor %}
+                    </ul>
+                    {% include "shop/_totals.html" %}
+                    <button type="submit" class="btn btn-lg btn-primary w-full justify-center mt-3.75">ثبت سفارش</button>
+                    <p class="text-xs leading-[1.8] mt-3.75 mb-0">با ثبت سفارش، موجودی کالاها به مدت {{ site_settings.order_payment_timeout_minutes }} دقیقه برای شما رزرو می‌شود. ثبت سفارش به معنی پذیرش <a href="{% url 'core:terms' %}" class="text-primary">قوانین و مقررات</a> است.</p>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

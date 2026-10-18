@@ -1,0 +1,137 @@
+.wizard.wizard-vertical {
+    @apply max-md:flex-col;
+}
+.wizard .wizard-nav {
+    @apply flex bg-secondary flex-1 !p-5 rounded-2xl relative max-md:!rounded-b-none;
+}
+
+.wizard.wizard-vertical .wizard-nav {
+    @apply md:min-w-85 md:w-85 flex-col w-full;
+}
+
+.wizard.wizard-horizontal .wizard-nav .wizard-step {
+    @apply !flex-[1_0_auto];
+}
+
+.wizard.wizard-horizontal .wizard-nav {
+    @apply rounded-b-none max-md:flex-col;
+}
+
+.wizard.wizard-horizontal .wizard-content {
+    @apply p-0;
+}
+
+.wizard.wizard-horizontal .wizard-buttons {
+    @apply -mt-1.5;
+}
+
+.wizard.wizard-horizontal .wizard-nav.dots .wizard-step {
+    @apply md:me-3.75;
+}
+
+.wizard.wizard-horizontal .wizard-nav.dots .wizard-step:last-child {
+    @apply me-0;
+}
+
+.wizard.vertical .wizard-content {
+    @apply md:w-[calc(100%_-_340px)] w-full m-0 p-0 pb-22.5;
+}
+
+.wizard .wizard-nav.dots .wizard-step:before,
+.wizard .wizard-nav.dots .wizard-step:after,
+.wizard .wizard-nav.dots .wizard-step:first-of-type:before,
+.wizard .wizard-nav.dots .wizard-step.active~.wizard-step:before,
+.wizard .wizard-nav.dots .wizard-step.active~.wizard-step:after,
+.wizard .wizard-nav.dots .wizard-step.active:after,
+.wizard .wizard-nav.dots .wizard-step.active:before {
+    @apply !hidden;
+}
+
+.wizard .wizard-nav.dots .wizard-step.active {
+    @apply text-primary;
+}
+
+.wizard .wizard-nav.dots .wizard-step {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: start;
+    flex-grow: unset;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: white;
+    margin-bottom: 10px;
+    padding: 20px;
+    border-radius: 20px;
+    flex: 0 0 auto;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.wizard .wizard-nav.dots .wizard-step .dot {
+    order: 1;
+    position: static;
+    height: 22px;
+    width: 22px;
+    background-color: var(--light);
+    box-shadow: none !important;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.wizard .wizard-nav.dots .wizard-step.active .dot {
+    background-color: var(--secondary);
+    background-image: url("data:image/svg+xml,%3csvg width='10' height='8' viewBox='0 0 10 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M9 1L3.5 6.5L1 4' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+}
+
+
+
+.wizard-buttons {
+    @apply py-4.25 px-7.5 border-t-2 border-black/10 rounded-b-2lg bg-white -mt-22.5 flex-wrap gap-1.25;
+}
+
+.wizard .wizard-buttons .wizard-btn {
+    display: inline-flex;
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    border-radius: var(--btn-radius);
+    line-height: var(--leading-tight);
+    padding: --spacing(3.5) --spacing(6.25);
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid;
+    color: var(--color-white);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+.wizard .wizard-buttons .wizard-btn:hover {
+    @apply bg-primary/90!;
+}
+.controls {
+    @apply max-md:flex-wrap;
+}
+.calendar-section {
+    @apply max-md:flex-col;
+}
+
+.wizard.style-2 .wizard-nav {
+    @apply bg-primary;
+}
+.wizard.style-2.wizard-vertical .wizard-nav {
+    @apply md:min-w-70 md:w-70 md:me-15;
+}
+.wizard.style-2 .wizard-nav.dots .wizard-step.active,
+.wizard.style-2 .wizard-nav.dots .wizard-step {
+    @apply bg-white text-secondary rounded-2lg;
+}
+.wizard.style-2 .wizard-nav.dots .wizard-step.active~.wizard-step .dot {
+    @apply bg-white border-2 border-primary;
+}
+.wizard.style-2 .wizard-nav.dots .wizard-step.active .dot {
+    @apply bg-primary;
+}
+.wizard.style-2.vertical .wizard-buttons {
+    @apply md:max-w-[calc(100%-340px)] w-full ms-auto border border-t-0 border-black/10 md:rounded-b-2xl;
+}

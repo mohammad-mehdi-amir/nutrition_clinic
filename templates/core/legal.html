@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}{% if page == "terms" %}قوانین و مقررات{% else %}حریم خصوصی{% endif %}{% endblock %}
+
+{% block banner %}
+{% if page == "terms" %}
+{% include "includes/page_banner.html" with title="قوانین و مقررات" %}
+{% else %}
+{% include "includes/page_banner.html" with title="حریم خصوصی" %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-white">
+    <div class="container">
+        <div class="max-w-225 mx-auto text-lg leading-[2.1]">
+            {% if page == "terms" %}
+                {{ site_settings.terms_text|default:"متن قوانین و مقررات به‌زودی منتشر می‌شود."|linebreaks }}
+            {% else %}
+                {{ site_settings.privacy_text|default:"متن سیاست حریم خصوصی به‌زودی منتشر می‌شود."|linebreaks }}
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

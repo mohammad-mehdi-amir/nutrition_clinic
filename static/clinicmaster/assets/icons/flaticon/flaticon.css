@@ -1,0 +1,88 @@
+/*!
+*    ______ _       _   _
+*    |  ____| |     | | (_)
+*    | |__  | | __ _| |_ _  ___ ___  _ __
+*    |  __| | |/ _` | __| |/ __/ _ \| '_ \
+*    | |    | | (_| | |_| | (_| (_) | | | |
+*    |_|    |_|\__,_|\__|_|\___\___/|_| |_|
+*
+*         https://www.flaticon.com
+*/
+
+@font-face {
+	font-family: "flaticon";
+	src: url("./flaticon.woff2?3d45b69369877d41727d5ce676aa99ad") format("woff2"),
+         url("./flaticon.woff?3d45b69369877d41727d5ce676aa99ad") format("woff"),
+         url("./flaticon.eot?3d45b69369877d41727d5ce676aa99ad#iefix") format("embedded-opentype"),
+         url("./flaticon.ttf?3d45b69369877d41727d5ce676aa99ad") format("truetype"),
+         url("./flaticon.svg?3d45b69369877d41727d5ce676aa99ad#flaticon") format("svg");
+  font-display: swap;
+}
+
+i[class^="flaticon-"]:before,
+i[class*=" flaticon-"]:before {
+    font-family: flaticon !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.flaticon-medical-symbol:before {
+    content: "\f101";
+}
+.flaticon-drugs:before {
+    content: "\f102";
+}
+.flaticon-doctor:before {
+    content: "\f103";
+}
+.flaticon-root-canal:before {
+    content: "\f104";
+}
+.flaticon-right-quote:before {
+    content: "\f105";
+}
+.flaticon-left-quote:before {
+    content: "\f106";
+}
+.flaticon-clock:before {
+    content: "\f107";
+}
+.flaticon-phone-call:before {
+    content: "\f108";
+}
+.flaticon-check:before {
+    content: "\f109";
+}
+.flaticon-list:before {
+    content: "\f10a";
+}
+.flaticon-stethoscope:before {
+    content: "\f10b";
+}
+.flaticon-hand-holding-usd:before {
+    content: "\f10c";
+}
+.flaticon-date:before {
+    content: "\f10d";
+}
+.flaticon-pin:before {
+    content: "\f10e";
+}
+.flaticon-phone-flip:before {
+    content: "\f10f";
+}
+.flaticon-telephone:before {
+    content: "\f110";
+}
+.flaticon-email:before {
+    content: "\f111";
+}
+.flaticon-message:before {
+    content: "\f112";
+}
+

@@ -1,20 +1,76 @@
-{% load static %}
-
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+{% load static clinic_tags %}<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme-color="skin-6">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
 
-    <title>{% block title %}کلینیک تغذیه{% endblock %}</title>
+    <title>{% block title %}{{ site_settings.clinic_name }}{% endblock %}{% block title_suffix %} | {{ site_settings.clinic_name }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ site_settings.tagline|default:site_settings.clinic_name }}{% endblock %}">
+    <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
+    <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="fa_IR">
+    <meta property="og:site_name" content="{{ site_settings.clinic_name }}">
+    <meta property="og:title" content="{% block og_title %}{{ site_settings.clinic_name }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ site_settings.tagline|default:site_settings.clinic_name }}{% endblock %}">
+    <meta property="og:url" content="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+
+    <link rel="icon" type="image/png" href="{% site_image site_settings.favicon 'clinicmaster/src/images/favicon.png' %}">
+
+    <link rel="preload" href="{% static 'fonts/vazirmatn/Vazirmatn-Variable.woff2' %}" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="{% static 'clinicmaster/assets/vendor/swiper/swiper-bundle.min.css' %}">
+    <link rel="stylesheet" href="{% static 'clinicmaster/assets/vendor/flatpickr/css/flatpicker.css' %}">
+    <link rel="stylesheet" href="{% static 'clinicmaster/assets/icons/fontawesome/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'clinicmaster/assets/icons/flaticon/flaticon.css' %}">
+    <link rel="stylesheet" href="{% static 'clinicmaster/assets/icons/feather/css/iconfont.css' %}">
+    <link rel="stylesheet" href="{% static 'clinicmaster/assets/css/clinic.build.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
+<body id="bg">
+<div class="page-wraper">
 
-<body>
+    {% include "includes/preloader.html" %}
 
-    {% block content %}
-    {% endblock %}
+    {% include "includes/header.html" %}
 
+    <div id="smooth-wrapper">
+        <div id="smooth-content">
+            <main class="page-content">
+                {% block banner %}{% endblock %}
+
+                {% include "includes/messages.html" %}
+
+                {% block content %}{% endblock %}
+            </main>
+
+            {% include "includes/footer.html" %}
+        </div>
+    </div>
+
+    <button id="scrollProgress" title="بازگشت به بالا" class="scroll-top fixed z-9999 ltr:right-5 rtl:left-5 bottom-5 size-12.5 rounded-full bg-secondary text-white cursor-pointer opacity-0 pointer-events-none duration-500 flex items-center justify-center [.scroll-top.active]:opacity-100 [.scroll-top.active]:pointer-events-auto max-sm:hidden">
+        <span class="icon text-xs relative z-1">
+            <i class="fas fa-arrow-up"></i>
+        </span>
+        <svg class="absolute top-0 ltr:left-0 rtl:right-0 -rotate-90" width="50" height="50">
+            <circle class="stroke-white" cx="25" cy="25" r="20" stroke="#000" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-dasharray="100.53" stroke-dashoffset="100.53"></circle>
+        </svg>
+    </button>
+
+</div>
+
+<script src="{% static 'clinicmaster/assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+<script src="{% static 'clinicmaster/assets/vendor/imagesloaded/imagesloaded.js' %}"></script>
+<script defer src="{% static 'clinicmaster/assets/vendor/gsap/gsap.min.js' %}"></script>
+<script defer src="{% static 'clinicmaster/assets/vendor/gsap/ScrollSmoother.js' %}"></script>
+<script defer src="{% static 'clinicmaster/assets/vendor/gsap/ScrollTrigger.min.js' %}"></script>
+<script src="{% static 'clinicmaster/assets/vendor/flatpickr/js/flatpickr.js' %}"></script>
+<script src="{% static 'clinicmaster/assets/vendor/xmenu/xmenu.js' %}"></script>
+<script src="{% static 'clinicmaster/assets/js/dz.carousel.js' %}"></script>
+<script src="{% static 'clinicmaster/assets/js/animation.js' %}"></script>
+<script src="{% static 'clinicmaster/assets/js/custom.js' %}"></script>
+<script src="{% static 'js/site.js' %}"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>

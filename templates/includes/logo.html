@@ -1,0 +1,7 @@
+<a href="{% url 'core:home' %}" class="flex items-center h-full" aria-label="{{ site_settings.clinic_name }}">
+    {% if site_settings.logo %}
+    <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.clinic_name }}" class="object-contain max-h-full">
+    {% else %}
+    <span class="font-title font-bold text-secondary leading-snug {{ logo_class|default:'text-base' }}">{{ site_settings.clinic_name }}</span>
+    {% endif %}
+</a>

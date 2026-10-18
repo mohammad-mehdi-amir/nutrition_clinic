@@ -8,4 +8,28 @@ class User(AbstractUser):
         unique=True,
         null=True,
         blank=True,
+        verbose_name="شماره موبایل",
     )
+
+    class Meta(AbstractUser.Meta):
+        verbose_name = "کاربر"
+        verbose_name_plural = "کاربران"
+
+class PasswordResetCode(models.Model):
+    """کد یک‌بارمصرف بازیابی رمز؛ فقط هش کد ذخیره می‌شود."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="password_reset_codes")
+    phone_number = models.CharField(max_length=11, db_index=True)
+    code_hash = models.CharField(max_length=128)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "کد بازیابی رمز"
+        verbose_name_plural = "کدهای بازیابی رمز"
+
+    def __str__(self):
+        return f"{self.phone_number} - {self.created_at:%Y-%m-%d %H:%M}"

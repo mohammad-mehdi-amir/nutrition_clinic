@@ -1,0 +1,17 @@
+html[data-theme-color="skin-3"]{
+    --primary: #F46700;
+    --primarydark: #cf5800;
+    --primary-rgb: 244, 103, 0;
+    
+    --primarylight: #ccf2f9;
+    --body-color: #566593;
+    --body-bg: #FFFCF8;
+    --heading-color: #0A3366;
+    --secondary: #0A3366;
+    --secondarydark: #031742;
+    --secondary-rgb: 10, 51, 102;
+    --light: #FDF5E8;
+
+    --btn-radius: 15px;
+    --accordion-shadow: inset 0 calc(-1 * 1px) 0 #E1EBF1;
+}

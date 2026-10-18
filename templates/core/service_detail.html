@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ service.title }}{% endblock %}
+{% block meta_description %}{{ service.summary }}{% endblock %}
+{% block og_title %}{{ service.title }}{% endblock %}
+{% block og_description %}{{ service.summary }}{% endblock %}
+
+{% block banner %}
+{% url 'core:services' as services_url %}
+{% include "includes/page_banner.html" with title=service.title parent_title="خدمات" parent_url=services_url %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 xl:17.5 md:py-12.5 sm:py-10 py-7.5 service-single bg-light">
+    <div class="container">
+        <div class="w-full">
+            <div class="flex max-lg:flex-col">
+                <div class="xl:w-116.25 xl:min-w-116.25 lg:w-97.5 lg:min-w-97.5 w-full sm:h-105 h-75 lg:rounded-s-xxl max-lg:rounded-t-xxl overflow-hidden">
+                    {% if service.image %}
+                    <img src="{{ service.image.url }}" alt="{{ service.title }}" class="size-full object-cover">
+                    {% else %}
+                    <img src="{% static 'clinicmaster/src/images/services/img.webp' %}" alt="" class="size-full object-cover">
+                    {% endif %}
+                </div>
+                <div class="sm:p-8.75 p-5 bg-white lg:rounded-e-xxl max-lg:rounded-b-xxl w-full">
+                    <h2 class="lg:text-[38px] sm:text-3xxl text-2xxl leading-[1.4]">{{ service.title }}</h2>
+                    <p class="2xxl:text-lg xl:text-base sm:text-2sm text-sm font-medium leading-[1.9] text-secondary">{{ service.summary }}</p>
+                    {% if service.body %}
+                    <div class="2xxl:text-lg xl:text-base sm:text-2sm text-sm font-normal leading-[2]">
+                        {{ service.body|linebreaks }}
+                    </div>
+                    {% endif %}
+                    <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary mt-5">رزرو نوبت مشاوره</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if other_services %}
+{% include "includes/sections/services.html" with services=other_services show_heading=False %}
+{% endif %}
+
+{% include "includes/sections/faq.html" with faqs=faqs show_all_link=True %}
+
+{% include "includes/sections/cta.html" %}
+{% endblock %}

@@ -1,0 +1,22 @@
+html[data-theme-color="skin-8"]{
+
+    --primary: #1DA8A3;
+    --primarydark: #189f9a;
+    --primary-rgb: 29, 168, 163;
+    
+    --primarylight: #C3D3D9;
+    --body-color: #566593;
+    --body-bg: #FFFFFF;
+    --heading-color: #11516A;
+    --secondary: #11516A;
+    --secondarydark: #05425a;
+    --secondary-rgb: 17, 81, 106;
+    --light: #EDF6F6;
+    
+    --btn-radius: 10px;
+    --accordion-shadow: 2px 2px 0 rgb(240 88 141 / 20%);
+    
+    --font-base: "Poppins", "sans-serif";
+    --font-title: "Libre Baskerville";
+    --font-sub-title: "DM Serif Display";
+}

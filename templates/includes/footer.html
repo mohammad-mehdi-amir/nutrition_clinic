@@ -1,0 +1,115 @@
+<footer class="[--spacing-x:50px] overflow-hidden">
+    <div class="container-fluid !p-0">
+        <div class="row [--tw-gutter-x:0px]">
+            <div class="2xl:w-2/3 w-full !px-0 !mx-0 bg-white">
+                <div class="md:pt-20 md:pb-7.5 sm:px-12.5 px-6.25 pt-12.5">
+                    <div class="row flex justify-between">
+                        <div class="xl:w-1/3 w-full wow fadeInUp" data-wow-delay="0.2s" data-wow-duration="0.8s">
+                            <div class="mb-7.5 widget_about">
+                                <div class="mb-6 h-15">
+                                    {% include "includes/logo.html" with logo_class="text-xl" %}
+                                </div>
+                                {% if site_settings.tagline %}
+                                <p class="text-2sm mb-5 leading-[1.9]">{{ site_settings.tagline }}</p>
+                                {% endif %}
+                                {% include "includes/social_links.html" with variant="footer" %}
+                            </div>
+                        </div>
+                        <div class="xl:w-1/6 md:w-1/4 w-1/2 wow fadeInUp" data-wow-delay="0.4s" data-wow-duration="0.8s">
+                            <div class="mb-7.5 widget_services">
+                                <h2 class="footer-title">دسترسی سریع</h2>
+                                <ul class="list-hover1">
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'core:about' %}"><span>درباره ما</span></a></li>
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'core:services' %}"><span>خدمات</span></a></li>
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'shop:product_list' %}"><span>فروشگاه</span></a></li>
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'shop:packages' %}"><span>پکیج‌های رژیم</span></a></li>
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'appointments:doctors' %}"><span>متخصصان</span></a></li>
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'core:faqs' %}"><span>سؤالات متداول</span></a></li>
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'core:contact' %}"><span>تماس با ما</span></a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="xl:w-1/4 md:w-1/4 w-1/2 wow fadeInUp" data-wow-delay="0.6s" data-wow-duration="0.8s">
+                            <div class="mb-7.5 widget-address">
+                                <h2 class="footer-title">اطلاعات تماس</h2>
+                                <ul>
+                                    {% if site_settings.phone %}
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="tel:{{ site_settings.phone }}"><i class="feather icon-phone-call text-primary text-xl me-1.25 rtl:float-right"></i> <span class="ltr-text">{{ site_settings.phone }}</span></a></li>
+                                    {% endif %}
+                                    {% if site_settings.email %}
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="mailto:{{ site_settings.email }}"><i class="feather icon-mail text-primary text-xl me-1.25 rtl:float-right"></i> <span class="ltr-text">{{ site_settings.email }}</span></a></li>
+                                    {% endif %}
+                                    {% if site_settings.address %}
+                                    <li class="relative py-2 text-2sm leading-6 font-medium"><i class="feather icon-map-pin text-primary text-xl me-1.25 rtl:float-right"></i> {{ site_settings.address }}</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="xl:w-1/6 md:w-1/4 w-1/2 wow fadeInUp" data-wow-delay="0.8s" data-wow-duration="0.8s">
+                            <div class="mb-7.5 widget_services">
+                                <h2 class="footer-title">حساب کاربری</h2>
+                                <ul class="list-hover1">
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'appointments:book_appointment' %}"><span>رزرو نوبت</span></a></li>
+                                    {% if user.is_authenticated %}
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'appointments:my_appointments' %}"><span>نوبت‌های من</span></a></li>
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'shop:order_list' %}"><span>سفارش‌های من</span></a></li>
+                                    {% else %}
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'accounts:login' %}"><span>ورود</span></a></li>
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'accounts:register' %}"><span>ثبت‌نام</span></a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="w-full">
+                        <div class="sm:px-12.5 px-6.25">
+                            <div class="pt-6 pb-7.5 border-t border-black/10">
+                                <div class="row">
+                                    <div class="lg:w-1/2 w-full lg:text-start text-center">
+                                        <p class="text-sm font-medium mb-0">© {% now "Y" as year %}<span class="current-year">{{ year }}</span> {{ site_settings.clinic_name }}. تمامی حقوق محفوظ است.</p>
+                                    </div>
+                                    <div class="lg:w-1/2 w-full lg:text-end text-center max-lg:mt-3.75">
+                                        <div class="flex items-center justify-center md:justify-center xl:justify-end">
+                                            <div class="text-sm font-medium">
+                                                <p class="mb-0"><a href="{% url 'core:terms' %}" class="text-primary underline">قوانین و مقررات</a> | <a href="{% url 'core:privacy' %}" class="text-primary underline">حریم خصوصی</a></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if site_settings.map_embed_url %}
+                <div class="lg:h-111.25 sm:h-60 h-50 wow fadeIn" data-wow-delay="0.2s" data-wow-duration="0.8s">
+                    <iframe class="size-full" src="{{ site_settings.map_embed_url }}" style="border:0;" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="نقشه‌ی {{ site_settings.clinic_name }}"></iframe>
+                </div>
+                {% endif %}
+            </div>
+            <div class="2xl:w-1/3 w-full !px-0 !mx-0">
+                <div class="md:py-23.75 md:px-21.25 py-13.75 sm:px-11.25 px-6.25 h-full relative bg-secondary">
+                    <div class="title-head">
+                        <h2 class="text-2xxl !text-white mb-5">رزرو آنلاین نوبت</h2>
+                    </div>
+                    <p class="text-white/70 text-base leading-[1.9] mb-7.5">پزشک و زمان مناسب خود را انتخاب کنید و بدون معطلی نوبت مشاوره‌ی تغذیه بگیرید.</p>
+                    {% if site_settings.working_days or site_settings.open_at %}
+                    <ul class="mb-7.5">
+                        {% if site_settings.working_days %}
+                        <li class="flex items-center gap-3 text-white mb-3.75"><i class="feather icon-calendar text-primary text-2xl"></i> {{ site_settings.working_days }}</li>
+                        {% endif %}
+                        {% if site_settings.open_at and site_settings.close_at %}
+                        <li class="flex items-center gap-3 text-white"><i class="feather icon-clock text-primary text-2xl"></i> ساعت {{ site_settings.open_at|time:"H:i" }} تا {{ site_settings.close_at|time:"H:i" }}</li>
+                        {% endif %}
+                    </ul>
+                    {% endif %}
+                    <a href="{% url 'appointments:book_appointment' %}" class="btn btn-lg btn-primary w-full justify-center">
+                        <i class="feather icon-calendar me-1.25"></i> رزرو نوبت
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>

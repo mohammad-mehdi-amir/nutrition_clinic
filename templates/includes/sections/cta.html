@@ -1,0 +1,26 @@
+{% load static clinic_tags %}
+<section class="bg-no-repeat bg-cover bg-center relative" style="background-image: url({% static 'clinicmaster/src/images/background/bg2.png' %});">
+    <div class="container">
+        <div class="row">
+            <div class="md:w-5/12 w-full order-2 md:order-1 p-0">
+                <div class="md:absolute bottom-0 ltr:left-0 rtl:right-0 md:w-1/2 w-full overflow-hidden">
+                    <img src="{% site_image site_settings.cta_image 'clinicmaster/src/images/background/img3.png' %}" alt="" class="w-full" loading="lazy">
+                </div>
+            </div>
+            <div class="md:w-7/12 w-full order-1 md:order-2">
+                <div class="2xxl:py-37.5 2xl:py-35 xl:py-30 lg:py-25 py-12.5 md:ms-10">
+                    <div class="relative z-2">
+                        <h2 class="2xxl:text-6xxl xl:text-5xxl sm:text-4xxl text-[32px] font-bold leading-[1.4] sm:mb-7.5 mb-3.75 !text-white">آماده‌ی شروع یک تغییر سالم هستید؟</h2>
+                        <a href="{% url 'appointments:book_appointment' %}" class="btn btn-lg btn-white group wow fadeInUp" data-wow-delay="0.6s" data-wow-duration="0.8s">
+                            رزرو نوبت مشاوره
+                            <span class="size-11 min-w-11 bg-secondary rounded-2lg text-white inline-flex items-center justify-center -my-2.75 -me-4.5 ms-3 group-hover:bg-white group-hover:text-heading"><i class="feather icon-arrow-left"></i></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="absolute animate-move4 h-auto bottom-[10%] ltr:right-1/5 rtl:left-1/5 max-lg:hidden"><img src="{% static 'clinicmaster/src/images/banner/item1.png' %}" alt=""></div>
+    <div class="absolute animate-move4 h-auto top-[15%] ltr:left-[5%] rtl:right-[5%] max-lg:hidden"><img src="{% static 'clinicmaster/src/images/banner/item2.png' %}" alt=""></div>
+    <div class="absolute animate-move4 h-auto top-1/5 ltr:right-[12%] rtl:left-[12%] max-lg:hidden"><img src="{% static 'clinicmaster/src/images/banner/item3.png' %}" alt=""></div>
+</section>

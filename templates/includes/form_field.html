@@ -1,0 +1,15 @@
+{% comment %}
+Usage: {% include "includes/form_field.html" with field=form.name %}
+{% endcomment %}
+<div class="relative w-full mb-6">
+    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-secondary mb-2">
+        {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.help_text %}
+    <small class="block text-xs text-bodycolor mt-1.5 leading-[1.8]">{{ field.help_text|safe }}</small>
+    {% endif %}
+    {% for error in field.errors %}
+    <p class="text-danger text-sm mt-1.5 mb-0">{{ error }}</p>
+    {% endfor %}
+</div>
