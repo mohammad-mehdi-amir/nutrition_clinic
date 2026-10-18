@@ -2,7 +2,7 @@
 
 {% block object-tools-items %}
     {% if original.pk %}
-    <li><a href="{% url 'admin:appointments_doctor_schedule' original.pk %}">برنامه‌ی هفتگی (شیفت‌ها)</a></li>
+    <li><a href="{% url 'admin:appointments_doctor_schedule' %}?doctor={{ original.pk }}">برنامه‌ی هفتگی (شیفت‌ها)</a></li>
     {% endif %}
     {{ block.super }}
 {% endblock %}

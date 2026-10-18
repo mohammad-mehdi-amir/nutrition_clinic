@@ -141,7 +141,8 @@ class AdminScheduleTests(TestCase):
 
     def setUp(self):
         self.doctor = Doctor.objects.create(name="Dr", specialty="Nutrition")
-        self.url = reverse("admin:appointments_doctor_schedule", args=[self.doctor.pk])
+        self.base_url = reverse("admin:appointments_doctor_schedule")
+        self.url = f"{self.base_url}?doctor={self.doctor.pk}"
 
     def _staff(self, **extra):
         return get_user_model().objects.create_user(
@@ -154,9 +155,10 @@ class AdminScheduleTests(TestCase):
 
         page = self.client.get(self.url)
         self.assertEqual(page.status_code, 200)
-        self.assertContains(page, "برنامه‌ی هفتگی")
+        self.assertContains(page, "برنامه کاری پزشک")
+        self.assertContains(page, 'name="slots"')
 
-        self.client.post(self.url, {"slots": ["0_10:00", "0_10:30"]})
+        self.client.post(self.base_url, {"doctor": self.doctor.pk, "slots": ["0_10:00", "0_10:30"]})
 
         old.refresh_from_db()
         self.assertFalse(old.is_active)
@@ -171,10 +173,17 @@ class AdminScheduleTests(TestCase):
         Appointment.objects.create(availability=slot, patient=patient, date=next_saturday(), status="confirmed")
         self.client.force_login(self._staff(is_superuser=True))
 
-        response = self.client.post(self.url, {"slots": []}, follow=True)
+        response = self.client.post(self.base_url, {"doctor": self.doctor.pk, "slots": []}, follow=True)
 
         self.assertContains(response, "1 نوبت آینده")
         self.assertEqual(Appointment.objects.get().status, "confirmed")
+
+    def test_page_without_doctor_shows_selector_only(self):
+        self.client.force_login(self._staff(is_superuser=True))
+        page = self.client.get(self.base_url)
+        self.assertContains(page, 'id="doctor"')
+        self.assertContains(page, "Dr")
+        self.assertNotContains(page, 'name="slots"')
 
     def test_staff_without_permission_denied(self):
         self.client.force_login(self._staff())

@@ -3,6 +3,8 @@ from django.contrib.staticfiles.apps import StaticFilesConfig
 
 
 class CoreConfig(AppConfig):
+    # این ماژول دو AppConfig دارد؛ بدون default=True جنگو این کلاس را برای apps.core انتخاب نمی‌کند
+    default = True
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apps.core'
     verbose_name = "تنظیمات و محتوا"

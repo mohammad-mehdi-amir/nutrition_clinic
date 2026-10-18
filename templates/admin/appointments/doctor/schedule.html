@@ -4,17 +4,20 @@
 {% block extrastyle %}
 {{ block.super }}
 <style>
-    .schedule-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
-    .schedule-wrap { overflow-x: auto; }
-    .schedule-table { border-collapse: collapse; min-width: 640px; width: 100%; }
-    .schedule-table th, .schedule-table td { text-align: center; padding: 6px 4px; border: 1px solid var(--hairline-color); }
-    .schedule-table thead th { position: sticky; top: 0; background: var(--darkened-bg); z-index: 1; }
-    .schedule-table tbody th { white-space: nowrap; background: var(--darkened-bg); font-variant-numeric: tabular-nums; }
-    .schedule-table td label { display: block; cursor: pointer; padding: 4px 0; }
+    .schedule-page { max-width: 1100px; }
+    .schedule-page h2 { margin: 0 0 20px; font-size: 1.4rem; }
+    .doctor-picker { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .doctor-picker select { min-width: 260px; padding: 6px 8px; }
+    .table-responsive { overflow-x: auto; margin-bottom: 20px; }
+    .schedule-table { width: 100%; min-width: 640px; border-collapse: collapse; text-align: center; }
+    .schedule-table th,
+    .schedule-table td { border: 1px solid var(--hairline-color); padding: 8px 6px; vertical-align: middle; text-align: center; }
+    .schedule-table thead th { background: var(--darkened-bg); font-weight: 600; position: sticky; top: 0; z-index: 1; }
+    .schedule-table tbody td:first-child { background: var(--darkened-bg); font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .schedule-table tbody tr:hover td { background: var(--selected-bg, var(--darkened-bg)); }
     .schedule-table td:has(input:checked) { background: var(--selected-row); }
-    .schedule-table .toggle { background: none; border: 0; color: var(--link-fg); cursor: pointer; font: inherit; padding: 0; }
-    .schedule-table .toggle:hover { text-decoration: underline; }
-    .schedule-help { color: var(--body-quiet-color); margin: 0 0 12px; }
+    .schedule-table input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+    .schedule-empty { padding: 30px 0; color: var(--body-quiet-color); }
 </style>
 {% endblock %}
 
@@ -23,83 +26,71 @@
     <a href="{% url 'admin:index' %}">خانه</a>
     &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
     &rsaquo; <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
-    &rsaquo; <a href="{% url opts|admin_urlname:'change' doctor.pk %}">{{ doctor }}</a>
-    &rsaquo; برنامه‌ی هفتگی
+    &rsaquo; برنامه کاری پزشک
 </div>
 {% endblock %}
 
+{% block content_title %}{% endblock %}
+
 {% block content %}
-<div id="content-main">
-    {% if not doctor.is_active %}
-    <p class="errornote">این پزشک غیرفعال است؛ شیفت‌هایش در سایت نمایش داده نمی‌شوند.</p>
-    {% endif %}
+<div id="content-main" class="schedule-page">
 
-    <p class="schedule-help">
-        اسلات‌های نیم‌ساعته‌ای را که پزشک در آن‌ها نوبت می‌پذیرد علامت بزنید. برای انتخاب یا حذف یک روز یا یک ساعت کامل، روی عنوان ستون یا سطر کلیک کنید.
-        شیفت‌ها حذف نمی‌شوند و فقط غیرفعال می‌شوند تا سوابق نوبت‌های قبلی حفظ شود.
-    </p>
+    <h2>برنامه کاری پزشک</h2>
 
-    <form method="post" id="schedule-form">
-        {% csrf_token %}
-        <div class="schedule-toolbar">
-            <strong>{{ active_count }} شیفت فعال</strong>
-            <button type="button" class="button" data-action="all">انتخاب همه</button>
-            <button type="button" class="button" data-action="none">پاک کردن همه</button>
-        </div>
-
-        <div class="module schedule-wrap">
-            <table class="schedule-table">
-                <thead>
-                    <tr>
-                        <th scope="col">ساعت</th>
-                        {% for value, label in days %}
-                        <th scope="col"><button type="button" class="toggle" data-col="{{ value }}">{{ label }}</button></th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in rows %}
-                    <tr>
-                        <th scope="row"><button type="button" class="toggle" data-row="{{ forloop.counter0 }}">{{ row.time|time:"H:i" }}</button></th>
-                        {% for cell in row.cells %}
-                        <td>
-                            <label>
-                                <input type="checkbox" name="slots" value="{{ cell.key }}" data-col="{{ cell.day }}" data-row="{{ forloop.parentloop.counter0 }}" {% if cell.checked %}checked{% endif %}
-                                       aria-label="{{ row.time|time:'H:i' }}">
-                            </label>
-                        </td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="submit-row">
-            <input type="submit" value="ذخیره‌ی برنامه" class="default">
-            <a href="{% url opts|admin_urlname:'change' doctor.pk %}" class="closelink">بازگشت</a>
-        </div>
+    <!-- انتخاب پزشک -->
+    <form method="get" class="doctor-picker">
+        <label for="doctor"><strong>پزشک</strong></label>
+        <select name="doctor" id="doctor" onchange="this.form.submit()">
+            <option value="">انتخاب پزشک</option>
+            {% for item in doctors %}
+            <option value="{{ item.id }}" {% if doctor and doctor.id == item.id %}selected{% endif %}>
+                {{ item.name }}{% if not item.is_active %} (غیرفعال){% endif %}
+            </option>
+            {% endfor %}
+        </select>
+        <noscript><input type="submit" value="نمایش"></noscript>
     </form>
+
+    {% if doctor %}
+        {% if not doctor.is_active %}
+        <p class="errornote">این پزشک غیرفعال است؛ شیفت‌هایش در سایت نمایش داده نمی‌شوند.</p>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="doctor" value="{{ doctor.id }}">
+
+            <div class="table-responsive">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>ساعت</th>
+                            {% for value, label in days %}
+                            <th>{{ label }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            <td>{{ row.time|time:"H:i" }}</td>
+                            {% for cell in row.cells %}
+                            <td>
+                                <input type="checkbox" name="slots" value="{{ cell.key }}" {% if cell.checked %}checked{% endif %} aria-label="{{ row.time|time:'H:i' }}">
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="submit-row">
+                <input type="submit" value="ذخیره برنامه" class="default">
+            </div>
+        </form>
+    {% else %}
+        <p class="schedule-empty">برای مشاهده و ویرایش برنامه‌ی کاری، یک پزشک را از لیست بالا انتخاب کنید.</p>
+    {% endif %}
 </div>
-
-<script>
-(function () {
-    const form = document.getElementById("schedule-form");
-    const boxes = (selector) => Array.from(form.querySelectorAll(`input[name="slots"]${selector}`));
-    const toggle = (list) => {
-        const allChecked = list.every((box) => box.checked);
-        list.forEach((box) => { box.checked = !allChecked; });
-    };
-
-    form.addEventListener("click", (event) => {
-        const button = event.target.closest("button");
-        if (!button) return;
-
-        if (button.dataset.action === "all") boxes("").forEach((box) => { box.checked = true; });
-        if (button.dataset.action === "none") boxes("").forEach((box) => { box.checked = false; });
-        if (button.dataset.col !== undefined) toggle(boxes(`[data-col="${button.dataset.col}"]`));
-        if (button.dataset.row !== undefined) toggle(boxes(`[data-row="${button.dataset.row}"]`));
-    });
-})();
-</script>
 {% endblock %}

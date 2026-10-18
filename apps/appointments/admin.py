@@ -34,11 +34,12 @@ class DoctorAdmin(admin.ModelAdmin):
     )
 
     change_form_template = "admin/appointments/doctor/change_form.html"
+    change_list_template = "admin/appointments/doctor/change_list.html"
 
     def get_urls(self):
         return [
             path(
-                "<int:doctor_id>/schedule/",
+                "schedule/",
                 self.admin_site.admin_view(self.schedule_view),
                 name="appointments_doctor_schedule",
             ),
@@ -46,16 +47,20 @@ class DoctorAdmin(admin.ModelAdmin):
 
     @admin.display(description="برنامه‌ی هفتگی")
     def schedule_link(self, obj):
-        url = reverse("admin:appointments_doctor_schedule", args=[obj.pk])
-        return format_html('<a href="{}">ویرایش شیفت‌ها</a>', url)
+        url = reverse("admin:appointments_doctor_schedule")
+        return format_html('<a href="{}?doctor={}">ویرایش شیفت‌ها</a>', url, obj.pk)
 
-    def schedule_view(self, request, doctor_id):
+    def schedule_view(self, request):
+        """صفحه‌ی برنامه‌ی کاری: انتخاب پزشک از لیست بالای صفحه + جدول شیفت‌ها."""
         if not request.user.has_perm("appointments.change_doctoravailability"):
             raise PermissionDenied
 
-        doctor = get_object_or_404(Doctor, pk=doctor_id)
+        doctor = None
+        doctor_id = request.POST.get("doctor") or request.GET.get("doctor")
+        if doctor_id:
+            doctor = get_object_or_404(Doctor, pk=doctor_id)
 
-        if request.method == "POST":
+        if request.method == "POST" and doctor:
             result = save_weekly_schedule(doctor, request.POST.getlist("slots"))
             messages.success(
                 request,
@@ -70,33 +75,33 @@ class DoctorAdmin(admin.ModelAdmin):
                     "این نوبت‌ها لغو نشده‌اند؛ لطفاً با بیماران هماهنگ کنید.",
                 )
 
-            return redirect(request.path)
+            return redirect(f"{request.path}?doctor={doctor.pk}")
 
-        active_keys = get_active_slot_keys(doctor)
-        days = DoctorAvailability.DAYS_OF_WEEK
-        rows = [
-            {
-                "time": slot_time,
-                "cells": [
-                    {
-                        "day": day,
-                        "key": schedule_slot_key(day, slot_time),
-                        "checked": schedule_slot_key(day, slot_time) in active_keys,
-                    }
-                    for day, _ in days
-                ],
-            }
-            for slot_time in get_schedule_time_slots()
-        ]
+        rows = []
+        if doctor:
+            active_keys = get_active_slot_keys(doctor)
+            rows = [
+                {
+                    "time": slot_time,
+                    "cells": [
+                        {
+                            "key": schedule_slot_key(day, slot_time),
+                            "checked": schedule_slot_key(day, slot_time) in active_keys,
+                        }
+                        for day, _ in DoctorAvailability.DAYS_OF_WEEK
+                    ],
+                }
+                for slot_time in get_schedule_time_slots()
+            ]
 
         context = {
             **self.admin_site.each_context(request),
             "opts": self.model._meta,
-            "title": f"برنامه‌ی هفتگی {doctor.name}",
+            "title": "برنامه کاری پزشک",
+            "doctors": Doctor.objects.all(),
             "doctor": doctor,
-            "days": days,
+            "days": DoctorAvailability.DAYS_OF_WEEK,
             "rows": rows,
-            "active_count": len(active_keys),
         }
         return TemplateResponse(request, "admin/appointments/doctor/schedule.html", context)
 
