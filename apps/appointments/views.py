@@ -1,10 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+
+from apps.core.models import SiteSettings
 
 from .models import Doctor
 from .services import (
     book_appointment,
+    get_payment_timeout,
+    validate_slot,
     can_cancel_appointment,
     cancel_appointment,
     expire_pending_appointments,
@@ -93,34 +98,9 @@ def select_time(request, doctor_id, date):
                 date=date,
             )
 
-        try:
-
-            book_appointment(
-                patient=request.user,
-                availability_id=availability_id,
-                selected_date=selected_date,
-            )
-
-        except ValueError as error:
-
-            messages.error(
-                request,
-                str(error)
-            )
-
-            return redirect(
-                "appointments:select_time",
-                doctor_id=doctor.id,
-                date=date,
-            )
-
-        messages.success(
-            request,
-            "نوبت شما با موفقیت ثبت شد."
-        )
-
         return redirect(
-            "appointments:my_appointments"
+            f"{reverse('appointments:confirm_appointment', kwargs={'doctor_id': doctor.id, 'date': date})}"
+            f"?availability={availability_id}"
         )
 
     has_available_slots = any(
@@ -139,11 +119,74 @@ def select_time(request, doctor_id, date):
             ),
             "slots": slots,
             "has_available_slots": has_available_slots,
-            
+            "fee": doctor.get_visit_fee(),
         },
     )
     
     
+@login_required
+def confirm_appointment(request, doctor_id, date):
+    """خلاصه‌ی نوبت (پزشک، تاریخ، ساعت، هزینه) و ثبت نهایی."""
+    doctor = get_object_or_404(Doctor, id=doctor_id, is_active=True)
+    select_url = reverse("appointments:select_time", kwargs={"doctor_id": doctor.id, "date": date})
+
+    try:
+        selected_date = jalali_to_gregorian(date)
+    except (ValueError, TypeError):
+        messages.error(request, "تاریخ انتخاب شده معتبر نیست.")
+        return redirect("appointments:book_appointment")
+
+    try:
+        availability_id = int(request.POST.get("availability") or request.GET.get("availability"))
+    except (TypeError, ValueError):
+        messages.error(request, "لطفاً یک ساعت را انتخاب کنید.")
+        return redirect(select_url)
+
+    try:
+        availability = validate_slot(request.user, availability_id, selected_date)
+        if availability.doctor_id != doctor.id:
+            raise ValueError("این زمان متعلق به پزشک انتخاب‌شده نیست.")
+    except ValueError as error:
+        messages.error(request, str(error))
+        return redirect(select_url)
+
+    if request.method == "POST":
+        try:
+            appointment = book_appointment(
+                patient=request.user,
+                availability_id=availability.id,
+                selected_date=selected_date,
+            )
+        except ValueError as error:
+            messages.error(request, str(error))
+            return redirect(select_url)
+
+        if appointment.status == "confirmed":
+            messages.success(request, "نوبت شما ثبت و تأیید شد.")
+        else:
+            messages.success(
+                request,
+                f"نوبت شما ثبت شد و تا {get_payment_timeout()} دقیقه برای پرداخت رزرو است.",
+            )
+
+        return redirect("appointments:my_appointments")
+
+    return render(
+        request,
+        "appointments/confirm_appointment.html",
+        {
+            "doctor": doctor,
+            "availability": availability,
+            "selected_date_jalali": format_jalali(selected_date),
+            "date": date,
+            "fee": doctor.get_visit_fee(),
+            "cancellation_hours": SiteSettings.load().cancellation_deadline_hours,
+            "payment_timeout": get_payment_timeout(),
+            "select_url": select_url,
+        },
+    )
+
+
 @login_required
 def my_appointments(request):
     expire_pending_appointments()
@@ -153,7 +196,7 @@ def my_appointments(request):
             "availability",
             "availability__doctor",
         )
-        .order_by("-date", "-availability__time")
+        .order_by("-date", "-start_time")
     )
     for appointment in appointments:
 

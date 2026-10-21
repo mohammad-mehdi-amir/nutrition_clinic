@@ -67,7 +67,7 @@
                     {% if order.can_cancel %}
                     <form method="post" action="{% url 'shop:order_cancel' order.pk %}" class="mt-3.75">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-sm w-full justify-center border border-danger/40 text-danger cursor-pointer" onclick="return confirm('سفارش لغو شود؟');">لغو سفارش</button>
+                        <button type="submit" class="btn btn-sm btn-danger-outline w-full justify-center cursor-pointer" onclick="return confirm('سفارش لغو شود؟');">لغو سفارش</button>
                     </form>
                     {% endif %}
                 </div>

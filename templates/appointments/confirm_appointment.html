@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load clinic_tags %}
+
+{% block title %}تأیید نوبت{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block banner %}
+{% url 'appointments:book_appointment' as book_url %}
+{% include "includes/page_banner.html" with title="تأیید نوبت" parent_title="رزرو نوبت" parent_url=book_url %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-light">
+    <div class="container">
+        <div class="max-w-150 mx-auto bg-white sm:rounded-3xl rounded-xxl sm:p-10 p-6.25 shadow-[0_10px_30px_rgba(var(--secondary-rgb),0.08)]">
+            <h2 class="text-2xxl font-bold mb-2.5">خلاصه‌ی نوبت</h2>
+            <p class="mb-7.5">اطلاعات زیر را بررسی کنید و در صورت درست بودن، نوبت را ثبت کنید.</p>
+
+            <ul class="mb-7.5 text-base">
+                <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>پزشک</span><span class="font-semibold text-secondary text-end">{{ doctor.name }}<small class="block font-normal text-sm text-bodycolor">{{ doctor.specialty }}</small></span></li>
+                <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>تاریخ</span><span class="font-semibold text-secondary">{{ selected_date_jalali }}</span></li>
+                <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>ساعت</span><span class="font-semibold text-secondary">{{ availability.time|time:"H:i" }}</span></li>
+                <li class="flex justify-between gap-5 py-3 text-lg"><span class="font-semibold text-secondary">هزینه‌ی ویزیت</span><span class="font-bold text-primary">{% if fee %}{{ fee|price }}{% else %}رایگان{% endif %}</span></li>
+            </ul>
+
+            <div class="py-3.75 px-5 text-sm rounded relative mb-7.5 text-info bg-info-light leading-[1.9]">
+                {% if fee %}
+                پس از ثبت، نوبت به مدت {{ payment_timeout }} دقیقه برای پرداخت رزرو می‌شود و در صورت عدم پرداخت به‌طور خودکار آزاد می‌شود.<br>
+                {% endif %}
+                لغو نوبت تا {{ cancellation_hours }} ساعت قبل از شروع آن از بخش «نوبت‌های من» امکان‌پذیر است.
+            </div>
+
+            <form method="post" class="flex flex-wrap gap-3.75">
+                {% csrf_token %}
+                <input type="hidden" name="availability" value="{{ availability.id }}">
+                <button type="submit" class="btn btn-lg btn-primary flex-1 justify-center">ثبت نوبت</button>
+                <a href="{{ select_url }}" class="btn btn-lg btn-primary-outline">تغییر ساعت</a>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

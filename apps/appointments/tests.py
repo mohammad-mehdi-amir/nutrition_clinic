@@ -30,7 +30,7 @@ class AppointmentServiceTests(TestCase):
             password="pass",
         )
         self.doctor = Doctor.objects.create(
-            name="Dr", specialty="Nutrition"
+            name="Dr", specialty="Nutrition", visit_fee=300_000
         )
         # 0 = شنبه
         self.saturday_slot = DoctorAvailability.objects.create(
@@ -102,7 +102,7 @@ class AppointmentServiceTests(TestCase):
         appointment = Appointment.objects.create(
             availability=self.saturday_slot,
             patient=self.patient,
-            date=self.saturday,
+            date=self.saturday + timedelta(days=7),
             status="confirmed",
         )
         cancel_appointment(self.patient, appointment.id)
@@ -216,3 +216,138 @@ class AppointmentDateFormTests(TestCase):
         form = AppointmentDateForm({"doctor": self.doctor.pk, "date": "1405/07/15"})
         self.assertFalse(form.is_valid())
         self.assertIn("doctor", form.errors)
+
+
+
+class FeeAndCancellationTests(TestCase):
+
+    def setUp(self):
+        from apps.core.models import SiteSettings
+        self.settings = SiteSettings.objects.create(
+            clinic_name="c", phone="1", default_visit_fee=150_000, cancellation_deadline_hours=12
+        )
+        self.patient = get_user_model().objects.create_user(username="patient", password="pass")
+        self.doctor = Doctor.objects.create(name="Dr", specialty="Nutrition")
+        self.slot = DoctorAvailability.objects.create(doctor=self.doctor, day_of_week=0, time=time(10, 0))
+        self.saturday = next_saturday() + timedelta(days=7)
+
+    def test_fee_falls_back_to_site_default(self):
+        self.assertEqual(self.doctor.get_visit_fee(), 150_000)
+        self.doctor.visit_fee = 0
+        self.assertEqual(self.doctor.get_visit_fee(), 0)
+
+    def test_paid_booking_snapshots_fee_and_waits_for_payment(self):
+        appointment = book_appointment(self.patient, self.slot.id, self.saturday)
+        self.assertEqual((appointment.status, appointment.payment_status, appointment.fee), ("pending", "unpaid", 150_000))
+        self.assertIsNotNone(appointment.payment_deadline)
+        self.assertEqual(appointment.start_time, time(10, 0))
+
+    def test_free_booking_is_confirmed_immediately(self):
+        self.doctor.visit_fee = 0
+        self.doctor.save()
+        appointment = book_appointment(self.patient, self.slot.id, self.saturday)
+        self.assertEqual((appointment.status, appointment.payment_status), ("confirmed", "not_required"))
+        self.assertIsNone(appointment.payment_deadline)
+
+    def test_patient_time_conflict_enforced_by_database(self):
+        from django.db import IntegrityError, transaction
+        other_doctor = Doctor.objects.create(name="Dr2", specialty="x")
+        other_slot = DoctorAvailability.objects.create(doctor=other_doctor, day_of_week=0, time=time(10, 0))
+        Appointment.objects.create(availability=self.slot, patient=self.patient, date=self.saturday, status="confirmed")
+        with transaction.atomic(), self.assertRaises(IntegrityError):
+            Appointment.objects.create(availability=other_slot, patient=self.patient, date=self.saturday, status="pending")
+
+    def test_concurrent_booking_race_returns_friendly_error(self):
+        """بین بررسی اولیه و ثبت، شخص دیگری همان اسلات را می‌گیرد ⇒ IntegrityError ⇒ پیام مناسب."""
+        from unittest import mock
+        other = get_user_model().objects.create_user(username="other")
+        with mock.patch("apps.appointments.services.validate_slot", return_value=self.slot):
+            Appointment.objects.create(availability=self.slot, patient=other, date=self.saturday, status="pending")
+            with self.assertRaisesMessage(ValueError, "هم‌اکنون رزرو شد"):
+                book_appointment(self.patient, self.slot.id, self.saturday)
+
+    def _appointment(self, days_ahead=None, hours_ahead=None, **extra):
+        start = timezone.localtime() + (timedelta(hours=hours_ahead) if hours_ahead is not None else timedelta(days=days_ahead))
+        slot = DoctorAvailability.objects.create(
+            doctor=self.doctor, day_of_week=DoctorAvailability.day_of_week_for(start.date()), time=start.time().replace(second=0, microsecond=0)
+        )
+        return Appointment.objects.create(availability=slot, patient=self.patient, date=start.date(), status="confirmed", **extra)
+
+    def test_cannot_cancel_within_deadline(self):
+        appointment = self._appointment(hours_ahead=6)
+        with self.assertRaisesMessage(ValueError, "12 ساعت"):
+            cancel_appointment(self.patient, appointment.id)
+
+    def test_can_cancel_before_deadline_and_paid_becomes_refund_request(self):
+        appointment = self._appointment(days_ahead=3, fee=150_000, payment_status="paid")
+        cancel_appointment(self.patient, appointment.id)
+        appointment.refresh_from_db()
+        self.assertEqual((appointment.status, appointment.payment_status), ("cancelled", "refund_requested"))
+
+    def test_pending_unpaid_can_be_cancelled(self):
+        appointment = book_appointment(self.patient, self.slot.id, self.saturday)
+        cancel_appointment(self.patient, appointment.id)
+        appointment.refresh_from_db()
+        self.assertEqual((appointment.status, appointment.payment_status), ("cancelled", "unpaid"))
+
+    def test_expire_command(self):
+        from django.core.management import call_command
+        from io import StringIO
+        appointment = book_appointment(self.patient, self.slot.id, self.saturday)
+        Appointment.objects.filter(pk=appointment.pk).update(payment_deadline=timezone.now() - timedelta(minutes=1))
+        out = StringIO()
+        call_command("expire_pending_appointments", stdout=out)
+        appointment.refresh_from_db()
+        self.assertEqual(appointment.status, "cancelled")
+        self.assertIn("1", out.getvalue())
+
+    def test_admin_actions_confirm_payment_and_refund(self):
+        from .services import confirm_manual_payment, mark_refunded
+        appointment = book_appointment(self.patient, self.slot.id, self.saturday)
+        confirm_manual_payment(appointment)
+        appointment.refresh_from_db()
+        self.assertEqual((appointment.status, appointment.payment_status), ("confirmed", "paid"))
+
+        cancel_appointment(self.patient, appointment.id)
+        mark_refunded(appointment)
+        appointment.refresh_from_db()
+        self.assertEqual(appointment.payment_status, "refunded")
+        with self.assertRaises(ValueError):
+            confirm_manual_payment(appointment)
+
+
+class ConfirmFlowTests(TestCase):
+
+    def setUp(self):
+        self.patient = get_user_model().objects.create_user(username="patient", password="pass")
+        self.client.force_login(self.patient)
+        self.doctor = Doctor.objects.create(name="دکتر نمونه", specialty="تغذیه", visit_fee=250_000)
+        self.slot = DoctorAvailability.objects.create(doctor=self.doctor, day_of_week=0, time=time(10, 0))
+        self.date = format_jalali(next_saturday() + timedelta(days=7), "-")
+        self.select_url = reverse("appointments:select_time", kwargs={"doctor_id": self.doctor.id, "date": self.date})
+        self.confirm_url = reverse("appointments:confirm_appointment", kwargs={"doctor_id": self.doctor.id, "date": self.date})
+
+    def test_select_time_redirects_to_summary_without_booking(self):
+        response = self.client.post(self.select_url, {"availability": self.slot.id})
+        self.assertRedirects(response, f"{self.confirm_url}?availability={self.slot.id}")
+        self.assertFalse(Appointment.objects.exists())
+
+    def test_summary_shows_fee_then_books(self):
+        page = self.client.get(self.confirm_url, {"availability": self.slot.id})
+        self.assertContains(page, "250,000 تومان")
+        self.assertContains(page, "10:00")
+
+        response = self.client.post(self.confirm_url, {"availability": self.slot.id})
+        self.assertRedirects(response, reverse("appointments:my_appointments"))
+        self.assertEqual(Appointment.objects.get().fee, 250_000)
+
+    def test_invalid_availability_param(self):
+        response = self.client.get(self.confirm_url, {"availability": "abc"})
+        self.assertRedirects(response, self.select_url, fetch_redirect_response=False)
+
+    def test_slot_of_other_doctor_rejected(self):
+        other = Doctor.objects.create(name="x", specialty="y")
+        other_slot = DoctorAvailability.objects.create(doctor=other, day_of_week=0, time=time(11, 0))
+        response = self.client.post(self.confirm_url, {"availability": other_slot.id})
+        self.assertRedirects(response, self.select_url, fetch_redirect_response=False)
+        self.assertFalse(Appointment.objects.exists())

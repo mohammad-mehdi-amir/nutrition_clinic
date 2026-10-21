@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load jalali_tags %}
+{% load jalali_tags clinic_tags %}
 
 {% block title %}نوبت‌های من{% endblock %}
 {% block meta_robots %}noindex, nofollow{% endblock %}
@@ -15,20 +15,21 @@
             <div class="flex flex-wrap gap-5 justify-between items-center mb-7.5">
                 <div>
                     <h2 class="text-2xxl font-bold mb-1.25">نوبت‌های من</h2>
-                    <p class="mb-0">فهرست نوبت‌های ثبت‌شده‌ی شما</p>
+                    <p class="mb-0">فهرست نوبت‌های ثبت‌شده‌ی شما. لغو نوبت تا {{ site_settings.cancellation_deadline_hours }} ساعت قبل از شروع آن امکان‌پذیر است.</p>
                 </div>
                 <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary">رزرو نوبت جدید</a>
             </div>
 
             {% if appointments %}
             <div class="overflow-x-auto">
-                <table class="w-full text-center border-collapse min-w-180">
+                <table class="w-full text-center border-collapse min-w-200">
                     <thead>
                         <tr class="bg-light text-secondary">
                             <th class="py-3.75 px-3 font-semibold">پزشک</th>
                             <th class="py-3.75 px-3 font-semibold">تخصص</th>
                             <th class="py-3.75 px-3 font-semibold">تاریخ</th>
                             <th class="py-3.75 px-3 font-semibold">ساعت</th>
+                            <th class="py-3.75 px-3 font-semibold">هزینه</th>
                             <th class="py-3.75 px-3 font-semibold">وضعیت</th>
                             <th class="py-3.75 px-3 font-semibold">عملیات</th>
                         </tr>
@@ -39,7 +40,8 @@
                             <td class="py-3.75 px-3 font-semibold text-secondary">{{ appointment.availability.doctor.name }}</td>
                             <td class="py-3.75 px-3">{{ appointment.availability.doctor.specialty }}</td>
                             <td class="py-3.75 px-3">{{ appointment.date|to_jalali:"%Y/%m/%d" }}</td>
-                            <td class="py-3.75 px-3">{{ appointment.availability.time|time:"H:i" }}</td>
+                            <td class="py-3.75 px-3">{{ appointment.start_time|time:"H:i" }}</td>
+                            <td class="py-3.75 px-3">{% if appointment.fee %}{{ appointment.fee|price }}<small class="block text-xs">{{ appointment.get_payment_status_display }}</small>{% else %}رایگان{% endif %}</td>
                             <td class="py-3.75 px-3">
                                 {% if appointment.status == "pending" %}
                                 <span class="inline-block rounded-full px-3 py-1 text-sm text-warning bg-warning-light">{{ appointment.get_status_display }}</span>

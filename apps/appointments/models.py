@@ -18,12 +18,27 @@ class Doctor(models.Model):
     )
     is_active = models.BooleanField(default=True)
 
+    visit_fee = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="هزینه‌ی ویزیت (تومان)",
+        help_text="خالی یعنی هزینه‌ی پیش‌فرض تنظیمات سایت؛ ۰ یعنی رایگان.",
+    )
+
     class Meta:
         verbose_name = "پزشک"
         verbose_name_plural = "پزشکان"
 
     def __str__(self):
         return self.name
+
+    def get_visit_fee(self):
+        """هزینه‌ی ویزیت این پزشک یا مقدار پیش‌فرض تنظیمات سایت (تومان)."""
+        if self.visit_fee is not None:
+            return self.visit_fee
+
+        from apps.core.models import SiteSettings
+        return SiteSettings.load().default_visit_fee
 
 
 
@@ -86,6 +101,19 @@ class Appointment(models.Model):
 
     ACTIVE_STATUSES = ACTIVE_APPOINTMENT_STATUSES
 
+    PAYMENT_NOT_REQUIRED = "not_required"
+    PAYMENT_UNPAID = "unpaid"
+    PAYMENT_PAID = "paid"
+    PAYMENT_REFUND_REQUESTED = "refund_requested"
+    PAYMENT_REFUNDED = "refunded"
+    PAYMENT_STATUS_CHOICES = [
+        (PAYMENT_NOT_REQUIRED, "رایگان"),
+        (PAYMENT_UNPAID, "پرداخت‌نشده"),
+        (PAYMENT_PAID, "پرداخت‌شده"),
+        (PAYMENT_REFUND_REQUESTED, "در انتظار بازپرداخت"),
+        (PAYMENT_REFUNDED, "بازپرداخت‌شده"),
+    ]
+
     availability = models.ForeignKey(
         DoctorAvailability,
         on_delete=models.PROTECT,
@@ -100,6 +128,18 @@ class Appointment(models.Model):
     )
 
     date = models.DateField()
+
+    # کپی ساعت شیفت برای قید یکتایی «یک بیمار، یک نوبت در هر ساعت»
+    start_time = models.TimeField(verbose_name="ساعت")
+
+    fee = models.PositiveIntegerField(default=0, verbose_name="هزینه (تومان)")
+
+    payment_status = models.CharField(
+        max_length=20,
+        choices=PAYMENT_STATUS_CHOICES,
+        default=PAYMENT_UNPAID,
+        verbose_name="وضعیت پرداخت",
+    )
 
     status = models.CharField(
         max_length=20,
@@ -125,7 +165,12 @@ class Appointment(models.Model):
                 fields=["availability", "date"],
                 condition=models.Q(status__in=ACTIVE_APPOINTMENT_STATUSES),
                 name="unique_active_appointment_slot",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["patient", "date", "start_time"],
+                condition=models.Q(status__in=ACTIVE_APPOINTMENT_STATUSES),
+                name="unique_active_patient_time",
+            ),
         ]
 
     def __str__(self):
@@ -134,5 +179,10 @@ class Appointment(models.Model):
             f"{self.patient} - "
             f"{self.availability.doctor} - "
             f"{jalali_date.strftime('%Y/%m/%d')} - "
-            f"{self.availability.time}"
+            f"{self.start_time:%H:%M}"
         )
+
+    def save(self, *args, **kwargs):
+        if self.start_time is None and self.availability_id:
+            self.start_time = self.availability.time
+        super().save(*args, **kwargs)

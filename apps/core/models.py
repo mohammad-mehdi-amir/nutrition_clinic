@@ -43,6 +43,16 @@ class SiteSettings(models.Model):
     terms_text = models.TextField(blank=True, verbose_name="قوانین و مقررات")
     privacy_text = models.TextField(blank=True, verbose_name="حریم خصوصی")
     payment_timeout_minutes = models.PositiveIntegerField(default=10,verbose_name="مهلت پرداخت نوبت (دقیقه)",)
+    default_visit_fee = models.PositiveIntegerField(
+        default=0,
+        verbose_name="هزینه‌ی پیش‌فرض ویزیت (تومان)",
+        help_text="برای پزشکانی که هزینه‌ی جداگانه ندارند. ۰ یعنی رایگان.",
+    )
+    cancellation_deadline_hours = models.PositiveIntegerField(
+        default=12,
+        verbose_name="حداقل فاصله‌ی لغو تا نوبت (ساعت)",
+        help_text="بیمار تا این تعداد ساعت قبل از شروع نوبت می‌تواند آن را لغو کند.",
+    )
 
     # تصاویر سایت — در صورت خالی بودن، تصویر پیش‌فرض قالب نمایش داده می‌شود
     hero_image = WebPImageField(

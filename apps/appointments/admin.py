@@ -8,7 +8,9 @@ from jalali_date.admin import ModelAdminJalaliMixin
 
 from .models import Doctor, DoctorAvailability, Appointment
 from .services import (
+    confirm_manual_payment,
     get_active_slot_keys,
+    mark_refunded,
     get_schedule_time_slots,
     save_weekly_schedule,
     schedule_slot_key,
@@ -20,6 +22,7 @@ class DoctorAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "specialty",
+        "visit_fee",
         "is_active",
         "schedule_link",
     )
@@ -135,24 +138,32 @@ class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     list_display = (
         "patient",
         "get_doctor",
-        "get_time",
         "date",
+        "get_time",
+        "fee",
         "status",
+        "payment_status",
         "created_at",
     )
 
     list_filter = (
         "status",
+        "payment_status",
         "date",
         "availability__doctor",
     )
 
     search_fields = (
         "patient__username",
+        "patient__phone_number",
         "patient__first_name",
         "patient__last_name",
         "availability__doctor__name",
     )
+
+    readonly_fields = ("start_time", "fee", "created_at", "payment_deadline")
+
+    actions = ["confirm_payment", "mark_as_refunded"]
 
     @admin.display(description="دکتر")
     def get_doctor(self, obj):
@@ -160,4 +171,23 @@ class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
 
     @admin.display(description="ساعت")
     def get_time(self, obj):
-        return obj.availability.time.strftime("%H:%M")
+        return obj.start_time.strftime("%H:%M")
+
+    def _run(self, request, queryset, func, done_message):
+        done = 0
+        for appointment in queryset:
+            try:
+                func(appointment)
+                done += 1
+            except ValueError:
+                continue
+        skipped = queryset.count() - done
+        self.message_user(request, f"{done} نوبت {done_message}." + (f" {skipped} مورد قابل انجام نبود." if skipped else ""))
+
+    @admin.action(description="تأیید پرداخت دستی (نوبت‌های در انتظار پرداخت)")
+    def confirm_payment(self, request, queryset):
+        self._run(request, queryset, confirm_manual_payment, "تأیید شد")
+
+    @admin.action(description="ثبت بازپرداخت انجام‌شده")
+    def mark_as_refunded(self, request, queryset):
+        self._run(request, queryset, mark_refunded, "به‌عنوان بازپرداخت‌شده ثبت شد")

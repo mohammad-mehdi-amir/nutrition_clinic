@@ -13,12 +13,7 @@ from .models import (
 
 
 def get_payment_timeout():
-    settings = SiteSettings.objects.first()
-
-    if not settings:
-        return 10
-
-    return settings.payment_timeout_minutes
+    return SiteSettings.load().payment_timeout_minutes
 
 
 def is_slot_in_past(selected_date, slot_time):
@@ -33,100 +28,103 @@ def is_slot_in_past(selected_date, slot_time):
     return False
 
 
-def book_appointment(
-    patient,
-    availability_id,
-    selected_date,
-):
-    expire_pending_appointments()
+def appointment_start(appointment):
+    """زمان شروع نوبت (aware، منطقه‌ی زمانی پروژه)."""
+    return timezone.make_aware(datetime.combine(appointment.date, appointment.start_time))
 
+
+def validate_slot(patient, availability_id, selected_date):
+    """
+    بررسی قابل رزرو بودن اسلات برای بیمار؛ در صورت معتبر بودن availability را برمی‌گرداند.
+    (بررسی اولیه برای پیام مناسب؛ ضمانت نهایی با قیدهای یکتای دیتابیس است.)
+    """
     if selected_date < timezone.localdate():
-        raise ValueError(
-            "امکان رزرو برای تاریخ گذشته وجود ندارد."
-        )
+        raise ValueError("امکان رزرو برای تاریخ گذشته وجود ندارد.")
 
-    availability = DoctorAvailability.objects.filter(
-        id=availability_id,
-        is_active=True,
-    ).select_related("doctor").first()
+    availability = (
+        DoctorAvailability.objects
+        .filter(id=availability_id, is_active=True, doctor__is_active=True)
+        .select_related("doctor")
+        .first()
+    )
 
     if not availability:
-        raise ValueError(
-            "این زمان دیگر قابل رزرو نیست."
-        )
+        raise ValueError("این زمان دیگر قابل رزرو نیست.")
 
-    # بررسی روز هفته
     if DoctorAvailability.day_of_week_for(selected_date) != availability.day_of_week:
-        raise ValueError(
-            "این زمان برای تاریخ انتخاب شده معتبر نیست."
-        )
+        raise ValueError("این زمان برای تاریخ انتخاب شده معتبر نیست.")
 
-    # اگر امروز است، ساعت هم نباید گذشته باشد
     if is_slot_in_past(selected_date, availability.time):
-        raise ValueError(
-            "این زمان گذشته است."
-        )
+        raise ValueError("این زمان گذشته است.")
 
-    # بررسی اینکه اسلات قبلاً رزرو نشده باشد
-    slot_booked = Appointment.objects.filter(
+    if Appointment.objects.filter(
         availability=availability,
         date=selected_date,
         status__in=ACTIVE_APPOINTMENT_STATUSES,
-    ).exists()
+    ).exists():
+        raise ValueError("این زمان قبلاً رزرو شده است.")
 
-    if slot_booked:
-        raise ValueError(
-            "این زمان قبلاً رزرو شده است."
-        )
-
-    # بررسی تداخل بیمار با پزشک دیگر
-    patient_has_conflict = Appointment.objects.filter(
+    if Appointment.objects.filter(
         patient=patient,
         date=selected_date,
-        availability__time=availability.time,
+        start_time=availability.time,
         status__in=ACTIVE_APPOINTMENT_STATUSES,
-    ).exists()
+    ).exists():
+        raise ValueError("شما در این تاریخ و ساعت نوبت دیگری دارید.")
 
-    if patient_has_conflict:
-        raise ValueError(
-            "شما در این تاریخ و ساعت نوبت دیگری دارید."
-        )
+    return availability
+
+
+def book_appointment(patient, availability_id, selected_date):
+    expire_pending_appointments()
+
+    availability = validate_slot(patient, availability_id, selected_date)
+    fee = availability.doctor.get_visit_fee()
+
+    if fee:
+        status = "pending"
+        payment_status = Appointment.PAYMENT_UNPAID
+        payment_deadline = timezone.now() + timedelta(minutes=get_payment_timeout())
+    else:
+        # ویزیت رایگان نیازی به پرداخت ندارد و مستقیم تأیید می‌شود
+        status = "confirmed"
+        payment_status = Appointment.PAYMENT_NOT_REQUIRED
+        payment_deadline = None
 
     try:
         with transaction.atomic():
-
             appointment = Appointment.objects.create(
                 availability=availability,
                 patient=patient,
                 date=selected_date,
-                status="pending",
-                payment_deadline=timezone.now() + timedelta(
-                    minutes=get_payment_timeout()
-                ),
+                start_time=availability.time,
+                fee=fee,
+                status=status,
+                payment_status=payment_status,
+                payment_deadline=payment_deadline,
             )
-
     except IntegrityError:
-        raise ValueError(
-            "این زمان هم‌اکنون توسط شخص دیگری رزرو شد."
-        )
+        # درخواست هم‌زمان: همین اسلات یا همین ساعت برای بیمار در همین لحظه ثبت شد
+        raise ValueError("این زمان هم‌اکنون رزرو شد؛ لطفاً زمان دیگری انتخاب کنید.")
 
     return appointment
 
 
 def expire_pending_appointments():
+    """لغو نوبت‌های پرداخت‌نشده‌ای که مهلتشان گذشته؛ تعداد را برمی‌گرداند."""
     now = timezone.now()
 
     # نوبت‌های قدیمی که payment_deadline ندارند بر اساس created_at منقضی می‌شوند
     legacy_expire_before = now - timedelta(minutes=get_payment_timeout())
 
-    Appointment.objects.filter(
+    return Appointment.objects.filter(
         Q(payment_deadline__lte=now)
         | Q(
             payment_deadline__isnull=True,
             created_at__lte=legacy_expire_before,
         ),
         status="pending",
-    ).update(status="cancelled")
+    ).update(status="cancelled", payment_deadline=None)
 
 
 def get_available_slots(doctor, selected_date):
@@ -159,46 +157,74 @@ def get_available_slots(doctor, selected_date):
     ]
 
 
+def cancellation_deadline(appointment):
+    """آخرین زمانی که بیمار می‌تواند نوبت را لغو کند."""
+    hours = SiteSettings.load().cancellation_deadline_hours
+    return appointment_start(appointment) - timedelta(hours=hours)
+
+
 def can_cancel_appointment(appointment):
     return (
-        appointment.status == "confirmed"
-        and not is_slot_in_past(
-            appointment.date,
-            appointment.availability.time,
-        )
+        appointment.status in ("pending", "confirmed")
+        and timezone.now() <= cancellation_deadline(appointment)
     )
 
 
 def cancel_appointment(patient, appointment_id):
-    appointment = (
-        Appointment.objects
-        .select_related("availability")
-        .filter(
-            id=appointment_id,
-            patient=patient,
-        )
-        .first()
-    )
-
-    if not appointment:
-        raise ValueError(
-            "نوبت مورد نظر پیدا نشد."
+    with transaction.atomic():
+        appointment = (
+            Appointment.objects
+            .select_for_update()
+            .filter(id=appointment_id, patient=patient)
+            .first()
         )
 
-    if not can_cancel_appointment(appointment):
-        raise ValueError(
-            "فقط نوبت‌های تایید شده‌ای که زمانشان نگذشته قابل لغو هستند."
-        )
+        if not appointment:
+            raise ValueError("نوبت مورد نظر پیدا نشد.")
 
-    appointment.status = "cancelled"
-    appointment.payment_deadline = None
+        if not can_cancel_appointment(appointment):
+            hours = SiteSettings.load().cancellation_deadline_hours
+            raise ValueError(
+                f"این نوبت قابل لغو نیست. لغو فقط تا {hours} ساعت قبل از شروع نوبت امکان‌پذیر است؛ "
+                "برای هماهنگی با کلینیک تماس بگیرید."
+            )
 
-    appointment.save(
-        update_fields=[
-            "status",
-            "payment_deadline",
-        ]
-    )
+        appointment.status = "cancelled"
+        appointment.payment_deadline = None
+
+        if appointment.payment_status == Appointment.PAYMENT_PAID:
+            appointment.payment_status = Appointment.PAYMENT_REFUND_REQUESTED
+
+        appointment.save(update_fields=["status", "payment_deadline", "payment_status"])
+
+    return appointment
+
+
+def confirm_manual_payment(appointment):
+    """تأیید پرداخت دستی توسط ادمین (تا قبل از اتصال درگاه)."""
+    with transaction.atomic():
+        appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)
+
+        if appointment.status != "pending":
+            raise ValueError("فقط نوبت‌های در انتظار پرداخت قابل تأیید هستند.")
+
+        appointment.status = "confirmed"
+        appointment.payment_status = Appointment.PAYMENT_PAID
+        appointment.payment_deadline = None
+        appointment.save(update_fields=["status", "payment_status", "payment_deadline"])
+
+    return appointment
+
+
+def mark_refunded(appointment):
+    with transaction.atomic():
+        appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)
+
+        if appointment.payment_status != Appointment.PAYMENT_REFUND_REQUESTED:
+            raise ValueError("این نوبت در انتظار بازپرداخت نیست.")
+
+        appointment.payment_status = Appointment.PAYMENT_REFUNDED
+        appointment.save(update_fields=["payment_status"])
 
     return appointment
 

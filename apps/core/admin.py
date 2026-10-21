@@ -16,7 +16,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             "fields": ("favicon", "hero_image", "about_image", "page_banner_image", "faq_image", "bmi_image", "cta_image"),
             "description": "در صورت خالی بودن هر مورد، تصویر پیش‌فرض قالب نمایش داده می‌شود.",
         }),
-        ("نوبت‌دهی", {"fields": ("payment_timeout_minutes",)}),
+        ("نوبت‌دهی", {"fields": ("default_visit_fee", "payment_timeout_minutes", "cancellation_deadline_hours")}),
         ("فروشگاه", {"fields": ("shipping_cost", "free_shipping_threshold", "order_payment_timeout_minutes")}),
     )
 
