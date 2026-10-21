@@ -59,10 +59,15 @@
                     </ul>
 
                     {% if order.status == "pending_payment" %}
-                    <div class="py-3.75 px-5 text-sm rounded relative mt-3.75 text-info bg-info-light leading-[1.8]">
-                        پرداخت آنلاین به‌زودی فعال می‌شود. موجودی تا {{ order.payment_deadline|to_jalali:"%H:%M" }} برای شما رزرو است.
-                    </div>
+                    <form method="post" action="{% url 'payments:pay_order' order.pk %}" class="mt-3.75">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-lg btn-primary w-full justify-center">پرداخت آنلاین</button>
+                    </form>
+                    <p class="text-sm mt-2.5 mb-0 leading-[1.8]">موجودی تا ساعت {{ order.payment_deadline|to_jalali:"%H:%M" }} برای شما رزرو است.</p>
                     {% endif %}
+                    {% with paid=order.payments.all %}{% for p in paid %}{% if p.status == "paid" %}
+                    <p class="text-sm mt-3.75 mb-0">شماره‌ی پیگیری پرداخت: <span class="ltr-text font-semibold text-secondary">{{ p.ref_id }}</span></p>
+                    {% endif %}{% endfor %}{% endwith %}
 
                     {% if order.can_cancel %}
                     <form method="post" action="{% url 'shop:order_cancel' order.pk %}" class="mt-3.75">

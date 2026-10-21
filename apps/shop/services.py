@@ -157,3 +157,43 @@ def expire_pending_orders():
             continue
 
     return count
+
+
+def mark_order_paid(order):
+    """
+    اعمال پرداخت موفق درگاه. True یعنی سفارش پرداخت‌شده شد؛
+    False یعنی سفارش منقضی شده و موجودی دیگر کافی نبود (نیاز به بازپرداخت توسط ادمین).
+    """
+    with transaction.atomic():
+        order = Order.objects.select_for_update().get(pk=order.pk)
+
+        if order.status == Order.STATUS_PAID:
+            return True
+
+        if order.status == Order.STATUS_PENDING:
+            order.status = Order.STATUS_PAID
+            order.payment_deadline = None
+            order.save(update_fields=["status", "payment_deadline", "updated_at"])
+            return True
+
+        if order.status != Order.STATUS_CANCELLED:
+            return False
+
+        # سفارش هنگام پرداخت منقضی شده و موجودی آزاد شده؛ در صورت امکان دوباره رزرو می‌کنیم
+        items = list(order.items.filter(product__isnull=False, product_type=Product.TYPE_PHYSICAL))
+        products = {
+            p.pk: p
+            for p in Product.objects.select_for_update().filter(pk__in=[i.product_id for i in items])
+        }
+
+        if any((products[i.product_id].stock or 0) < i.quantity for i in items):
+            return False
+
+        for item in items:
+            product = products[item.product_id]
+            product.stock -= item.quantity
+            product.save(update_fields=["stock", "updated_at"])
+
+        order.status = Order.STATUS_PAID
+        order.save(update_fields=["status", "updated_at"])
+        return True

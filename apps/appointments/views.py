@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from apps.core.models import SiteSettings
+from apps.payments.views import redirect_to_gateway
 
 from .models import Doctor
 from .services import (
@@ -163,13 +164,10 @@ def confirm_appointment(request, doctor_id, date):
 
         if appointment.status == "confirmed":
             messages.success(request, "نوبت شما ثبت و تأیید شد.")
-        else:
-            messages.success(
-                request,
-                f"نوبت شما ثبت شد و تا {get_payment_timeout()} دقیقه برای پرداخت رزرو است.",
-            )
+            return redirect("appointments:my_appointments")
 
-        return redirect("appointments:my_appointments")
+        # نوبت پولی: مستقیم به درگاه؛ در صورت خطا دکمه‌ی پرداخت در «نوبت‌های من» هست
+        return redirect_to_gateway(request, appointment, reverse("appointments:my_appointments"))
 
     return render(
         request,

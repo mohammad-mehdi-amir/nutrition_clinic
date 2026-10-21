@@ -54,6 +54,12 @@
                                 {% endif %}
                             </td>
                             <td class="py-3.75 px-3">
+                                {% if appointment.status == "pending" and appointment.payment_status == "unpaid" and appointment.fee %}
+                                <form method="post" action="{% url 'payments:pay_appointment' appointment.id %}" class="inline-block mb-1.25">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-primary">پرداخت</button>
+                                </form>
+                                {% endif %}
                                 {% if appointment.can_cancel %}
                                 <form method="post" action="{% url 'appointments:cancel_appointment' appointment.id %}" class="inline">
                                     {% csrf_token %}

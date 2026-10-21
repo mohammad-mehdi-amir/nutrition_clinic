@@ -55,6 +55,8 @@ INSTALLED_APPS = [
     "apps.shop",
 
     "apps.blog",
+
+    "apps.payments",
 ]
 
 MIDDLEWARE = [
@@ -162,6 +164,14 @@ LOGOUT_REDIRECT_URL = "core:home"
 SMS_BACKEND = os.getenv("SMS_BACKEND", "apps.accounts.sms.ConsoleSMSBackend")
 SMS_API_KEY = os.getenv("SMS_API_KEY", "")
 SMS_TEMPLATE = os.getenv("SMS_TEMPLATE", "")
+
+# Payments. PAYMENT_GATEWAY: "zarinpal" (Production) | "fake" (توسعه؛ فقط با DEBUG)
+PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "fake" if DEBUG else "zarinpal")
+ZARINPAL_MERCHANT_ID = os.getenv("ZARINPAL_MERCHANT_ID", "")
+ZARINPAL_SANDBOX = os.getenv("ZARINPAL_SANDBOX", "True").lower() in ("1", "true", "yes")
+ZARINPAL_TIMEOUT = int(os.getenv("ZARINPAL_TIMEOUT", "20"))  # ثانیه
+# مدت تمدید رزرو نوبت/سفارش هنگام رفتن کاربر به درگاه
+PAYMENT_GATEWAY_WINDOW_MINUTES = 15
 
 JALALI_DATE_DEFAULTS = {
     "LIST_DISPLAY_AUTO_CONVERT": True,

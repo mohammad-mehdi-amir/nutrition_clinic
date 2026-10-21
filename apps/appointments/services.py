@@ -311,3 +311,38 @@ def get_active_slot_keys(doctor):
         schedule_slot_key(item.day_of_week, item.time)
         for item in doctor.availabilities.filter(is_active=True)
     }
+
+
+def mark_appointment_paid(appointment):
+    """
+    اعمال پرداخت موفق درگاه. True یعنی نوبت تأیید شد؛
+    False یعنی نوبت قابل فعال‌سازی نبود و درخواست بازپرداخت ثبت شد.
+    """
+    with transaction.atomic():
+        appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)
+
+        if appointment.status == "confirmed" and appointment.payment_status == Appointment.PAYMENT_PAID:
+            return True
+
+        if appointment.status == "pending":
+            appointment.status = "confirmed"
+            appointment.payment_status = Appointment.PAYMENT_PAID
+            appointment.payment_deadline = None
+            appointment.save(update_fields=["status", "payment_status", "payment_deadline"])
+            return True
+
+        # نوبت هنگام حضور کاربر در درگاه منقضی شده؛ اگر اسلات هنوز آزاد است دوباره فعالش می‌کنیم
+        if appointment.status == "cancelled" and appointment.payment_status == Appointment.PAYMENT_UNPAID:
+            try:
+                with transaction.atomic():
+                    appointment.status = "confirmed"
+                    appointment.payment_status = Appointment.PAYMENT_PAID
+                    appointment.payment_deadline = None
+                    appointment.save(update_fields=["status", "payment_status", "payment_deadline"])
+                return True
+            except IntegrityError:
+                appointment.refresh_from_db()
+
+        appointment.payment_status = Appointment.PAYMENT_REFUND_REQUESTED
+        appointment.save(update_fields=["payment_status"])
+        return False

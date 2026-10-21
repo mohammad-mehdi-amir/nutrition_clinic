@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.payments.views import redirect_to_gateway
 from .cart import Cart
 from .forms import CheckoutForm
 from .locations import get_locations
@@ -168,7 +169,7 @@ def checkout(request):
                 return redirect("shop:cart")
 
             messages.success(request, f"سفارش #{order.pk} ثبت شد.")
-            return redirect(order.get_absolute_url())
+            return redirect_to_gateway(request, order, order.get_absolute_url())
     else:
         form = CheckoutForm(initial=initial, needs_shipping=totals.needs_shipping)
 

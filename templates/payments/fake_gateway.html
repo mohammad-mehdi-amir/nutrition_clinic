@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load clinic_tags %}
+
+{% block title %}درگاه آزمایشی{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block content %}
+<section class="pt-40 pb-17.5 bg-light">
+    <div class="container">
+        <div class="max-w-130 mx-auto bg-white rounded-3xl p-10 text-center">
+            <span class="inline-block rounded-full px-3 py-1 text-sm text-warning bg-warning-light mb-5">فقط محیط توسعه</span>
+            <h1 class="text-2xxl font-bold mb-2.5">درگاه پرداخت آزمایشی</h1>
+            <p class="mb-7.5">{{ payment.description }} — <strong class="text-secondary">{{ payment.amount|price }}</strong></p>
+            <div class="flex flex-wrap gap-3.75 justify-center">
+                <a href="{{ callback_url }}?Authority={{ authority|urlencode }}&Status=OK" class="btn btn-lg btn-primary">پرداخت موفق</a>
+                <a href="{{ callback_url }}?Authority={{ authority|urlencode }}&Status=NOK" class="btn btn-lg btn-danger-outline">انصراف / ناموفق</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
