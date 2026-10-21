@@ -5,6 +5,8 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.accounts.models import ShippingAddress
+from apps.accounts.services import save_default_address
 from apps.payments.views import redirect_to_gateway
 from .cart import Cart
 from .forms import CheckoutForm
@@ -153,7 +155,8 @@ def checkout(request):
         return redirect("shop:product_list")
 
     totals = calculate_totals(lines)
-    initial = {
+    saved_address = ShippingAddress.objects.filter(user=request.user).first()
+    initial = saved_address.as_initial() if saved_address else {
         "recipient_name": request.user.get_full_name(),
         "recipient_phone": request.user.phone_number or "",
     }
@@ -167,6 +170,9 @@ def checkout(request):
             except OrderError as error:
                 messages.error(request, str(error))
                 return redirect("shop:cart")
+
+            if form.cleaned_data.get("save_address"):
+                save_default_address(request.user, form.cleaned_data)
 
             messages.success(request, f"سفارش #{order.pk} ثبت شد.")
             return redirect_to_gateway(request, order, order.get_absolute_url())
@@ -188,14 +194,18 @@ def checkout(request):
 @login_required
 def order_list(request):
     orders = request.user.orders.prefetch_related("items")
-    return render(request, "shop/order_list.html", {"orders": orders})
+    return render(request, "shop/order_list.html", {"orders": orders, "panel_section": "orders"})
 
 
 @login_required
 def order_detail(request, pk):
     # فقط سفارش‌های خود کاربر؛ شناسه‌ی سفارش دیگران 404 می‌دهد
     order = get_object_or_404(request.user.orders.prefetch_related("items"), pk=pk)
-    return render(request, "shop/order_detail.html", {"order": order})
+    return render(
+        request,
+        "shop/order_detail.html",
+        {"order": order, "panel_section": "order_detail", "panel_menu_key": "orders"},
+    )
 
 
 @login_required

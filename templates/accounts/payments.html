@@ -1,0 +1,40 @@
+{% extends "accounts/_panel.html" %}
+{% load clinic_tags jalali_tags %}
+
+{% block panel_content %}
+<div class="bg-white rounded-xxl sm:p-7.5 p-5">
+    <h2 class="text-xl font-bold mb-5">تاریخچه‌ی پرداخت‌ها</h2>
+    {% if payments %}
+    <div class="overflow-x-auto">
+        <table class="table-stack w-full text-center border-collapse min-w-180">
+            <thead>
+                <tr class="bg-light text-secondary">
+                    <th class="py-3.75 px-3 font-semibold">زمان</th>
+                    <th class="py-3.75 px-3 font-semibold">بابت</th>
+                    <th class="py-3.75 px-3 font-semibold">مبلغ</th>
+                    <th class="py-3.75 px-3 font-semibold">وضعیت</th>
+                    <th class="py-3.75 px-3 font-semibold">شماره‌ی پیگیری</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr class="border-b border-black/5">
+                    <td data-label="زمان" class="py-3.75 px-3">{{ payment.created_at|to_jalali:"%Y/%m/%d - %H:%M" }}</td>
+                    <td data-label="بابت" class="py-3.75 px-3">
+                        {% if payment.order_id %}<a href="{% url 'shop:order_detail' payment.order_id %}" class="text-primary">{{ payment.description }}</a>{% else %}{{ payment.description }}{% endif %}
+                    </td>
+                    <td data-label="مبلغ" class="py-3.75 px-3">{{ payment.amount|price }}</td>
+                    <td data-label="وضعیت" class="py-3.75 px-3">
+                        <span class="inline-block rounded-full px-3 py-1 text-sm {% if payment.status == 'paid' %}text-success bg-success-light{% elif payment.status == 'redirected' or payment.status == 'initiated' %}text-warning bg-warning-light{% else %}text-danger bg-danger-light{% endif %}">{{ payment.get_status_display }}</span>
+                    </td>
+                    <td data-label="شماره‌ی پیگیری" class="py-3.75 px-3"><span class="ltr-text">{{ payment.ref_id|default:"-" }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="mb-0">هنوز پرداختی انجام نداده‌اید.</p>
+    {% endif %}
+</div>
+{% endblock %}

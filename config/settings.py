@@ -157,7 +157,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 #USER MODEL CONFIG
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"
-LOGIN_REDIRECT_URL = "core:home"
+LOGIN_REDIRECT_URL = "accounts:dashboard"
 LOGOUT_REDIRECT_URL = "core:home"
 
 # SMS (بازیابی رمز). در Production: SMS_BACKEND=apps.accounts.sms.KavenegarSMSBackend

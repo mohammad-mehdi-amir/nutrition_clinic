@@ -1,0 +1,24 @@
+{% extends "accounts/_panel.html" %}
+
+{% block panel_content %}
+<div class="bg-white rounded-xxl sm:p-7.5 p-5">
+    <h2 class="text-xl font-bold mb-5">اطلاعات حساب</h2>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "includes/form_errors.html" %}
+        <div class="row">
+            <div class="sm:w-1/2 w-full">{% include "includes/form_field.html" with field=form.first_name %}</div>
+            <div class="sm:w-1/2 w-full">{% include "includes/form_field.html" with field=form.last_name %}</div>
+            <div class="sm:w-1/2 w-full">
+                <div class="relative w-full mb-6">
+                    <label class="block text-sm font-medium text-secondary mb-2" for="readonly-phone">شماره موبایل</label>
+                    <input id="readonly-phone" type="text" value="{{ user.phone_number|default:user.username }}" class="py-2.5 px-5 bg-light w-full outline-none text-black/60 rounded-2lg h-15 cursor-not-allowed" dir="ltr" readonly>
+                    <small class="block text-xs text-bodycolor mt-1.5">شماره موبایل نام کاربری شماست؛ برای تغییر آن با کلینیک تماس بگیرید.</small>
+                </div>
+            </div>
+            <div class="sm:w-1/2 w-full">{% include "includes/form_field.html" with field=form.email %}</div>
+        </div>
+        <button type="submit" class="btn btn-lg btn-primary">ذخیره‌ی تغییرات</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load account_tags %}
+{% comment %}
+چیدمان مشترک صفحات پنل کاربری.
+فرزند: block panel_content؛ متغیر panel_section بخش فعال منو و عنوان بنر را تعیین می‌کند (account_tags).
+{% endcomment %}
+
+{% block title %}{% panel_title panel_section %}{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block banner %}
+{% url 'accounts:dashboard' as dashboard_url %}
+{% panel_title panel_section as page_title %}
+{% if panel_section == "dashboard" %}
+{% include "includes/page_banner.html" with title="حساب کاربری" %}
+{% else %}
+{% include "includes/page_banner.html" with title=page_title parent_title="حساب کاربری" parent_url=dashboard_url %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="2xxl:py-25 md:py-17.5 py-10 bg-light">
+    <div class="container">
+        <div class="grid grid-cols-12 gap-7.5">
+            <aside class="lg:col-span-3 col-span-12">
+                <div class="bg-white rounded-xxl sm:p-6.25 p-5 lg:sticky lg:top-30">
+                    <div class="flex items-center gap-3.75 pb-5 mb-3.75 border-b border-black/5">
+                        <span class="size-12.5 min-w-12.5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-2xl"><i class="feather icon-user"></i></span>
+                        <div class="overflow-hidden">
+                            <p class="font-semibold text-secondary mb-0 truncate">{{ user.get_full_name|default:user.username }}</p>
+                            {% if user.phone_number %}<p class="text-sm mb-0 ltr-text">{{ user.phone_number }}</p>{% endif %}
+                        </div>
+                    </div>
+                    {% get_panel_menu as panel_menu %}
+                    {% firstof panel_menu_key panel_section as active_key %}
+                    <nav aria-label="منوی حساب کاربری">
+                        <ul class="flex lg:flex-col gap-1.25 max-lg:overflow-x-auto max-lg:-mx-1 max-lg:px-1 max-lg:pb-1.25 [scrollbar-width:thin]">
+                            {% for key, url_name, icon, label in panel_menu %}
+                            <li class="max-lg:shrink-0">
+                                <a href="{% url url_name %}" class="flex items-center gap-2.5 rounded-2lg px-3.75 py-2.5 whitespace-nowrap duration-300 {% if active_key == key %}bg-primary text-white{% else %}text-secondary hover:bg-light hover:text-primary{% endif %}" {% if active_key == key %}aria-current="page"{% endif %}>
+                                    <i class="feather {{ icon }} text-lg"></i><span>{{ label }}</span>
+                                </a>
+                            </li>
+                            {% endfor %}
+                            <li class="max-lg:shrink-0 lg:mt-2.5 lg:pt-2.5 lg:border-t lg:border-black/5">
+                                <form method="post" action="{% url 'accounts:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full flex items-center gap-2.5 rounded-2lg px-3.75 py-2.5 whitespace-nowrap text-danger hover:bg-danger-light cursor-pointer">
+                                        <i class="feather icon-log-out text-lg"></i><span>خروج</span>
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </aside>
+
+            <div class="lg:col-span-9 col-span-12 min-w-0">
+                {% block panel_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

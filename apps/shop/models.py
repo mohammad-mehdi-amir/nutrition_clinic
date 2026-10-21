@@ -188,6 +188,7 @@ class Order(models.Model):
     total = models.PositiveIntegerField(verbose_name="مبلغ نهایی (تومان)")
 
     payment_deadline = models.DateTimeField(null=True, blank=True, verbose_name="مهلت پرداخت")
+    paid_at = models.DateTimeField(null=True, blank=True, verbose_name="زمان پرداخت")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ثبت")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="آخرین تغییر")
 

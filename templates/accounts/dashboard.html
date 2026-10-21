@@ -1,0 +1,77 @@
+{% extends "accounts/_panel.html" %}
+{% load clinic_tags jalali_tags %}
+
+{% block panel_content %}
+<div class="bg-white rounded-xxl sm:p-7.5 p-5 mb-7.5">
+    <h2 class="text-2xl font-bold mb-1.25">سلام {{ user.first_name|default:"" }}، خوش آمدید</h2>
+    <p class="mb-0">خلاصه‌ی نوبت‌ها، سفارش‌ها و پکیج‌های شما در یک نگاه.</p>
+</div>
+
+{% if payments_needing_review %}
+<div class="py-3.75 px-5 text-base rounded relative mb-7.5 text-warning bg-warning-light leading-[1.9]">
+    {{ payments_needing_review }} پرداخت شما نیاز به بررسی دارد (مثلاً مهلت رزرو هنگام پرداخت تمام شده بود). همکاران ما برای بازگرداندن وجه با شما تماس می‌گیرند.
+</div>
+{% endif %}
+
+<div class="grid grid-cols-3 sm:gap-5 gap-2.5 mb-7.5">
+    <a href="{% url 'appointments:my_appointments' %}" class="bg-white rounded-xxl sm:p-5 p-3 flex max-sm:flex-col max-sm:text-center items-center sm:gap-3.75 gap-2 duration-300 hover:shadow-[0_10px_30px_rgba(var(--secondary-rgb),0.08)]">
+        <span class="size-12.5 min-w-12.5 rounded-full bg-primary text-white flex items-center justify-center text-xl"><i class="feather icon-calendar"></i></span>
+        <span><strong class="block text-2xl text-secondary">{{ upcoming_count }}</strong><span class="sm:text-sm text-xs">نوبت پیش‌رو</span></span>
+    </a>
+    <a href="{% url 'shop:order_list' %}" class="bg-white rounded-xxl sm:p-5 p-3 flex max-sm:flex-col max-sm:text-center items-center sm:gap-3.75 gap-2 duration-300 hover:shadow-[0_10px_30px_rgba(var(--secondary-rgb),0.08)]">
+        <span class="size-12.5 min-w-12.5 rounded-full bg-secondary text-white flex items-center justify-center text-xl"><i class="feather icon-shopping-bag"></i></span>
+        <span><strong class="block text-2xl text-secondary">{{ orders_count }}</strong><span class="sm:text-sm text-xs">سفارش</span></span>
+    </a>
+    <a href="{% url 'accounts:packages' %}" class="bg-white rounded-xxl sm:p-5 p-3 flex max-sm:flex-col max-sm:text-center items-center sm:gap-3.75 gap-2 duration-300 hover:shadow-[0_10px_30px_rgba(var(--secondary-rgb),0.08)]">
+        <span class="size-12.5 min-w-12.5 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xl"><i class="feather icon-clipboard"></i></span>
+        <span><strong class="block text-2xl text-secondary">{{ active_packages|length }}</strong><span class="sm:text-sm text-xs">پکیج فعال</span></span>
+    </a>
+</div>
+
+{% if awaiting_payment_count %}
+<div class="py-3.75 px-5 text-base rounded relative mb-7.5 text-info bg-info-light flex flex-wrap items-center justify-between gap-3.75">
+    <span>{{ awaiting_payment_count }} نوبت در انتظار پرداخت دارید.</span>
+    <a href="{% url 'appointments:my_appointments' %}" class="btn btn-sm btn-primary">پرداخت</a>
+</div>
+{% endif %}
+
+<div class="bg-white rounded-xxl sm:p-7.5 p-5 mb-7.5">
+    <div class="flex flex-wrap justify-between items-center gap-3.75 mb-5">
+        <h3 class="text-xl font-bold mb-0">نوبت‌های پیش‌رو</h3>
+        <a href="{% url 'appointments:book_appointment' %}" class="btn btn-sm btn-primary">رزرو نوبت جدید</a>
+    </div>
+    {% if upcoming_appointments %}
+    <ul>
+        {% for appointment in upcoming_appointments %}
+        <li class="flex flex-wrap items-center justify-between gap-3 py-3.75 {% if not forloop.last %}border-b border-black/5{% endif %}">
+            <span class="font-semibold text-secondary">{{ appointment.availability.doctor.name }}</span>
+            <span class="sm:text-sm text-xs">{{ appointment.date|to_jalali:"%Y/%m/%d" }} — ساعت {{ appointment.start_time|time:"H:i" }}</span>
+            <span class="inline-block rounded-full px-3 py-1 text-sm {% if appointment.status == 'confirmed' %}text-success bg-success-light{% else %}text-warning bg-warning-light{% endif %}">{{ appointment.get_status_display }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="mb-0">نوبت پیش‌رویی ندارید.</p>
+    {% endif %}
+</div>
+
+<div class="bg-white rounded-xxl sm:p-7.5 p-5">
+    <div class="flex flex-wrap justify-between items-center gap-3.75 mb-5">
+        <h3 class="text-xl font-bold mb-0">آخرین سفارش‌ها</h3>
+        <a href="{% url 'shop:order_list' %}" class="text-primary font-semibold">همه‌ی سفارش‌ها</a>
+    </div>
+    {% if recent_orders %}
+    <ul>
+        {% for order in recent_orders %}
+        <li class="flex flex-wrap items-center justify-between gap-3 py-3.75 {% if not forloop.last %}border-b border-black/5{% endif %}">
+            <a href="{{ order.get_absolute_url }}" class="font-semibold text-secondary">سفارش #{{ order.pk }}</a>
+            <span class="sm:text-sm text-xs">{{ order.created_at|to_jalali:"%Y/%m/%d" }} — {{ order.total|price }}</span>
+            {% include "shop/_status_badge.html" %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="mb-0">هنوز سفارشی ثبت نکرده‌اید. <a href="{% url 'shop:product_list' %}" class="text-primary">رفتن به فروشگاه</a></p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,17 +1,8 @@
-{% extends "base.html" %}
+{% extends "accounts/_panel.html" %}
 {% load jalali_tags clinic_tags %}
 
-{% block title %}نوبت‌های من{% endblock %}
-{% block meta_robots %}noindex, nofollow{% endblock %}
-
-{% block banner %}
-{% include "includes/page_banner.html" with title="نوبت‌های من" %}
-{% endblock %}
-
-{% block content %}
-<section class="2xxl:py-25 md:py-17.5 py-10 bg-light">
-    <div class="container">
-        <div class="bg-white sm:rounded-3xl rounded-xxl sm:p-10 p-6.25 shadow-[0_10px_30px_rgba(var(--secondary-rgb),0.08)]">
+{% block panel_content %}
+        <div class="bg-white rounded-xxl sm:p-7.5 p-5">
             <div class="flex flex-wrap gap-5 justify-between items-center mb-7.5">
                 <div>
                     <h2 class="text-2xxl font-bold mb-1.25">نوبت‌های من</h2>
@@ -82,6 +73,4 @@
             </div>
             {% endif %}
         </div>
-    </div>
-</section>
 {% endblock %}

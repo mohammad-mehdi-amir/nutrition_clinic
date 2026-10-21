@@ -51,6 +51,7 @@
                                 <ul class="list-hover1">
                                     <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'appointments:book_appointment' %}"><span>رزرو نوبت</span></a></li>
                                     {% if user.is_authenticated %}
+                                    <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'accounts:dashboard' %}"><span>حساب کاربری</span></a></li>
                                     <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'appointments:my_appointments' %}"><span>نوبت‌های من</span></a></li>
                                     <li class="relative py-2 text-2sm leading-5 font-medium"><a href="{% url 'shop:order_list' %}"><span>سفارش‌های من</span></a></li>
                                     {% else %}

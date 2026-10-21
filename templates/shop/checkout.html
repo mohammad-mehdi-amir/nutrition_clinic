@@ -25,6 +25,11 @@
                     <div class="sm:w-1/3 w-full">{% include "includes/form_field.html" with field=form.city %}</div>
                     <div class="sm:w-1/3 w-full">{% include "includes/form_field.html" with field=form.postal_code %}</div>
                     <div class="w-full">{% include "includes/form_field.html" with field=form.address %}</div>
+                    <div class="w-full mb-5">
+                        <label class="inline-flex items-center gap-2.5 cursor-pointer">
+                            {{ form.save_address }}<span>{{ form.save_address.label }}</span>
+                        </label>
+                    </div>
                     {% else %}
                     <p class="w-full text-sm mb-5">سبد شما فقط شامل پکیج رژیم است و نیازی به نشانی ارسال نیست.</p>
                     {% endif %}

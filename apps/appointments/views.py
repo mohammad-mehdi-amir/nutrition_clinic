@@ -208,6 +208,7 @@ def my_appointments(request):
         "appointments/my_appointments.html",
         {
             "appointments": appointments,
+            "panel_section": "appointments",
         },
     )
     

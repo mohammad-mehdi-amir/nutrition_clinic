@@ -1,11 +1,18 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User
+from .models import ShippingAddress, User
+
+
+class ShippingAddressInline(admin.StackedInline):
+    model = ShippingAddress
+    extra = 0
+    can_delete = True
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
+    inlines = [ShippingAddressInline]
     fieldsets = BaseUserAdmin.fieldsets + (
         ("اطلاعات تماس", {"fields": ("phone_number",)}),
     )

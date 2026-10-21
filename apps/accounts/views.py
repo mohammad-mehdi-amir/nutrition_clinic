@@ -1,11 +1,32 @@
 from django.contrib import messages
 from django.contrib.auth import login
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from .forms import LoginForm, PasswordResetRequestForm, PasswordResetVerifyForm, RegisterForm
-from .services import ResetError, request_reset_code, verify_and_reset
+from apps.payments.models import Payment
+from apps.shop.forms import ShippingAddressForm
+from apps.shop.locations import get_locations
+from apps.shop.services import get_purchased_packages
+from .forms import (
+    LoginForm,
+    PasswordResetRequestForm,
+    PasswordResetVerifyForm,
+    ProfileForm,
+    RegisterForm,
+    UserPasswordChangeForm,
+)
+from .models import ShippingAddress
+from .services import (
+    ResetError,
+    get_dashboard_summary,
+    request_reset_code,
+    save_default_address,
+    verify_and_reset,
+)
 
 
 class UserLoginView(LoginView):
@@ -16,7 +37,7 @@ class UserLoginView(LoginView):
 
 def register(request):
     if request.user.is_authenticated:
-        return redirect("core:home")
+        return redirect("accounts:dashboard")
 
     next_url = request.POST.get("next") or request.GET.get("next")
 
@@ -35,7 +56,7 @@ def register(request):
             ):
                 return redirect(next_url)
 
-            return redirect("core:home")
+            return redirect("accounts:dashboard")
     else:
         form = RegisterForm()
 
@@ -98,4 +119,89 @@ def password_reset_verify(request):
         request,
         "accounts/password_reset_verify.html",
         {"form": form, "phone": phone},
+    )
+
+
+# ---------- پنل کاربری ----------
+
+@login_required
+def dashboard(request):
+    return render(
+        request,
+        "accounts/dashboard.html",
+        {"panel_section": "dashboard", **get_dashboard_summary(request.user)},
+    )
+
+
+@login_required
+def profile(request):
+    if request.method == "POST":
+        form = ProfileForm(request.POST, instance=request.user)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, "اطلاعات حساب شما به‌روز شد.")
+            return redirect("accounts:profile")
+    else:
+        form = ProfileForm(instance=request.user)
+
+    return render(request, "accounts/profile.html", {"form": form, "panel_section": "profile"})
+
+
+class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    """Django همچنان session کاربر را پس از تغییر رمز معتبر نگه می‌دارد."""
+
+    template_name = "accounts/password_change.html"
+    form_class = UserPasswordChangeForm
+    success_url = reverse_lazy("accounts:profile")
+    extra_context = {"panel_section": "password"}
+
+    def form_valid(self, form):
+        messages.success(self.request, "رمز عبور شما تغییر کرد.")
+        return super().form_valid(form)
+
+
+@login_required
+def address(request):
+    current = ShippingAddress.objects.filter(user=request.user).first()
+    initial = current.as_initial() if current else {
+        "recipient_name": request.user.get_full_name(),
+        "recipient_phone": request.user.phone_number or "",
+    }
+
+    if request.method == "POST":
+        form = ShippingAddressForm(request.POST)
+
+        if form.is_valid():
+            save_default_address(request.user, form.cleaned_data)
+            messages.success(request, "نشانی پیش‌فرض ذخیره شد و در خریدهای بعدی به‌صورت خودکار پر می‌شود.")
+            return redirect("accounts:address")
+    else:
+        form = ShippingAddressForm(initial=initial)
+
+    return render(
+        request,
+        "accounts/address.html",
+        {"form": form, "panel_section": "address", "iran_locations": get_locations()},
+    )
+
+
+@login_required
+def packages(request):
+    return render(
+        request,
+        "accounts/packages.html",
+        {"packages": get_purchased_packages(request.user), "panel_section": "packages"},
+    )
+
+
+@login_required
+def payments(request):
+    return render(
+        request,
+        "accounts/payments.html",
+        {
+            "payments": Payment.objects.filter(user=request.user).select_related("appointment", "order"),
+            "panel_section": "payments",
+        },
     )

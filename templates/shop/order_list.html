@@ -1,17 +1,9 @@
-{% extends "base.html" %}
+{% extends "accounts/_panel.html" %}
 {% load clinic_tags jalali_tags %}
 
-{% block title %}سفارش‌های من{% endblock %}
-{% block meta_robots %}noindex, nofollow{% endblock %}
-
-{% block banner %}
-{% include "includes/page_banner.html" with title="سفارش‌های من" %}
-{% endblock %}
-
-{% block content %}
-<section class="2xxl:py-25 md:py-17.5 py-10 bg-light">
-    <div class="container">
-        <div class="bg-white sm:rounded-3xl rounded-xxl sm:p-10 p-6.25">
+{% block panel_content %}
+        <div class="bg-white rounded-xxl sm:p-7.5 p-5">
+            <h2 class="text-xl font-bold mb-5">سفارش‌های من</h2>
             {% if orders %}
             <div class="overflow-x-auto">
                 <table class="table-stack w-full text-center border-collapse min-w-180">
@@ -46,6 +38,4 @@
             </div>
             {% endif %}
         </div>
-    </div>
-</section>
 {% endblock %}

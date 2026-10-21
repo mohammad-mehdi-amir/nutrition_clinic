@@ -100,7 +100,7 @@
                             </li>
                             <li class="inline-block">
                                 {% if user.is_authenticated %}
-                                <a href="{% url 'appointments:my_appointments' %}" class="min-w-10 flex align-center justify-center align-middle relative" title="نوبت‌های من" aria-label="نوبت‌های من">
+                                <a href="{% url 'accounts:dashboard' %}" class="min-w-10 flex align-center justify-center align-middle relative" title="حساب کاربری" aria-label="حساب کاربری">
                                     <i class="feather icon-user text-[30px] text-secondary"></i>
                                 </a>
                                 {% else %}

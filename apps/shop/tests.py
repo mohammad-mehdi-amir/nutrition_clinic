@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from apps.core.models import SiteSettings
 from .cart import CartLine
-from .models import Category, Order, Product
+from .models import Category, Order, OrderItem, Product
 from .services import calculate_totals, expire_pending_orders
 
 SHIPPING = {
@@ -292,3 +292,70 @@ class CheckoutLocationTests(TestCase):
         self.assertContains(response, 'id="iran-locations"')
         self.assertContains(response, "data-province-select")
         self.assertContains(response, "js/province-city.js")
+
+
+class PurchasedPackageAndAddressTests(TestCase):
+
+    def setUp(self):
+        SiteSettings.objects.create(clinic_name="c", phone="1")
+        self.user = get_user_model().objects.create_user(username="09120000009", phone_number="09120000009", password="x")
+        self.client.force_login(self.user)
+
+    def _order_with(self, product, status, user=None, paid_at=None):
+        order = Order.objects.create(
+            user=user or self.user, recipient_name="x", recipient_phone="09120000009",
+            subtotal=product.price, total=product.price, status=status, paid_at=paid_at,
+        )
+        OrderItem.objects.create(order=order, product=product, product_name=product.name, product_type=product.product_type,
+                                 unit_price=product.price, quantity=1, line_total=product.price)
+        return order
+
+    def test_mark_order_paid_sets_paid_at(self):
+        from .services import mark_order_paid
+        order = self._order_with(make_physical(), Order.STATUS_PENDING)
+        mark_order_paid(order)
+        order.refresh_from_db()
+        self.assertIsNotNone(order.paid_at)
+
+    def test_purchased_packages_dates_and_filters(self):
+        from .services import get_purchased_packages
+        package = make_package(name="کتو")  # 30 روز
+        paid_at = timezone.now() - timedelta(days=10)
+        self._order_with(package, Order.STATUS_PAID, paid_at=paid_at)
+        self._order_with(make_package(name="پرداخت‌نشده"), Order.STATUS_PENDING)
+        other = get_user_model().objects.create_user(username="other")
+        self._order_with(make_package(name="دیگری"), Order.STATUS_PAID, user=other, paid_at=timezone.now())
+
+        packages = get_purchased_packages(self.user)
+
+        self.assertEqual([p.item.product_name for p in packages], ["کتو"])
+        self.assertEqual(packages[0].ends_at, paid_at + timedelta(days=30))
+        self.assertTrue(packages[0].is_active)
+        self.assertIn(packages[0].days_left, (19, 20))
+
+    def test_expired_package(self):
+        from .services import get_purchased_packages
+        self._order_with(make_package(), Order.STATUS_COMPLETED, paid_at=timezone.now() - timedelta(days=40))
+        self.assertFalse(get_purchased_packages(self.user)[0].is_active)
+
+    def test_checkout_prefills_and_saves_default_address(self):
+        from apps.accounts.models import ShippingAddress
+        ShippingAddress.objects.create(user=self.user, recipient_name="ذخیره‌شده", recipient_phone="09121234567",
+                                       province="قم", city="قم", address="کوچه یک", postal_code="1111111111")
+        product = make_physical()
+        self.client.post(reverse("shop:cart_add", args=[product.pk]))
+
+        page = self.client.get(reverse("shop:checkout"))
+        self.assertContains(page, "ذخیره‌شده")
+        self.assertContains(page, "کوچه یک")
+
+        self.client.post(reverse("shop:checkout"), {**SHIPPING, "save_address": "on"})
+        self.assertEqual(ShippingAddress.objects.get(user=self.user).city, "تهران")
+
+    def test_checkout_without_save_keeps_old_address(self):
+        from apps.accounts.models import ShippingAddress
+        ShippingAddress.objects.create(user=self.user, recipient_name="قدیمی", recipient_phone="09121234567",
+                                       province="قم", city="قم", address="کوچه یک", postal_code="1111111111")
+        self.client.post(reverse("shop:cart_add", args=[make_physical().pk]))
+        self.client.post(reverse("shop:checkout"), SHIPPING)  # بدون save_address
+        self.assertEqual(ShippingAddress.objects.get(user=self.user).city, "قم")

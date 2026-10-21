@@ -1,0 +1,27 @@
+{% extends "accounts/_panel.html" %}
+{% load static %}
+
+{% block panel_content %}
+<div class="bg-white rounded-xxl sm:p-7.5 p-5">
+    <h2 class="text-xl font-bold mb-2.5">نشانی پیش‌فرض</h2>
+    <p class="mb-5">این نشانی در خریدهای بعدی به‌صورت خودکار در فرم تسویه‌حساب قرار می‌گیرد.</p>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "includes/form_errors.html" %}
+        <div class="row">
+            <div class="sm:w-1/2 w-full">{% include "includes/form_field.html" with field=form.recipient_name %}</div>
+            <div class="sm:w-1/2 w-full">{% include "includes/form_field.html" with field=form.recipient_phone %}</div>
+            <div class="sm:w-1/3 w-full">{% include "includes/form_field.html" with field=form.province %}</div>
+            <div class="sm:w-1/3 w-full">{% include "includes/form_field.html" with field=form.city %}</div>
+            <div class="sm:w-1/3 w-full">{% include "includes/form_field.html" with field=form.postal_code %}</div>
+            <div class="w-full">{% include "includes/form_field.html" with field=form.address %}</div>
+        </div>
+        <button type="submit" class="btn btn-lg btn-primary">ذخیره‌ی نشانی</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ iran_locations|json_script:"iran-locations" }}
+<script src="{% static 'js/province-city.js' %}"></script>
+{% endblock %}

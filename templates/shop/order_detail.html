@@ -1,19 +1,11 @@
-{% extends "base.html" %}
+{% extends "accounts/_panel.html" %}
 {% load clinic_tags jalali_tags %}
 
 {% block title %}سفارش #{{ order.pk }}{% endblock %}
-{% block meta_robots %}noindex, nofollow{% endblock %}
 
-{% block banner %}
-{% url 'shop:order_list' as orders_url %}
-{% include "includes/page_banner.html" with title="جزئیات سفارش" parent_title="سفارش‌های من" parent_url=orders_url %}
-{% endblock %}
-
-{% block content %}
-<section class="2xxl:py-25 md:py-17.5 py-10 bg-light">
-    <div class="container">
+{% block panel_content %}
         <div class="grid grid-cols-12 gap-7.5">
-            <div class="lg:col-span-8 col-span-12 bg-white rounded-xxl sm:p-7.5 p-5">
+            <div class="xl:col-span-8 col-span-12 bg-white rounded-xxl sm:p-7.5 p-5">
                 <div class="flex flex-wrap justify-between items-center gap-3.75 mb-5">
                     <h2 class="text-2xl font-bold mb-0">سفارش #{{ order.pk }}</h2>
                     {% include "shop/_status_badge.html" %}
@@ -49,7 +41,7 @@
                 {% endif %}
             </div>
 
-            <div class="lg:col-span-4 col-span-12">
+            <div class="xl:col-span-4 col-span-12">
                 <div class="bg-white rounded-xxl sm:p-7.5 p-5">
                     <h2 class="text-xl font-bold mb-3.75">مبلغ سفارش</h2>
                     <ul class="text-base">
@@ -78,6 +70,4 @@
                 </div>
             </div>
         </div>
-    </div>
-</section>
 {% endblock %}

@@ -101,3 +101,39 @@ def verify_and_reset(phone, code, new_password):
         raise ResetError("کد واردشده صحیح نیست.")
 
     return user
+
+
+def get_dashboard_summary(user):
+    """داده‌ی داشبورد کاربر؛ همه‌ی کوئری‌ها محدود به خود کاربر."""
+    from apps.appointments.models import ACTIVE_APPOINTMENT_STATUSES
+    from apps.payments.models import Payment
+    from apps.shop.services import get_purchased_packages
+
+    today = timezone.localdate()
+    appointments = user.appointments.select_related("availability__doctor")
+
+    upcoming = appointments.filter(
+        date__gte=today,
+        status__in=ACTIVE_APPOINTMENT_STATUSES,
+    ).order_by("date", "start_time")
+
+    packages = get_purchased_packages(user)
+
+    return {
+        "upcoming_appointments": upcoming[:3],
+        "upcoming_count": upcoming.count(),
+        "awaiting_payment_count": appointments.filter(status="pending", payment_status="unpaid").count(),
+        "recent_orders": user.orders.prefetch_related("items")[:3],
+        "orders_count": user.orders.count(),
+        "active_packages": [p for p in packages if p.is_active],
+        "payments_needing_review": Payment.objects.filter(user=user, needs_review=True).count(),
+    }
+
+
+def save_default_address(user, data):
+    """ذخیره/به‌روزرسانی نشانی پیش‌فرض از cleaned_data فرم نشانی یا تسویه‌حساب."""
+    from .models import ShippingAddress
+
+    values = {name: data[name] for name in ShippingAddress.FIELDS}
+    address, _ = ShippingAddress.objects.update_or_create(user=user, defaults=values)
+    return address

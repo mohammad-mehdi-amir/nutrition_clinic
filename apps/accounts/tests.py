@@ -20,7 +20,7 @@ class RegisterTests(TestCase):
     def test_register_creates_user_with_phone_as_username_and_logs_in(self):
         response = self.client.post(reverse("accounts:register"), self._data())
 
-        self.assertRedirects(response, reverse("core:home"))
+        self.assertRedirects(response, reverse("accounts:dashboard"))
         user = User.objects.get()
         self.assertEqual(user.username, "09121234567")
         self.assertEqual(user.phone_number, "09121234567")
@@ -53,7 +53,7 @@ class RegisterTests(TestCase):
             reverse("accounts:register"),
             self._data(next="https://evil.example.com/"),
         )
-        self.assertRedirects(response, reverse("core:home"))
+        self.assertRedirects(response, reverse("accounts:dashboard"))
 
 
 class LoginLogoutTests(TestCase):
@@ -77,7 +77,7 @@ class LoginLogoutTests(TestCase):
             reverse("accounts:login"),
             {"username": "۰۹۱۲۱۲۳۴۵۶۷", "password": "Str0ng-Pass-9876"},
         )
-        self.assertRedirects(response, reverse("core:home"))
+        self.assertRedirects(response, reverse("accounts:dashboard"))
 
     def test_logout_requires_post(self):
         self.client.force_login(self.user)
@@ -192,3 +192,87 @@ class PasswordResetTests(TestCase):
 
     def test_login_page_links_to_reset(self):
         self.assertContains(self.client.get(reverse("accounts:login")), reverse("accounts:password_reset"))
+
+
+
+class AccountPanelTests(TestCase):
+
+    PANEL_URLS = ["dashboard", "profile", "password_change", "address", "packages", "payments"]
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="09121112233", phone_number="09121112233", password="Old-Pass-1234",
+            first_name="سارا", last_name="احمدی",
+        )
+        self.other = User.objects.create_user(username="09124445566", phone_number="09124445566", password="x")
+
+    def test_panel_pages_require_login(self):
+        for name in self.PANEL_URLS:
+            with self.subTest(page=name):
+                response = self.client.get(reverse(f"accounts:{name}"))
+                self.assertEqual(response.status_code, 302)
+                self.assertIn(reverse("accounts:login"), response["Location"])
+
+    def test_panel_pages_render(self):
+        self.client.force_login(self.user)
+        for name in self.PANEL_URLS + []:
+            with self.subTest(page=name):
+                response = self.client.get(reverse(f"accounts:{name}"))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "منوی حساب کاربری")
+        for url in [reverse("appointments:my_appointments"), reverse("shop:order_list")]:
+            self.assertContains(self.client.get(url), "منوی حساب کاربری")
+
+    def test_profile_update_cannot_change_phone(self):
+        self.client.force_login(self.user)
+        response = self.client.post(reverse("accounts:profile"), {
+            "first_name": "مریم", "last_name": "رضایی", "email": "m@example.com",
+            "phone_number": "09350000000", "username": "hacker",
+        })
+        self.assertRedirects(response, reverse("accounts:profile"))
+        self.user.refresh_from_db()
+        self.assertEqual((self.user.first_name, self.user.email), ("مریم", "m@example.com"))
+        self.assertEqual((self.user.phone_number, self.user.username), ("09121112233", "09121112233"))
+
+    def test_password_change(self):
+        self.client.force_login(self.user)
+        url = reverse("accounts:password_change")
+
+        wrong = self.client.post(url, {"old_password": "bad", "new_password1": "New-Pass-98765", "new_password2": "New-Pass-98765"})
+        self.assertEqual(wrong.status_code, 200)
+
+        weak = self.client.post(url, {"old_password": "Old-Pass-1234", "new_password1": "123", "new_password2": "123"})
+        self.assertEqual(weak.status_code, 200)
+
+        ok = self.client.post(url, {"old_password": "Old-Pass-1234", "new_password1": "New-Pass-98765", "new_password2": "New-Pass-98765"})
+        self.assertRedirects(ok, reverse("accounts:profile"))
+        # session معتبر می‌ماند
+        self.assertEqual(self.client.get(reverse("accounts:dashboard")).status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("New-Pass-98765"))
+
+    def test_address_saved_and_city_validated(self):
+        from .models import ShippingAddress
+        self.client.force_login(self.user)
+        data = {"recipient_name": "سارا", "recipient_phone": "09121112233", "province": "تهران", "city": "مشهد", "address": "خیابان یک", "postal_code": "1234567890"}
+
+        bad = self.client.post(reverse("accounts:address"), data)
+        self.assertEqual(bad.status_code, 200)
+        self.assertFalse(ShippingAddress.objects.exists())
+
+        data["city"] = "تهران"
+        self.assertRedirects(self.client.post(reverse("accounts:address"), data), reverse("accounts:address"))
+        self.assertEqual(ShippingAddress.objects.get(user=self.user).city, "تهران")
+
+    def test_payments_page_shows_only_own_payments(self):
+        from apps.payments.models import Payment
+        from apps.shop.models import Order
+        mine = Order.objects.create(user=self.user, recipient_name="a", recipient_phone="09121112233", subtotal=1, total=111_111)
+        theirs = Order.objects.create(user=self.other, recipient_name="b", recipient_phone="09124445566", subtotal=1, total=999_999)
+        Payment.objects.create(user=self.user, order=mine, gateway="fake", amount=111_111, status="paid", ref_id="MINE1")
+        Payment.objects.create(user=self.other, order=theirs, gateway="fake", amount=999_999, status="paid", ref_id="THEIRS1")
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("accounts:payments"))
+        self.assertContains(response, "MINE1")
+        self.assertNotContains(response, "THEIRS1")

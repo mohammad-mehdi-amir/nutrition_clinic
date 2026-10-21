@@ -173,7 +173,8 @@ def mark_order_paid(order):
         if order.status == Order.STATUS_PENDING:
             order.status = Order.STATUS_PAID
             order.payment_deadline = None
-            order.save(update_fields=["status", "payment_deadline", "updated_at"])
+            order.paid_at = timezone.now()
+            order.save(update_fields=["status", "payment_deadline", "paid_at", "updated_at"])
             return True
 
         if order.status != Order.STATUS_CANCELLED:
@@ -195,5 +196,53 @@ def mark_order_paid(order):
             product.save(update_fields=["stock", "updated_at"])
 
         order.status = Order.STATUS_PAID
-        order.save(update_fields=["status", "updated_at"])
+        order.paid_at = timezone.now()
+        order.save(update_fields=["status", "paid_at", "updated_at"])
         return True
+
+
+PAID_ORDER_STATUSES = (
+    Order.STATUS_PAID,
+    Order.STATUS_PROCESSING,
+    Order.STATUS_SHIPPED,
+    Order.STATUS_COMPLETED,
+)
+
+
+@dataclass
+class PurchasedPackage:
+    item: OrderItem
+    order: Order
+    duration_days: int
+    starts_at: object
+    ends_at: object
+
+    @property
+    def is_active(self):
+        return self.ends_at is not None and timezone.now() < self.ends_at
+
+    @property
+    def days_left(self):
+        if not self.is_active:
+            return 0
+        return max(0, (self.ends_at - timezone.now()).days)
+
+
+def get_purchased_packages(user):
+    """پکیج‌های خریداری‌شده (فقط سفارش‌های پرداخت‌شده‌ی خود کاربر)، جدیدترین اول."""
+    items = (
+        OrderItem.objects
+        .filter(order__user=user, order__status__in=PAID_ORDER_STATUSES, product_type=Product.TYPE_PACKAGE)
+        .select_related("order", "product")
+        .order_by("-order__paid_at", "-order__created_at")
+    )
+
+    packages = []
+    for item in items:
+        # مدت اعتبار از محصول؛ اگر محصول حذف شده باشد نامشخص است
+        duration = item.product.duration_days if item.product_id and item.product.duration_days else 0
+        starts_at = item.order.paid_at or item.order.created_at
+        ends_at = starts_at + timedelta(days=duration) if duration else None
+        packages.append(PurchasedPackage(item, item.order, duration, starts_at, ends_at))
+
+    return packages
