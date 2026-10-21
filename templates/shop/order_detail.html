@@ -21,7 +21,7 @@
                 <p class="text-sm mb-5">ثبت‌شده در {{ order.created_at|to_jalali:"%Y/%m/%d - %H:%M" }}</p>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full border-collapse min-w-125">
+                    <table class="table-stack w-full border-collapse min-w-125">
                         <thead>
                             <tr class="bg-light text-secondary text-start">
                                 <th class="py-3 px-3 font-semibold text-start">محصول</th>
@@ -34,9 +34,9 @@
                             {% for item in order.items.all %}
                             <tr class="border-b border-black/5 text-center">
                                 <td class="py-3 px-3 text-start">{{ item.product_name }}<small class="block text-xs">{{ item.get_product_type_display }}</small></td>
-                                <td class="py-3 px-3">{{ item.unit_price|price }}</td>
-                                <td class="py-3 px-3">{{ item.quantity }}</td>
-                                <td class="py-3 px-3 font-semibold">{{ item.line_total|price }}</td>
+                                <td data-label="قیمت واحد" class="py-3 px-3">{{ item.unit_price|price }}</td>
+                                <td data-label="تعداد" class="py-3 px-3">{{ item.quantity }}</td>
+                                <td data-label="جمع" class="py-3 px-3 font-semibold">{{ item.line_total|price }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

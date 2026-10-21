@@ -71,3 +71,52 @@ body jdp-container {
     font-family: var(--font-base);
     border-radius: 15px;
 }
+
+/* ---------- جدول‌های پاسخ‌گو: در موبایل هر سطر یک کارت ----------
+ * استفاده: class="table-stack" روی <table> و data-label روی هر <td>
+ */
+@media (max-width: 767px) {
+    .table-stack {
+        min-width: 0 !important;
+    }
+
+    .table-stack thead {
+        display: none;
+    }
+
+    .table-stack tbody tr {
+        display: block;
+        border: 1px solid #E1EBF1;
+        border-radius: 15px;
+        padding: 6px 16px;
+        margin-bottom: 12px;
+        background: #fff;
+    }
+
+    .table-stack tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 8px 0 !important;
+        text-align: end !important;
+        border-bottom: 1px dashed #E1EBF1;
+    }
+
+    .table-stack tbody td:last-child {
+        border-bottom: 0;
+    }
+
+    .table-stack tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--heading-color);
+        text-align: start;
+        flex-shrink: 0;
+    }
+
+    .table-stack tbody td:not([data-label])::before,
+    .table-stack tbody td[data-label=""]::before {
+        content: none;
+    }
+}

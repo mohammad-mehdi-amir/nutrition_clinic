@@ -22,7 +22,7 @@
 
             {% if appointments %}
             <div class="overflow-x-auto">
-                <table class="w-full text-center border-collapse min-w-200">
+                <table class="table-stack w-full text-center border-collapse min-w-200">
                     <thead>
                         <tr class="bg-light text-secondary">
                             <th class="py-3.75 px-3 font-semibold">پزشک</th>
@@ -37,12 +37,12 @@
                     <tbody>
                         {% for appointment in appointments %}
                         <tr class="border-b border-black/5">
-                            <td class="py-3.75 px-3 font-semibold text-secondary">{{ appointment.availability.doctor.name }}</td>
-                            <td class="py-3.75 px-3">{{ appointment.availability.doctor.specialty }}</td>
-                            <td class="py-3.75 px-3">{{ appointment.date|to_jalali:"%Y/%m/%d" }}</td>
-                            <td class="py-3.75 px-3">{{ appointment.start_time|time:"H:i" }}</td>
-                            <td class="py-3.75 px-3">{% if appointment.fee %}{{ appointment.fee|price }}<small class="block text-xs">{{ appointment.get_payment_status_display }}</small>{% else %}رایگان{% endif %}</td>
-                            <td class="py-3.75 px-3">
+                            <td data-label="پزشک" class="py-3.75 px-3 font-semibold text-secondary">{{ appointment.availability.doctor.name }}</td>
+                            <td data-label="تخصص" class="py-3.75 px-3">{{ appointment.availability.doctor.specialty }}</td>
+                            <td data-label="تاریخ" class="py-3.75 px-3">{{ appointment.date|to_jalali:"%Y/%m/%d" }}</td>
+                            <td data-label="ساعت" class="py-3.75 px-3">{{ appointment.start_time|time:"H:i" }}</td>
+                            <td data-label="هزینه" class="py-3.75 px-3">{% if appointment.fee %}{{ appointment.fee|price }}<small class="block text-xs">{{ appointment.get_payment_status_display }}</small>{% else %}رایگان{% endif %}</td>
+                            <td data-label="وضعیت" class="py-3.75 px-3">
                                 {% if appointment.status == "pending" %}
                                 <span class="inline-block rounded-full px-3 py-1 text-sm text-warning bg-warning-light">{{ appointment.get_status_display }}</span>
                                 {% elif appointment.status == "confirmed" %}

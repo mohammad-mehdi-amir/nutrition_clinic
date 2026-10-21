@@ -14,7 +14,7 @@
         <div class="bg-white sm:rounded-3xl rounded-xxl sm:p-10 p-6.25">
             {% if orders %}
             <div class="overflow-x-auto">
-                <table class="w-full text-center border-collapse min-w-180">
+                <table class="table-stack w-full text-center border-collapse min-w-180">
                     <thead>
                         <tr class="bg-light text-secondary">
                             <th class="py-3.75 px-3 font-semibold">شماره</th>
@@ -28,11 +28,11 @@
                     <tbody>
                         {% for order in orders %}
                         <tr class="border-b border-black/5">
-                            <td class="py-3.75 px-3 font-semibold text-secondary">#{{ order.pk }}</td>
-                            <td class="py-3.75 px-3">{{ order.created_at|to_jalali:"%Y/%m/%d" }}</td>
-                            <td class="py-3.75 px-3">{{ order.items.all|length }} قلم</td>
-                            <td class="py-3.75 px-3">{{ order.total|price }}</td>
-                            <td class="py-3.75 px-3">{% include "shop/_status_badge.html" %}</td>
+                            <td data-label="شماره" class="py-3.75 px-3 font-semibold text-secondary">#{{ order.pk }}</td>
+                            <td data-label="تاریخ" class="py-3.75 px-3">{{ order.created_at|to_jalali:"%Y/%m/%d" }}</td>
+                            <td data-label="اقلام" class="py-3.75 px-3">{{ order.items.all|length }} قلم</td>
+                            <td data-label="مبلغ" class="py-3.75 px-3">{{ order.total|price }}</td>
+                            <td data-label="وضعیت" class="py-3.75 px-3">{% include "shop/_status_badge.html" %}</td>
                             <td class="py-3.75 px-3"><a href="{{ order.get_absolute_url }}" class="text-primary font-semibold">جزئیات</a></td>
                         </tr>
                         {% endfor %}

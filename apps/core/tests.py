@@ -67,6 +67,7 @@ class PublicPagesTests(TestCase):
         response = self.client.get("/page-that-does-not-exist/")
         self.assertEqual(response.status_code, 404)
         self.assertContains(response, "صفحه‌ای که به دنبال آن هستید پیدا نشد", status_code=404)
+        self.assertContains(response, 'name="viewport"', status_code=404)
 
 
 class ContactFormTests(TestCase):
