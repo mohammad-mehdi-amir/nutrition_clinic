@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% load static clinic_tags %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | پنل مدیریت {{ site_settings.clinic_name }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="preload" href="{% static 'fonts/vazirmatn/Vazirmatn-Variable.woff2' %}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{% static 'css/admin-theme.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="icon" type="image/png" href="{% site_image site_settings.favicon 'clinicmaster/src/images/favicon.png' %}">
+{% endblock %}
+
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}">پنل مدیریت {{ site_settings.clinic_name }}</a></div>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

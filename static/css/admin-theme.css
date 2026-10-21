@@ -1,0 +1,297 @@
+/*
+ * پوسته‌ی پنل ادمین هم‌رنگ و هم‌وزن قالب ClinicMaster (skin-6).
+ * فقط متغیرهای CSS خود ادمین جنگو و ظاهر اجزا تغییر می‌کند؛ ساختار HTML ادمین دست‌نخورده است.
+ * بعد از base.css و dark_mode.css و قبل از rtl.css لود می‌شود (block extrastyle).
+ */
+
+@font-face {
+    font-family: "Vazirmatn";
+    src: url("../fonts/vazirmatn/Vazirmatn-Variable.woff2") format("woff2-variations"),
+         url("../fonts/vazirmatn/Vazirmatn-Variable.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ---------- حالت روشن (رنگ‌های قالب) ---------- */
+html[data-theme="light"],
+:root {
+    --clinic-primary: #71B606;
+    --clinic-primary-dark: #609b05;
+    --clinic-secondary: #23281C;
+    --clinic-light: #F4F8E9;
+    --clinic-radius: 15px;
+    --clinic-radius-sm: 10px;
+
+    --primary: var(--clinic-primary);
+    --secondary: var(--clinic-secondary);
+    --accent: var(--clinic-primary); /* رنگ عنوان هدر ادمین (#site-name) */
+    --primary-fg: #fff;
+
+    --body-fg: #555555;
+    --body-bg: #ffffff;
+    --body-quiet-color: #6b6f66;
+    --body-medium-color: #3d4235;
+    --body-loud-color: var(--clinic-secondary);
+
+    --header-color: var(--clinic-light);
+    --header-branding-color: #ffffff;
+    --header-bg: var(--clinic-secondary);
+    --header-link-color: #ffffff;
+
+    --breadcrumbs-fg: #eaf5d4;
+    --breadcrumbs-link-fg: #ffffff;
+    --breadcrumbs-bg: var(--clinic-primary);
+
+    --link-fg: var(--clinic-primary-dark);
+    --link-hover-color: var(--clinic-secondary);
+    --link-selected-fg: var(--clinic-primary-dark);
+
+    --hairline-color: #E1EBF1;
+    --border-color: #d6dccd;
+
+    --error-fg: #d93636;
+
+    --message-success-bg: #e6f3cf;
+    --message-warning-bg: #fff6d6;
+    --message-error-bg: #fdeaea;
+
+    --darkened-bg: var(--clinic-light);
+    --selected-bg: #e6f3cf;
+    --selected-row: #eef7dc;
+
+    --button-fg: #fff;
+    --button-bg: var(--clinic-secondary);
+    --button-hover-bg: #3a4230;
+    --default-button-bg: var(--clinic-primary);
+    --default-button-hover-bg: var(--clinic-primary-dark);
+    --close-button-bg: #8a8f83;
+    --close-button-hover-bg: var(--clinic-secondary);
+    --delete-button-bg: #d93636;
+    --delete-button-hover-bg: #b92828;
+
+    --object-tools-fg: #fff;
+    --object-tools-bg: var(--clinic-primary);
+    --object-tools-hover-bg: var(--clinic-primary-dark);
+
+    --font-family-primary: "Vazirmatn", Tahoma, system-ui, sans-serif;
+}
+
+/* ---------- حالت تیره ---------- */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary: #5f9a05;
+        --secondary: #161a12;
+        --header-bg: #161a12;
+        --breadcrumbs-bg: #4d7d05;
+
+        --body-fg: #e6e9e1;
+        --body-bg: #121410;
+        --body-quiet-color: #b8bdb0;
+        --body-medium-color: #d6dacf;
+        --body-loud-color: #ffffff;
+
+        --link-fg: #9bd84a;
+        --link-hover-color: #c3ec8a;
+        --link-selected-fg: #9bd84a;
+
+        --hairline-color: #262b20;
+        --border-color: #343b2b;
+
+        --message-success-bg: #2c4a0a;
+        --message-warning-bg: #4d3d06;
+        --message-error-bg: #5a1414;
+
+        --darkened-bg: #1b1f17;
+        --selected-bg: #232a1b;
+        --selected-row: #26340f;
+
+        --button-bg: #343b2b;
+        --button-hover-bg: #454e39;
+        --default-button-bg: #5f9a05;
+        --default-button-hover-bg: #71B606;
+        --object-tools-bg: #5f9a05;
+        --object-tools-hover-bg: #71B606;
+    }
+}
+
+html[data-theme="dark"] {
+    --primary: #5f9a05;
+    --secondary: #161a12;
+    --header-bg: #161a12;
+    --breadcrumbs-bg: #4d7d05;
+
+    --body-fg: #e6e9e1;
+    --body-bg: #121410;
+    --body-quiet-color: #b8bdb0;
+    --body-medium-color: #d6dacf;
+    --body-loud-color: #ffffff;
+
+    --link-fg: #9bd84a;
+    --link-hover-color: #c3ec8a;
+    --link-selected-fg: #9bd84a;
+
+    --hairline-color: #262b20;
+    --border-color: #343b2b;
+
+    --message-success-bg: #2c4a0a;
+    --message-warning-bg: #4d3d06;
+    --message-error-bg: #5a1414;
+
+    --darkened-bg: #1b1f17;
+    --selected-bg: #232a1b;
+    --selected-row: #26340f;
+
+    --button-bg: #343b2b;
+    --button-hover-bg: #454e39;
+    --default-button-bg: #5f9a05;
+    --default-button-hover-bg: #71B606;
+    --object-tools-bg: #5f9a05;
+    --object-tools-hover-bg: #71B606;
+}
+
+/* ---------- تایپوگرافی هم‌وزن قالب ---------- */
+body,
+input, textarea, select, button {
+    font-family: var(--font-family-primary);
+}
+
+body {
+    font-size: 0.9rem;
+    letter-spacing: 0;
+}
+
+h1, h2, h3, h4, h5,
+#site-name {
+    color: var(--body-loud-color);
+    font-weight: 700;
+}
+
+#content h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* ---------- هدر و مسیر صفحه ---------- */
+#header {
+    padding-block: 14px;
+    box-shadow: 0 10px 20px rgba(35, 40, 28, 0.12);
+}
+
+#site-name a {
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+div.breadcrumbs {
+    padding-block: 12px;
+    font-weight: 500;
+}
+
+/* ---------- ماژول‌ها و کارت‌ها (گوشه‌ی گرد قالب) ---------- */
+.module,
+#changelist .changelist-form-container,
+#changelist-filter,
+.dashboard .module,
+.inline-group,
+fieldset.module {
+    border-radius: var(--clinic-radius);
+    overflow: hidden;
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 10px 14px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+#changelist-filter h2,
+#changelist-filter h3 {
+    font-weight: 600;
+}
+
+/* ---------- دکمه‌ها مثل btn قالب ---------- */
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button,
+.object-tools a,
+.selector-chooseall,
+.selector-clearall {
+    border-radius: var(--clinic-radius-sm);
+    font-weight: 600;
+    letter-spacing: 0;
+    transition: background-color 0.3s ease;
+}
+
+.submit-row {
+    border-radius: var(--clinic-radius);
+}
+
+.submit-row a.deletelink,
+.submit-row a.closelink {
+    border-radius: var(--clinic-radius-sm);
+}
+
+.object-tools a {
+    padding: 6px 14px;
+    text-transform: none;
+    font-size: 0.8rem;
+}
+
+/* ---------- فرم‌ها ---------- */
+input[type=text], input[type=password], input[type=email], input[type=url],
+input[type=number], input[type=tel], input[type=search],
+textarea, select, .vTextField {
+    border-radius: 8px;
+    border-color: var(--border-color);
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--clinic-primary);
+    outline: 2px solid rgba(113, 182, 6, 0.25);
+    outline-offset: 0;
+}
+
+/* ---------- جدول‌ها ---------- */
+thead th,
+tfoot td {
+    font-weight: 600;
+}
+
+#result_list tbody tr:hover td,
+#result_list tbody tr:hover th {
+    background: var(--selected-row);
+}
+
+/* ---------- پیام‌ها ---------- */
+ul.messagelist li {
+    border-radius: var(--clinic-radius-sm);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+/* ---------- صفحه‌ی ورود ---------- */
+.login #container {
+    border-radius: var(--clinic-radius);
+    box-shadow: 0 10px 30px rgba(35, 40, 28, 0.12);
+    overflow: hidden;
+}
+
+.login #header {
+    padding: 18px 24px;
+}
+
+.login .submit-row input[type=submit] {
+    background: var(--default-button-bg);
+    padding: 10px 28px;
+}
+
+.login .submit-row input[type=submit]:hover {
+    background: var(--default-button-hover-bg);
+}

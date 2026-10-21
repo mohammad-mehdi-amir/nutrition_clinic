@@ -8,15 +8,16 @@ ACTIVE_APPOINTMENT_STATUSES = ["pending", "confirmed", "completed"]
 
 
 class Doctor(models.Model):
-    name = models.CharField(max_length=100)
-    specialty = models.CharField(max_length=100)
-    bio = models.TextField(blank=True)
+    name = models.CharField(max_length=100, verbose_name="نام")
+    specialty = models.CharField(max_length=100, verbose_name="تخصص")
+    bio = models.TextField(blank=True, verbose_name="معرفی")
     image = WebPImageField(
         upload_to="doctors/",
         blank=True,
-        null=True
+        null=True,
+        verbose_name="تصویر",
     )
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, verbose_name="فعال")
 
     visit_fee = models.PositiveIntegerField(
         null=True,
@@ -56,16 +57,18 @@ class DoctorAvailability(models.Model):
     doctor = models.ForeignKey(
         Doctor,
         on_delete=models.CASCADE,
-        related_name="availabilities"
+        related_name="availabilities",
+        verbose_name="پزشک",
     )
 
     day_of_week = models.PositiveSmallIntegerField(
-        choices=DAYS_OF_WEEK
+        choices=DAYS_OF_WEEK,
+        verbose_name="روز هفته",
     )
 
-    time = models.TimeField()
+    time = models.TimeField(verbose_name="ساعت")
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, verbose_name="فعال")
 
     class Meta:
         constraints = [
@@ -119,15 +122,17 @@ class Appointment(models.Model):
         on_delete=models.PROTECT,
         related_name="appointments",
         limit_choices_to={"is_active": True},
+        verbose_name="شیفت",
     )
 
     patient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="appointments",
+        verbose_name="بیمار",
     )
 
-    date = models.DateField()
+    date = models.DateField(verbose_name="تاریخ")
 
     # کپی ساعت شیفت برای قید یکتایی «یک بیمار، یک نوبت در هر ساعت»
     start_time = models.TimeField(verbose_name="ساعت")
@@ -146,13 +151,15 @@ class Appointment(models.Model):
         choices=STATUS_CHOICES,
         default="pending",
         blank=True,
+        verbose_name="وضعیت",
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ثبت")
     
     payment_deadline = models.DateTimeField(
         null=True,
         blank=True,
+        verbose_name="مهلت پرداخت",
     )
 
     class Meta:
