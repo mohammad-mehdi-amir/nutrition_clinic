@@ -1,0 +1,44 @@
+{% load jalali_tags %}
+<aside>
+    <div class="p-7.5 sm:rounded-xxl rounded-lg bg-white sm:mb-7.5 mb-5">
+        <h2 class="text-xl mb-5">جست‌وجو</h2>
+        <form role="search" method="get" action="{% url 'blog:post_list' %}">
+            <div class="relative">
+                <label for="blog-search" class="sr-only">جست‌وجو در مقالات</label>
+                <input id="blog-search" name="q" value="{{ query }}" type="search" placeholder="جست‌وجو در مقالات…" class="w-full h-15 py-2.5 ps-5 pe-12.5 text-2sm sm:rounded-2lg rounded-md bg-primary-30 border-2 border-primary outline-none placeholder:text-bodycolor">
+                <button type="submit" class="absolute ltr:right-1.25 rtl:left-1.25 top-1/2 -translate-y-1/2 size-12 cursor-pointer" aria-label="جست‌وجو"><i class="feather icon-search text-primary text-2xl"></i></button>
+            </div>
+        </form>
+    </div>
+
+    {% if sidebar_categories %}
+    <div class="p-7.5 sm:rounded-xxl rounded-lg bg-white sm:mb-7.5 mb-5">
+        <h2 class="text-xl mb-5">دسته‌بندی‌ها</h2>
+        <ul>
+            {% for item in sidebar_categories %}
+            <li class="py-2.5 flex items-center justify-between gap-3 {% if not forloop.last %}border-b border-black/5{% endif %}">
+                <a href="{{ item.get_absolute_url }}" class="flex items-center gap-2 text-2sm {% if category == item %}text-primary font-semibold{% else %}text-bodycolor hover:text-primary{% endif %}"><i class="feather icon-folder text-primary"></i>{{ item.name }}</a>
+                <span class="text-2xs text-primary font-medium">{{ item.post_count }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    {% if latest_posts %}
+    <div class="p-7.5 sm:rounded-xxl rounded-lg bg-white sm:mb-7.5 mb-5">
+        <h2 class="text-xl mb-5">آخرین مقالات</h2>
+        {% for item in latest_posts %}
+        <div class="flex items-center {% if not forloop.last %}mb-5{% endif %}">
+            <a href="{{ item.get_absolute_url }}" class="w-22.5 min-w-22.5 h-22.5 rounded-2xl relative overflow-hidden bg-light flex items-center justify-center" tabindex="-1" aria-hidden="true">
+                {% if item.image %}<img loading="lazy" src="{{ item.image.url }}" alt="" class="size-full object-cover">{% else %}<i class="feather icon-file-text text-3xl text-primary/40"></i>{% endif %}
+            </a>
+            <div class="ms-4">
+                <p class="text-2xs text-primary font-medium mb-1">{{ item.published_at|to_jalali:"%Y/%m/%d" }}</p>
+                <h3 class="font-medium text-base leading-[1.6]"><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></h3>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</aside>

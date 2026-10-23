@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load jalali_tags blog_tags %}
+
+{% block title %}{{ post.title }}{% endblock %}
+{% block meta_description %}{{ post.summary }}{% endblock %}
+{% block meta_robots %}{% if post.is_public %}index, follow{% else %}noindex, nofollow{% endif %}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_description %}{{ post.summary }}{% endblock %}
+{% block og_image %}{% if post.image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ post.image.url }}">{% endif %}{% endblock %}
+
+{% block banner %}
+{% url 'blog:post_list' as blog_url %}
+{% if post.category %}
+{% include "includes/page_banner.html" with title=post.category.name parent_title="مقالات" parent_url=blog_url %}
+{% else %}
+{% include "includes/page_banner.html" with title="مقالات" %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<section class="lg:pt-25 lg:pb-10 pt-12.5 pb-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <article class="xl:w-2/3 w-full mb-7.5">
+                {% if not post.is_public %}
+                <div class="py-3.75 px-5 text-base rounded relative mb-5 text-warning bg-warning-light">پیش‌نمایش کارکنان: این مقاله {% if post.status == "draft" %}پیش‌نویس است{% else %}هنوز زمان انتشارش نرسیده{% endif %} و برای کاربران نمایش داده نمی‌شود.</div>
+                {% endif %}
+
+                <header class="sm:pb-7.5 pb-3.75">
+                    <h1 class="lg:text-4xxl sm:text-3xxl text-2xxl leading-[1.5] mb-3.75">{{ post.title }}</h1>
+                    <ul class="flex flex-wrap items-center gap-2.5 sm:mb-7.5 mb-5">
+                        <li class="bg-[rgba(var(--primary-rgb),0.1)] text-primary rounded-xxl font-medium text-2xs py-1.25 pe-3.75 ps-5.75 leading-[1.4] relative inline-flex items-center after:absolute after:size-1.5 after:rounded-full after:bg-primary ltr:after:left-2.5 rtl:after:right-2.5"><time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|to_jalali:"%Y/%m/%d" }}</time></li>
+                        {% if post.author_name %}
+                        <li class="inline-flex items-center gap-1.5 sm:text-2xs text-xs font-medium text-secondary py-1.5 px-3"><i class="fa-solid fa-user text-xs text-primary"></i> {{ post.author_name }}</li>
+                        {% endif %}
+                        <li class="inline-flex items-center gap-1.5 sm:text-2xs text-xs font-medium text-secondary py-1.5 px-3"><i class="feather icon-clock text-primary"></i> {{ post.reading_minutes }} دقیقه مطالعه</li>
+                    </ul>
+                    {% if post.image %}
+                    <div class="sm:rounded-3xl rounded-xxl relative overflow-hidden">
+                        <img src="{{ post.image.url }}" alt="{{ post.title }}" class="w-full object-cover">
+                    </div>
+                    {% endif %}
+                </header>
+
+                <div class="bg-white sm:rounded-3xl rounded-xxl lg:p-10 sm:p-7.5 p-5">
+                    <p class="lg:text-xl text-lg text-secondary font-semibold leading-[1.9] sm:mb-7.5 mb-5">{{ post.summary }}</p>
+                    {{ post.body|article_body }}
+                </div>
+            </article>
+            <div class="xl:w-1/3 w-full">
+                {% include "blog/_sidebar.html" %}
+            </div>
+        </div>
+
+        {% if related_posts %}
+        <div class="mt-7.5">
+            <h2 class="text-2xxl font-bold mb-7.5">مقالات مرتبط</h2>
+            <div class="row">
+                {% for item in related_posts %}
+                <div class="xl:w-1/3 md:w-1/2 w-full mb-7.5">{% include "includes/sections/post_card.html" with post=item %}</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

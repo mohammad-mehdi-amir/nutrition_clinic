@@ -1,0 +1,24 @@
+{% load jalali_tags %}
+{# کارت مقاله — برگرفته از blog-grid قالب. ورودی: post #}
+<div class="relative z-1 lg:p-7.5 p-5 h-full duration-200 bg-white rounded-3xl group flex flex-col">
+    <a href="{{ post.get_absolute_url }}" class="rounded-xxl mb-6.25 sm:h-62.5 h-50 relative overflow-hidden block bg-light before:absolute before:top-0 ltr:before:left-[-75%] rtl:before:right-[-75%] before:z-1 before:block before:w-1/2 before:h-full before:skew-x-[-25deg] before:bg-linear-(--img-hover-gradient) group-hover:before:animate-dzShine" tabindex="-1" aria-hidden="true">
+        {% if post.image %}
+        <img src="{{ post.image.url }}" alt="{{ post.title }}" class="size-full object-cover" loading="lazy">
+        {% else %}
+        <span class="size-full flex items-center justify-center"><i class="feather icon-file-text text-[72px] text-primary/40"></i></span>
+        {% endif %}
+    </a>
+    <div class="relative flex flex-col flex-1">
+        <ul class="flex flex-wrap items-center gap-1.25 mb-2.5">
+            <li class="bg-[rgba(var(--primary-rgb),0.1)] text-primary rounded-xxl font-medium text-2xs py-1.25 pe-3.75 ps-5.75 leading-[1.4] relative inline-flex items-center after:absolute after:size-1.5 after:rounded-full after:bg-primary ltr:after:left-2.5 rtl:after:right-2.5">{{ post.published_at|to_jalali:"%Y/%m/%d" }}</li>
+            {% if post.category %}
+            <li class="bg-[rgba(var(--primary-rgb),0.1)] text-primary rounded-xxl font-medium text-2xs py-1.25 pe-3.75 ps-5.75 leading-[1.4] relative inline-flex items-center after:absolute after:size-1.5 after:rounded-full after:bg-primary ltr:after:left-2.5 rtl:after:right-2.5"><a href="{{ post.category.get_absolute_url }}">{{ post.category.name }}</a></li>
+            {% endif %}
+        </ul>
+        <h3 class="xl:text-2xl text-xl leading-[1.5] mb-2.5"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h3>
+        <p class="text-2sm leading-[1.9]">{{ post.summary }}</p>
+        <a href="{{ post.get_absolute_url }}" class="text-2sm font-medium text-primary mt-auto">
+            ادامه‌ی مطلب <i class="feather icon-arrow-left-circle"></i>
+        </a>
+    </div>
+</div>

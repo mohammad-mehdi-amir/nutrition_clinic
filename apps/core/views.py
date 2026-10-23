@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.templatetags.static import static
 
 from apps.appointments.models import Doctor
+from apps.blog.models import Post
 from .forms import ContactForm
 from .models import FAQ, Service, SiteSettings
 
@@ -14,6 +15,7 @@ def home(request):
         {
             "services": Service.objects.filter(is_active=True)[:4],
             "doctors": Doctor.objects.filter(is_active=True)[:4],
+            "posts": Post.objects.published().select_related("category")[:3],
         },
     )
 
