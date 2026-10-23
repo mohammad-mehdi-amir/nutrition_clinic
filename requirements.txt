@@ -8,3 +8,5 @@ pillow==12.3.0
 psycopg[binary]==3.2.13
 python-dotenv==1.2.3
 sqlparse==0.6.0
+# django-jalali-date imports distutils (removed in Python 3.12); setuptools provides it on 3.12+
+setuptools==75.8.0

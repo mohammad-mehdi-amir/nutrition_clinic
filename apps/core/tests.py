@@ -243,3 +243,41 @@ class TransformationSectionTests(TestCase):
 
     def test_section_hidden_without_cases(self):
         self.assertNotContains(self.client.get(reverse("core:home")), "تغییرات واقعی مراجعان ما")
+
+
+class ImageUploadValidationTests(TestCase):
+
+    def test_oversized_image_rejected(self):
+        from django.core.exceptions import ValidationError
+
+        class FakeFile:
+            size = 6 * 1024 * 1024
+
+        field = Service._meta.get_field("image")
+        with self.assertRaisesMessage(ValidationError, "مگابایت"):
+            field.run_validators(FakeFile())
+
+    def test_non_image_rejected_by_form(self):
+        from django import forms
+
+        class ServiceForm(forms.ModelForm):
+            class Meta:
+                model = Service
+                fields = ["title", "slug", "summary", "image"]
+
+        fake = SimpleUploadedFile("evil.jpg", b"<?php echo 1; ?>", content_type="image/jpeg")
+        form = ServiceForm({"title": "t", "slug": "t", "summary": "s"}, {"image": fake})
+        self.assertFalse(form.is_valid())
+        self.assertIn("image", form.errors)
+
+    def test_svg_rejected_by_form(self):
+        from django import forms
+
+        class LogoForm(forms.ModelForm):
+            class Meta:
+                model = SiteSettings
+                fields = ["clinic_name", "phone", "logo"]
+
+        svg = SimpleUploadedFile("logo.svg", b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>', content_type="image/svg+xml")
+        form = LogoForm({"clinic_name": "c", "phone": "1"}, {"logo": svg})
+        self.assertFalse(form.is_valid())

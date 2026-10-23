@@ -5,6 +5,8 @@ from django.core.files.base import ContentFile
 from django.db import models
 from PIL import Image
 
+from utils.validators import validate_image_size
+
 
 class WebPImageField(models.ImageField):
     """
@@ -15,6 +17,9 @@ class WebPImageField(models.ImageField):
     - upload_to فقط یک بار اعمال می‌شود (بدون مسیر تودرتو)؛
     - ذخیره‌ی دوباره‌ی مدل، تصویر را دوباره پردازش نمی‌کند.
     """
+
+    # بدون ورود به deconstruct ⇒ migration جدید لازم نیست
+    default_validators = models.ImageField.default_validators + [validate_image_size]
 
     def pre_save(self, model_instance, add):
         file = getattr(model_instance, self.attname)

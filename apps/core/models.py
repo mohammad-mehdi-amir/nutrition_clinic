@@ -2,7 +2,7 @@ from django.db import models
 from django.urls import reverse
 
 from utils.fields import WebPImageField
-from utils.validators import iran_mobile_validator
+from utils.validators import iran_mobile_validator, validate_image_size
 
 
 class SiteSettings(models.Model):
@@ -16,6 +16,7 @@ class SiteSettings(models.Model):
     logo = models.ImageField(
         upload_to="site/",
         blank=True,
+        validators=[validate_image_size],
         verbose_name="لوگو",
         help_text="در صورت خالی بودن، نام کلینیک نمایش داده می‌شود.",
     )
@@ -94,6 +95,7 @@ class SiteSettings(models.Model):
     favicon = models.ImageField(
         upload_to="site/",
         blank=True,
+        validators=[validate_image_size],
         verbose_name="آیکون سایت (favicon)",
         help_text="PNG مربع، حداقل ۶۴×۶۴ پیکسل.",
     )
