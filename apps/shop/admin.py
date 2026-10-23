@@ -1,8 +1,10 @@
 from django.contrib import admin, messages
 from jalali_date.admin import ModelAdminJalaliMixin
 
+from apps.diet.services import create_requests_for_order
+
 from .models import Category, Order, OrderItem, Product
-from .services import OrderError, cancel_order
+from .services import PAID_ORDER_STATUSES, OrderError, cancel_order
 
 
 @admin.register(Category)
@@ -55,6 +57,12 @@ class OrderAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
         ("گیرنده", {"fields": ("recipient_name", "recipient_phone", "province", "city", "address", "postal_code", "note")}),
         ("مبالغ (تومان)", {"fields": ("subtotal", "shipping_cost", "total")}),
     )
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # اگر ادمین پرداخت را دستی ثبت کند، درخواست رژیم پکیج‌ها هم ساخته شود
+        if obj.status in PAID_ORDER_STATUSES:
+            create_requests_for_order(obj)
 
     def has_add_permission(self, request):
         # سفارش فقط از مسیر تسویه‌حساب ساخته می‌شود تا مبالغ و موجودی معتبر بمانند

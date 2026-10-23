@@ -108,6 +108,7 @@ ROBOTS_DISALLOW = [
     "/shop/checkout/",
     "/shop/orders/",
     "/payments/",
+    "/diet/",
 ]
 
 

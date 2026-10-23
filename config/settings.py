@@ -69,6 +69,8 @@ INSTALLED_APPS = [
     "apps.blog",
 
     "apps.payments",
+
+    "apps.diet",
 ]
 
 MIDDLEWARE = [
@@ -181,6 +183,12 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# فایل‌های پزشکی (PDF رژیم‌ها) خارج از MEDIA_ROOT؛ فقط از طریق view با بررسی دسترسی (apps/diet/storage.py)
+PRIVATE_MEDIA_ROOT = Path(os.getenv("PRIVATE_MEDIA_ROOT") or BASE_DIR / "private_media")
+# "django" (توسعه) | "nginx" (Production، با X-Accel-Redirect به location داخلی)
+PRIVATE_MEDIA_SERVE = os.getenv("PRIVATE_MEDIA_SERVE", "django")
+PRIVATE_MEDIA_ACCEL_PREFIX = "/protected-media/"
+
 #USER MODEL CONFIG
 AUTH_USER_MODEL = "accounts.User"
 LOGIN_URL = "accounts:login"
@@ -213,6 +221,7 @@ JALALI_DATE_DEFAULTS = {
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 MAX_IMAGE_UPLOAD_SIZE = 5 * 1024 * 1024  # utils/fields.py
+MAX_PDF_UPLOAD_SIZE = 10 * 1024 * 1024  # utils/validators.validate_pdf
 
 # ---------- کش (محدودیت نرخ درخواست از آن استفاده می‌کند) ----------
 # در Production با چند پروسس gunicorn، کش مشترک (Redis یا دیتابیس) لازم است تا محدودیت‌ها بین پروسس‌ها مشترک باشد.

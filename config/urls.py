@@ -23,6 +23,7 @@ urlpatterns = [
     path("shop/", include("apps.shop.urls")),
     path("payments/", include("apps.payments.urls")),
     path("blog/", include("apps.blog.urls")),
+    path("diet/", include("apps.diet.urls")),
 ]
 
 if settings.DEBUG:
