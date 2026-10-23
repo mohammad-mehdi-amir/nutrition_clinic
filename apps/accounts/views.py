@@ -5,6 +5,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, PasswordChangeView
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from utils.ratelimit import ratelimit
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from apps.payments.models import Payment
@@ -29,12 +31,14 @@ from .services import (
 )
 
 
+@method_decorator(ratelimit("login", limit=10, window=600), name="dispatch")
 class UserLoginView(LoginView):
     template_name = "accounts/login.html"
     authentication_form = LoginForm
     redirect_authenticated_user = True
 
 
+@ratelimit("register", limit=5, window=3600)
 def register(request):
     if request.user.is_authenticated:
         return redirect("accounts:dashboard")
@@ -70,6 +74,7 @@ def register(request):
 RESET_SESSION_KEY = "password_reset_phone"
 
 
+@ratelimit("password_reset", limit=10, window=3600)
 def password_reset_request(request):
     if request.method == "POST":
         form = PasswordResetRequestForm(request.POST)
@@ -94,6 +99,7 @@ def password_reset_request(request):
     return render(request, "accounts/password_reset_request.html", {"form": form})
 
 
+@ratelimit("password_reset_verify", limit=20, window=3600)
 def password_reset_verify(request):
     phone = request.session.get(RESET_SESSION_KEY)
 

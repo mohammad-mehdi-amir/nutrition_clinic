@@ -6,6 +6,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from utils.ratelimit import ratelimit
+
 from .models import Payment
 from .services import PaymentError, handle_callback, start_payment
 
@@ -26,6 +28,7 @@ def redirect_to_gateway(request, target, failure_url):
 
 @login_required
 @require_POST
+@ratelimit("pay", limit=30, window=3600)
 def pay_appointment(request, appointment_id):
     appointment = get_object_or_404(request.user.appointments, pk=appointment_id)
     return redirect_to_gateway(request, appointment, reverse("appointments:my_appointments"))
@@ -33,6 +36,7 @@ def pay_appointment(request, appointment_id):
 
 @login_required
 @require_POST
+@ratelimit("pay", limit=30, window=3600)
 def pay_order(request, order_id):
     order = get_object_or_404(request.user.orders, pk=order_id)
     return redirect_to_gateway(request, order, order.get_absolute_url())

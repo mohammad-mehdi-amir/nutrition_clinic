@@ -5,6 +5,7 @@ from django.urls import reverse
 
 from apps.core.models import SiteSettings
 from apps.payments.views import redirect_to_gateway
+from utils.ratelimit import ratelimit
 
 from .models import Doctor
 from .services import (
@@ -126,6 +127,7 @@ def select_time(request, doctor_id, date):
     
     
 @login_required
+@ratelimit("book", limit=20, window=3600)
 def confirm_appointment(request, doctor_id, date):
     """خلاصه‌ی نوبت (پزشک، تاریخ، ساعت، هزینه) و ثبت نهایی."""
     doctor = get_object_or_404(Doctor, id=doctor_id, is_active=True)

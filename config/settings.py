@@ -220,6 +220,13 @@ if os.getenv("CACHE_BACKEND", "locmem") == "database":
 else:
     CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
+# ---------- محدودیت نرخ درخواست (utils/ratelimit.py) ----------
+RATELIMIT_ENABLED = env_bool("RATELIMIT_ENABLED", True)
+# پشت Nginx: RATELIMIT_IP_HEADER=HTTP_X_REAL_IP (و در Nginx: proxy_set_header X-Real-IP $remote_addr;)
+RATELIMIT_IP_HEADER = os.getenv("RATELIMIT_IP_HEADER", "")
+
+TEST_RUNNER = "config.test_runner.ClinicTestRunner"
+
 # ---------- امنیت (فقط وقتی DEBUG خاموش است) ----------
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"

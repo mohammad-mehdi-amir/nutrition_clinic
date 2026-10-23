@@ -4,6 +4,8 @@ from django.templatetags.static import static
 
 from apps.appointments.models import Doctor
 from apps.blog.models import Post
+
+from utils.ratelimit import ratelimit
 from .forms import ContactForm
 from .models import FAQ, Service, SiteSettings, TransformationCase
 
@@ -58,6 +60,7 @@ def faqs(request):
     )
 
 
+@ratelimit("contact", limit=5, window=3600)
 def contact(request):
     if request.method == "POST":
         form = ContactForm(request.POST)

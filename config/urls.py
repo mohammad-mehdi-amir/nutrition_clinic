@@ -4,6 +4,10 @@ from django.contrib import admin
 from django.urls import include, path
 
 from apps.core.views import favicon
+from utils.ratelimit import ratelimit
+
+# ورود ادمین هم در برابر حدس رمز محدود می‌شود
+admin.site.login = ratelimit("admin_login", limit=10, window=600)(admin.site.login)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

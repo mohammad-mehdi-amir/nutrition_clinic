@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from apps.accounts.models import ShippingAddress
 from apps.accounts.services import save_default_address
 from apps.payments.views import redirect_to_gateway
+from utils.ratelimit import ratelimit
 from .cart import Cart
 from .forms import CheckoutForm
 from .locations import get_locations
@@ -146,6 +147,7 @@ def cart_remove(request, product_id):
 
 
 @login_required
+@ratelimit("checkout", limit=20, window=3600)
 def checkout(request):
     cart = Cart(request)
     lines = cart.lines()

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}درخواست‌های زیاد{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+
+{% block banner %}
+{% include "includes/page_banner.html" with title="کمی صبر کنید" %}
+{% endblock %}
+
+{% block content %}
+<section class="md:py-20 py-12.5 bg-light">
+    <div class="container">
+        <div class="max-w-150 mx-auto bg-white rounded-3xl sm:p-10 p-6.25 text-center">
+            <i class="feather icon-clock text-6xl text-warning"></i>
+            <h2 class="text-2xxl font-bold mt-5 mb-2.5">تعداد درخواست‌ها بیش از حد مجاز است</h2>
+            <p class="leading-[1.9] mb-7.5">برای حفظ امنیت حساب‌ها، لطفاً حدود {{ retry_minutes }} دقیقه‌ی دیگر دوباره تلاش کنید.</p>
+            <a href="{% url 'core:home' %}" class="btn btn-lg btn-primary">بازگشت به صفحه‌ی اصلی</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
