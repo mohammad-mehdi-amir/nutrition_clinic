@@ -462,3 +462,60 @@ class DietAdminTests(TestCase):
             {"title": "رژیم گیاهی", "goal": "", "calories": "", "description": "", "file": pdf_file(), "is_active": "on"},
         )
         self.assertEqual(DietTemplate.objects.get(title="رژیم گیاهی").created_by, self.admin)
+
+
+class MyDietsTests(TestCase):
+
+    def setUp(self):
+        from .services import deliver_diet
+        self.user = make_user()
+        mark_order_paid(make_order(self.user))
+        mark_order_paid(make_order(self.user))  # دومی هنوز در انتظار
+        first, self.pending = DietRequest.objects.order_by("created_at")
+        self.diet = deliver_diet(first, title="رژیم ماه اول", uploaded_file=pdf_file(), note="شام سبک باشد")
+        self.client.force_login(self.user)
+
+    def test_page_lists_delivered_and_pending(self):
+        response = self.client.get(reverse("diet:my_diets"))
+        self.assertContains(response, "رژیم ماه اول")
+        self.assertContains(response, "شام سبک باشد")
+        self.assertContains(response, reverse("diet:download", args=[self.diet.pk]))
+        self.assertContains(response, "در حال آماده‌سازی")
+        self.assertNotContains(response, "منقضی")
+
+    def test_owner_downloads_forever(self):
+        from datetime import timedelta
+        from django.utils import timezone
+        # حتی سال‌ها بعد از پایان مدت برنامه
+        Order.objects.update(paid_at=timezone.now() - timedelta(days=3650))
+        response = self.client.get(reverse("diet:download", args=[self.diet.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(b"".join(response.streaming_content), PDF_BYTES)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertIn("attachment", response["Content-Disposition"])
+
+    def test_other_user_and_guest_cannot_download(self):
+        url = reverse("diet:download", args=[self.diet.pk])
+        self.client.force_login(make_user("09120000099"))
+        self.assertEqual(self.client.get(url).status_code, 404)
+        self.assertNotContains(self.client.get(reverse("diet:my_diets")), "رژیم ماه اول")
+        self.client.logout()
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response["Location"])
+
+    def test_private_file_not_reachable_via_media_url(self):
+        response = self.client.get("/media/" + self.diet.file.name)
+        self.assertEqual(response.status_code, 404)
+
+    def test_old_packages_url_redirects(self):
+        response = self.client.get(reverse("accounts:packages"))
+        self.assertRedirects(response, reverse("diet:my_diets"), status_code=301)
+
+    def test_dashboard_tile_counts(self):
+        response = self.client.get(reverse("accounts:dashboard"))
+        self.assertEqual(response.context["diets_count"], 1)
+        self.assertEqual(response.context["pending_diet_requests"], 1)
+
+    def test_robots_blocks_diet_pages(self):
+        self.assertContains(self.client.get("/robots.txt"), "Disallow: /diet/")

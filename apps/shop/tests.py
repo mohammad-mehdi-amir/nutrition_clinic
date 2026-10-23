@@ -294,7 +294,7 @@ class CheckoutLocationTests(TestCase):
         self.assertContains(response, "js/province-city.js")
 
 
-class PurchasedPackageAndAddressTests(TestCase):
+class PaidAtAndAddressTests(TestCase):
 
     def setUp(self):
         SiteSettings.objects.create(clinic_name="c", phone="1")
@@ -316,27 +316,6 @@ class PurchasedPackageAndAddressTests(TestCase):
         mark_order_paid(order)
         order.refresh_from_db()
         self.assertIsNotNone(order.paid_at)
-
-    def test_purchased_packages_dates_and_filters(self):
-        from .services import get_purchased_packages
-        package = make_package(name="کتو")  # 30 روز
-        paid_at = timezone.now() - timedelta(days=10)
-        self._order_with(package, Order.STATUS_PAID, paid_at=paid_at)
-        self._order_with(make_package(name="پرداخت‌نشده"), Order.STATUS_PENDING)
-        other = get_user_model().objects.create_user(username="other")
-        self._order_with(make_package(name="دیگری"), Order.STATUS_PAID, user=other, paid_at=timezone.now())
-
-        packages = get_purchased_packages(self.user)
-
-        self.assertEqual([p.item.product_name for p in packages], ["کتو"])
-        self.assertEqual(packages[0].ends_at, paid_at + timedelta(days=30))
-        self.assertTrue(packages[0].is_active)
-        self.assertIn(packages[0].days_left, (19, 20))
-
-    def test_expired_package(self):
-        from .services import get_purchased_packages
-        self._order_with(make_package(), Order.STATUS_COMPLETED, paid_at=timezone.now() - timedelta(days=40))
-        self.assertFalse(get_purchased_packages(self.user)[0].is_active)
 
     def test_checkout_prefills_and_saves_default_address(self):
         from apps.accounts.models import ShippingAddress

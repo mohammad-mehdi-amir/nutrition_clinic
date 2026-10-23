@@ -107,9 +107,9 @@ def get_dashboard_summary(user):
     """داده‌ی داشبورد کاربر؛ همه‌ی کوئری‌ها محدود به خود کاربر."""
     from apps.appointments.models import ACTIVE_APPOINTMENT_STATUSES
     from apps.diet.forms import MeasurementForm
+    from apps.diet.models import DietRequest, PatientDiet
     from apps.diet.services import get_health_stats
     from apps.payments.models import Payment
-    from apps.shop.services import get_purchased_packages
 
     today = timezone.localdate()
     appointments = user.appointments.select_related("availability__doctor")
@@ -119,15 +119,14 @@ def get_dashboard_summary(user):
         status__in=ACTIVE_APPOINTMENT_STATUSES,
     ).order_by("date", "start_time")
 
-    packages = get_purchased_packages(user)
-
     return {
         "upcoming_appointments": upcoming[:3],
         "upcoming_count": upcoming.count(),
         "awaiting_payment_count": appointments.filter(status="pending", payment_status="unpaid").count(),
         "recent_orders": user.orders.prefetch_related("items")[:3],
         "orders_count": user.orders.count(),
-        "active_packages": [p for p in packages if p.is_active],
+        "diets_count": PatientDiet.objects.filter(request__user=user).count(),
+        "pending_diet_requests": user.diet_requests.filter(status=DietRequest.STATUS_PENDING).count(),
         "payments_needing_review": Payment.objects.filter(user=user, needs_review=True).count(),
         "health": get_health_stats(user),
         "measurement_form": MeasurementForm(),

@@ -1,0 +1,63 @@
+{% extends "accounts/_panel.html" %}
+{% load jalali_tags diet_tags %}
+
+{% block panel_content %}
+{% health_profile_notice %}
+
+<div class="bg-white rounded-xxl sm:p-7.5 p-5">
+    <h2 class="text-xl font-bold mb-1.25">رژیم‌های من</h2>
+    <p class="mb-5 leading-[1.9]">پس از خرید پکیج، کارشناس ما رژیم شما را به‌صورت فایل PDF آماده می‌کند. رژیم‌ها برای همیشه اینجا می‌مانند و هر زمان بخواهید می‌توانید دوباره دانلودشان کنید.</p>
+
+    {% if diet_requests %}
+    <div class="flex flex-col gap-5">
+        {% for diet_request in diet_requests %}
+        <div class="rounded-xxl border border-black/5 bg-light sm:p-5 p-3.75">
+            <div class="flex flex-wrap justify-between items-start gap-3 mb-3.75">
+                <div>
+                    <h3 class="text-lg font-semibold mb-1.25">{{ diet_request.package_name }}</h3>
+                    <p class="text-sm mb-0">
+                        خرید: {{ diet_request.created_at|to_jalali:"%Y/%m/%d" }}
+                        {% with product=diet_request.order_item.product %}{% if product.duration_days %} — مدت برنامه: {{ product.duration_days }} روز{% endif %}{% endwith %}
+                        — <a href="{{ diet_request.order_item.order.get_absolute_url }}" class="text-primary">سفارش #{{ diet_request.order_item.order.pk }}</a>
+                    </p>
+                </div>
+                {% if diet_request.status == "delivered" %}
+                {% include "diet/_badge.html" with color="success" label="آماده" %}
+                {% else %}
+                {% include "diet/_badge.html" with color="warning" label="در حال آماده‌سازی" %}
+                {% endif %}
+            </div>
+
+            {% for diet in diet_request.diets.all %}
+            <div class="bg-white rounded-2lg sm:p-4 p-3 {% if not forloop.last %}mb-2.5{% endif %}">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="size-11 min-w-11 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl"><i class="feather icon-file-text"></i></span>
+                        <div class="min-w-0">
+                            <p class="font-semibold text-secondary mb-0 break-words">{{ diet.title }}</p>
+                            <p class="text-xs mb-0">{{ diet.delivered_at|to_jalali:"%Y/%m/%d" }}{% if forloop.first and not forloop.last %} — آخرین نسخه{% endif %}</p>
+                        </div>
+                    </div>
+                    <a href="{% url 'diet:download' diet.pk %}" class="btn btn-sm btn-primary max-sm:w-full justify-center"><i class="feather icon-download me-1.25"></i>دانلود PDF</a>
+                </div>
+                {% if diet.note %}
+                <div class="mt-3 pt-3 border-t border-black/5 text-sm leading-[1.9]">
+                    <span class="font-semibold text-secondary">پیام کارشناس:</span> {{ diet.note|linebreaksbr }}
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-sm mb-0 leading-[1.9]">کارشناس ما در حال آماده‌سازی رژیم شماست؛ پس از آماده شدن با پیامک خبرتان می‌کنیم.
+                {% if not user.health_profile %}<a href="{% url 'diet:health_profile' %}" class="text-primary">تکمیل پروفایل سلامت</a> به دقیق‌تر شدن رژیم کمک می‌کند.{% endif %}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-10">
+        <p class="mb-5">هنوز پکیج رژیمی خریداری نکرده‌اید.</p>
+        <a href="{% url 'shop:packages' %}" class="btn btn-primary">مشاهده‌ی پکیج‌های رژیم</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -197,7 +197,7 @@ class PasswordResetTests(TestCase):
 
 class AccountPanelTests(TestCase):
 
-    PANEL_URLS = ["dashboard", "profile", "password_change", "address", "packages", "payments"]
+    PANEL_URLS = ["dashboard", "profile", "password_change", "address", "payments"]
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -220,7 +220,8 @@ class AccountPanelTests(TestCase):
                 response = self.client.get(reverse(f"accounts:{name}"))
                 self.assertEqual(response.status_code, 200)
                 self.assertContains(response, "منوی حساب کاربری")
-        for url in [reverse("appointments:my_appointments"), reverse("shop:order_list")]:
+        for url in [reverse("appointments:my_appointments"), reverse("shop:order_list"),
+                    reverse("diet:my_diets"), reverse("diet:health_profile")]:
             self.assertContains(self.client.get(url), "منوی حساب کاربری")
 
     def test_profile_update_cannot_change_phone(self):

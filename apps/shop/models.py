@@ -66,7 +66,7 @@ class Product(models.Model):
     duration_days = models.PositiveIntegerField(
         null=True,
         blank=True,
-        verbose_name="مدت اعتبار (روز)",
+        verbose_name="مدت برنامه‌ی رژیم (روز)",
         help_text="فقط برای پکیج رژیم.",
     )
     features = models.TextField(
@@ -114,7 +114,7 @@ class Product(models.Model):
             if self.stock is not None:
                 errors["stock"] = "پکیج رژیم موجودی ندارد؛ این فیلد را خالی بگذارید."
             if not self.duration_days:
-                errors["duration_days"] = "مدت اعتبار پکیج را وارد کنید."
+                errors["duration_days"] = "مدت برنامه‌ی رژیم را وارد کنید."
 
         if errors:
             raise ValidationError(errors)

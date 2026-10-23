@@ -12,7 +12,6 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from apps.payments.models import Payment
 from apps.shop.forms import ShippingAddressForm
 from apps.shop.locations import get_locations
-from apps.shop.services import get_purchased_packages
 from .forms import (
     LoginForm,
     PasswordResetRequestForm,
@@ -194,11 +193,8 @@ def address(request):
 
 @login_required
 def packages(request):
-    return render(
-        request,
-        "accounts/packages.html",
-        {"packages": get_purchased_packages(request.user), "panel_section": "packages"},
-    )
+    # «پکیج‌های من» با «رژیم‌های من» جایگزین شد؛ آدرس قدیمی همچنان کار می‌کند
+    return redirect("diet:my_diets", permanent=True)
 
 
 @login_required

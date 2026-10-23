@@ -42,7 +42,7 @@
                 <ul class="mb-7.5 flex flex-wrap gap-3.75 text-sm">
                     <li class="bg-light rounded-2lg px-3.75 py-2">نوع: {{ product.get_product_type_display }}</li>
                     {% if product.is_package %}
-                    <li class="bg-light rounded-2lg px-3.75 py-2">مدت اعتبار: {{ product.duration_days }} روز</li>
+                    <li class="bg-light rounded-2lg px-3.75 py-2">مدت برنامه: {{ product.duration_days }} روز</li>
                     {% elif product.in_stock %}
                     <li class="bg-success-light text-success rounded-2lg px-3.75 py-2">موجود در انبار</li>
                     {% else %}

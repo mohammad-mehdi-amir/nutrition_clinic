@@ -3,13 +3,13 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .forms import HealthProfileForm, MeasurementForm
-from .models import DietTemplate, HealthProfile, PatientDiet
+from .models import DietRequest, DietTemplate, HealthProfile, PatientDiet
 from .services import NOTICE_SESSION_KEY, add_measurement, save_health_profile
 from .storage import pdf_download_name, serve_private_file
 
@@ -89,3 +89,21 @@ def add_measurement_view(request):
 def dismiss_health_notice(request):
     request.session[NOTICE_SESSION_KEY] = True
     return redirect(_safe_next(request, "accounts:dashboard"))
+
+
+@login_required
+def my_diets(request):
+    requests = (
+        DietRequest.objects
+        .filter(user=request.user)
+        .select_related("order_item__order", "order_item__product")
+        .prefetch_related("diets")
+    )
+    return render(request, "diet/my_diets.html", {"diet_requests": requests, "panel_section": "diets"})
+
+
+@login_required
+def download_diet(request, pk):
+    """دانلود PDF رژیم؛ فقط صاحب آن (رژیم کاربر دیگر ⇒ ۴۰۴، بدون افشای وجودش)."""
+    diet = get_object_or_404(PatientDiet, pk=pk, request__user=request.user)
+    return serve_private_file(diet.file, pdf_download_name(diet.title))

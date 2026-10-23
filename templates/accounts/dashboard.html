@@ -4,7 +4,7 @@
 {% block panel_content %}
 <div class="bg-white rounded-xxl sm:p-7.5 p-5 mb-7.5">
     <h2 class="text-2xl font-bold mb-1.25">سلام {{ user.first_name|default:"" }}، خوش آمدید</h2>
-    <p class="mb-0">خلاصه‌ی نوبت‌ها، سفارش‌ها و پکیج‌های شما در یک نگاه.</p>
+    <p class="mb-0">خلاصه‌ی نوبت‌ها، سفارش‌ها، رژیم‌ها و وضعیت سلامت شما در یک نگاه.</p>
 </div>
 
 {% health_profile_notice %}
@@ -24,9 +24,9 @@
         <span class="size-12.5 min-w-12.5 rounded-full bg-secondary text-white flex items-center justify-center text-xl"><i class="feather icon-shopping-bag"></i></span>
         <span><strong class="block text-2xl text-secondary">{{ orders_count }}</strong><span class="sm:text-sm text-xs">سفارش</span></span>
     </a>
-    <a href="{% url 'accounts:packages' %}" class="bg-white rounded-xxl sm:p-5 p-3 flex max-sm:flex-col max-sm:text-center items-center sm:gap-3.75 gap-2 duration-300 hover:shadow-[0_10px_30px_rgba(var(--secondary-rgb),0.08)]">
-        <span class="size-12.5 min-w-12.5 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xl"><i class="feather icon-clipboard"></i></span>
-        <span><strong class="block text-2xl text-secondary">{{ active_packages|length }}</strong><span class="sm:text-sm text-xs">پکیج فعال</span></span>
+    <a href="{% url 'diet:my_diets' %}" class="bg-white rounded-xxl sm:p-5 p-3 flex max-sm:flex-col max-sm:text-center items-center sm:gap-3.75 gap-2 duration-300 hover:shadow-[0_10px_30px_rgba(var(--secondary-rgb),0.08)]">
+        <span class="size-12.5 min-w-12.5 rounded-full bg-primary/15 text-primary flex items-center justify-center text-xl"><i class="feather icon-file-text"></i></span>
+        <span><strong class="block text-2xl text-secondary">{{ diets_count }}</strong><span class="sm:text-sm text-xs">{% if pending_diet_requests %}رژیم ({{ pending_diet_requests }} در حال آماده‌سازی){% else %}رژیم من{% endif %}</span></span>
     </a>
 </div>
 

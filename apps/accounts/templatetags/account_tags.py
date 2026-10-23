@@ -7,7 +7,7 @@ PANEL_MENU = [
     ("dashboard", "accounts:dashboard", "icon-grid", "داشبورد"),
     ("appointments", "appointments:my_appointments", "icon-calendar", "نوبت‌های من"),
     ("orders", "shop:order_list", "icon-shopping-bag", "سفارش‌های من"),
-    ("packages", "accounts:packages", "icon-clipboard", "پکیج‌های من"),
+    ("diets", "diet:my_diets", "icon-file-text", "رژیم‌های من"),
     ("health", "diet:health_profile", "icon-activity", "پروفایل سلامت"),
     ("payments", "accounts:payments", "icon-credit-card", "پرداخت‌ها"),
     ("profile", "accounts:profile", "icon-user", "اطلاعات حساب"),
