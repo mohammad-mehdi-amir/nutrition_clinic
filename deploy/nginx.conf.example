@@ -19,7 +19,7 @@ server {
     ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
 
-    client_max_body_size 10M;   # هم‌راستا با DATA_UPLOAD_MAX_MEMORY_SIZE
+    client_max_body_size 12M;   # PDF رژیم تا ۱۰MB (MAX_PDF_UPLOAD_SIZE) + سربار فرم
 
     location /static/ {
         alias /srv/nutrition_clinic/staticfiles/;
@@ -32,6 +32,15 @@ server {
         expires 7d;
         # اجرای اسکریپت در پوشه‌ی آپلود ممنوع
         location ~* \.(php|py|sh|html?)$ { deny all; }
+    }
+
+    # فایل‌های پزشکی (PDF رژیم‌ها): فقط پس از بررسی دسترسی در Django و با هدر X-Accel-Redirect
+    # (PRIVATE_MEDIA_SERVE=nginx). internal ⇒ درخواست مستقیم کاربر به این آدرس ۴۰۴ می‌گیرد.
+    location /protected-media/ {
+        internal;
+        alias /srv/nutrition_clinic/private_media/;
+        add_header Cache-Control "private, no-store";
+        add_header X-Content-Type-Options nosniff;
     }
 
     location / {

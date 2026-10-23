@@ -10,6 +10,7 @@ sudo apt install -y python3.11 python3.11-venv postgresql nginx certbot python3-
 sudo adduser --system --group --home /srv/nutrition_clinic clinic
 sudo mkdir -p /var/log/nutrition_clinic /var/backups/nutrition_clinic
 sudo chown clinic: /var/log/nutrition_clinic /var/backups/nutrition_clinic
+sudo chmod 700 /var/backups/nutrition_clinic   # شامل PDF رژیم بیماران
 ```
 Python 3.11 تا 3.13 پشتیبانی می‌شود (روی 3.12+ بسته‌ی `setuptools` از requirements نصب می‌شود).
 
@@ -20,6 +21,8 @@ cd /srv/nutrition_clinic
 git clone <آدرس مخزن> .
 python3.11 -m venv venv
 venv/bin/pip install -r requirements.txt
+# فایل‌های پزشکی (PDF رژیم‌ها) خارج از media؛ Nginx (گروه www-data) فقط می‌خواند
+install -d -m 750 private_media && chgrp www-data private_media
 ```
 فایل CSS نهایی (`clinic.build.css`) داخل مخزن است؛ روی سرور به Node نیازی نیست.
 
@@ -57,6 +60,9 @@ ZARINPAL_SANDBOX=False
 SMS_BACKEND=apps.accounts.sms.KavenegarSMSBackend
 SMS_API_KEY=<کلید کاوه‌نگار>
 SMS_TEMPLATE=<نام قالب verify در پنل کاوه‌نگار>
+SMS_DIET_READY_TEMPLATE=<نام قالب «رژیم شما آماده است»؛ ‎%token = نام کوچک بیمار>
+
+PRIVATE_MEDIA_SERVE=nginx
 
 ADMINS=admin@example.com
 ```
@@ -104,6 +110,8 @@ sudo -u clinic crontab deploy/crontab.example
 - `https://example.com/robots.txt` و `https://example.com/sitemap.xml`
 - یک نوبت و یک سفارش آزمایشی با **زرین‌پال sandbox** (`ZARINPAL_SANDBOX=True` و یک UUID دلخواه به‌عنوان مرچنت) تا انتها؛ بعد از تأیید callback، مرچنت واقعی و `ZARINPAL_SANDBOX=False`.
 - بازیابی رمز با شماره‌ی خودتان (ارسال پیامک واقعی).
+- رژیم: خرید یک پکیج آزمایشی، تحویل یک PDF از ادمین («درخواست‌های رژیم»)، دریافت پیامک و دانلود از «رژیم‌های من». سپس مطمئن شوید آدرس مستقیم `https://example.com/protected-media/...` و `https://example.com/media/patient_diets/...` هر دو ۴۰۴ هستند.
+- دسترسی کارکنان به پرونده‌ها: فقط به کاربرانی که لازم است مجوزهای «رژیم و پرونده‌ی سلامت» را بدهید (Groups در ادمین).
 - آدرس sitemap را در Google Search Console ثبت کنید.
 
 ## به‌روزرسانی نسخه
@@ -117,14 +125,15 @@ sudo systemctl restart nutrition_clinic
 ```
 
 ## پشتیبان و بازیابی
-اسکریپت `deploy/backup.sh` هر روز از دیتابیس (`pg_dump -Fc`) و پوشه‌ی `media` نسخه می‌گیرد و ۱۴ روز نگه می‌دارد.
-پیشنهاد می‌شود پوشه‌ی پشتیبان به فضای دیگری (سرور دوم یا فضای ابری) هم کپی شود.
+اسکریپت `deploy/backup.sh` هر روز از دیتابیس (`pg_dump -Fc`)، پوشه‌ی `media` و پوشه‌ی `private_media` (PDF رژیم بیماران) نسخه می‌گیرد و ۱۴ روز نگه می‌دارد.
+پیشنهاد می‌شود پوشه‌ی پشتیبان به فضای دیگری (سرور دوم یا فضای ابری) هم کپی شود؛ چون شامل اطلاعات سلامت است، فقط به‌صورت رمزگذاری‌شده (مثلاً `gpg` یا `restic`).
 
 بازیابی:
 ```bash
 sudo systemctl stop nutrition_clinic
 pg_restore -h 127.0.0.1 -U nutrition_clinic -d nutrition_clinic --clean --if-exists /var/backups/nutrition_clinic/db-YYYYMMDD-HHMM.dump
 tar -xzf /var/backups/nutrition_clinic/media-YYYYMMDD-HHMM.tar.gz -C /srv/nutrition_clinic
+tar -xzf /var/backups/nutrition_clinic/private-media-YYYYMMDD-HHMM.tar.gz -C /srv/nutrition_clinic
 sudo systemctl start nutrition_clinic
 ```
 
