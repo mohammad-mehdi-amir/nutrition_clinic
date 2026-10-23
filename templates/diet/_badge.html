@@ -1,0 +1,2 @@
+{% comment %}Usage: {% include "diet/_badge.html" with color="success" label="..." %} — کلاس‌ها صریح نوشته شده‌اند تا Tailwind آن‌ها را بسازد.{% endcomment %}
+<span class="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium {% if color == 'success' %}text-success bg-success-light{% elif color == 'warning' %}text-warning bg-warning-light{% elif color == 'danger' %}text-danger bg-danger-light{% else %}text-info bg-info-light{% endif %}">{{ label }}</span>

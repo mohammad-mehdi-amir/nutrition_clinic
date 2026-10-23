@@ -1,11 +1,13 @@
 {% extends "accounts/_panel.html" %}
-{% load clinic_tags jalali_tags %}
+{% load clinic_tags jalali_tags diet_tags %}
 
 {% block panel_content %}
 <div class="bg-white rounded-xxl sm:p-7.5 p-5 mb-7.5">
     <h2 class="text-2xl font-bold mb-1.25">سلام {{ user.first_name|default:"" }}، خوش آمدید</h2>
     <p class="mb-0">خلاصه‌ی نوبت‌ها، سفارش‌ها و پکیج‌های شما در یک نگاه.</p>
 </div>
+
+{% health_profile_notice %}
 
 {% if payments_needing_review %}
 <div class="py-3.75 px-5 text-base rounded relative mb-7.5 text-warning bg-warning-light leading-[1.9]">
@@ -34,6 +36,8 @@
     <a href="{% url 'appointments:my_appointments' %}" class="btn btn-sm btn-primary">پرداخت</a>
 </div>
 {% endif %}
+
+{% include "diet/_health_card.html" %}
 
 <div class="bg-white rounded-xxl sm:p-7.5 p-5 mb-7.5">
     <div class="flex flex-wrap justify-between items-center gap-3.75 mb-5">

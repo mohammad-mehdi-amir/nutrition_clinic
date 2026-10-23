@@ -8,6 +8,7 @@ PANEL_MENU = [
     ("appointments", "appointments:my_appointments", "icon-calendar", "نوبت‌های من"),
     ("orders", "shop:order_list", "icon-shopping-bag", "سفارش‌های من"),
     ("packages", "accounts:packages", "icon-clipboard", "پکیج‌های من"),
+    ("health", "diet:health_profile", "icon-activity", "پروفایل سلامت"),
     ("payments", "accounts:payments", "icon-credit-card", "پرداخت‌ها"),
     ("profile", "accounts:profile", "icon-user", "اطلاعات حساب"),
     ("address", "accounts:address", "icon-map-pin", "نشانی پیش‌فرض"),

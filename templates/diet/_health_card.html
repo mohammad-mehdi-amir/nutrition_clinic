@@ -1,0 +1,113 @@
+{% load jalali_tags diet_tags %}
+{% comment %}کارت «وضعیت سلامت من» در داشبورد؛ داده از apps.diet.services.get_health_stats.{% endcomment %}
+<div class="bg-white rounded-xxl sm:p-7.5 p-5 mb-7.5">
+    <div class="flex flex-wrap justify-between items-center gap-3.75 mb-5">
+        <h3 class="text-xl font-bold mb-0">وضعیت سلامت من</h3>
+        <a href="{% url 'diet:health_profile' %}" class="text-primary font-semibold">{% if health.profile %}ویرایش پروفایل{% else %}تکمیل پروفایل{% endif %}</a>
+    </div>
+
+    {% if not health.weight %}
+    <p class="mb-5 leading-[1.9]">با ثبت قد و وزن، BMI، بازه‌ی وزن سالم، کالری روزانه و روند تغییر وزن خود را اینجا می‌بینید.</p>
+    {% else %}
+    <div class="grid sm:grid-cols-3 grid-cols-2 sm:gap-5 gap-2.5 mb-5">
+        <div class="bg-light rounded-2lg sm:p-4 p-3 col-span-2 sm:col-span-1">
+            <span class="flex items-center gap-2 text-sm mb-1.25"><i class="feather icon-activity text-primary"></i>شاخص توده‌ی بدنی (BMI)</span>
+            {% if health.bmi %}
+            <div class="flex items-center gap-2.5 mb-2.5">
+                <strong class="text-2xl text-secondary">{{ health.bmi.value }}</strong>
+                {% include "diet/_badge.html" with color=health.bmi.color label=health.bmi.label %}
+            </div>
+            <div class="relative h-2 rounded-full bg-[linear-gradient(to_right,var(--color-info)_0%,var(--color-info)_14%,var(--color-success)_14%,var(--color-success)_40%,var(--color-warning)_40%,var(--color-warning)_60%,var(--color-danger)_60%)]" dir="ltr" aria-hidden="true">
+                <span class="absolute -top-1 size-4 -ml-2 rounded-full bg-white border-2 border-secondary" style="left: {{ health.bmi.position }}%"></span>
+            </div>
+            {% else %}
+            <p class="text-sm mb-0">برای محاسبه، قد خود را وارد کنید.</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-light rounded-2lg sm:p-4 p-3">
+            <span class="flex items-center gap-2 text-sm mb-1.25"><i class="feather icon-bar-chart-2 text-primary"></i>وزن فعلی</span>
+            <strong class="block text-2xl text-secondary">{{ health.weight|num }} <small class="text-sm font-normal">کیلوگرم</small></strong>
+            {% if health.weight_change is not None %}
+            <span class="text-xs flex items-center gap-1 mt-1 {% if health.weight_change < 0 %}text-success{% elif health.weight_change > 0 %}text-warning{% endif %}">
+                <i class="feather {% if health.weight_change < 0 %}icon-trending-down{% else %}icon-trending-up{% endif %}"></i>
+                {% if health.weight_change < 0 %}{{ health.weight_change|num|cut:"-" }} کیلوگرم کاهش{% elif health.weight_change > 0 %}{{ health.weight_change|num }} کیلوگرم افزایش{% else %}بدون تغییر{% endif %} از اولین ثبت
+            </span>
+            {% endif %}
+        </div>
+
+        {% if health.healthy_range %}
+        <div class="bg-light rounded-2lg sm:p-4 p-3">
+            <span class="flex items-center gap-2 text-sm mb-1.25"><i class="feather icon-heart text-primary"></i>بازه‌ی وزن سالم</span>
+            <strong class="block text-lg text-secondary"><span dir="ltr">{{ health.healthy_range.0|num }} – {{ health.healthy_range.1|num }}</span> <small class="text-sm font-normal">کیلوگرم</small></strong>
+        </div>
+        {% endif %}
+
+        {% if health.target_diff is not None %}
+        <div class="bg-light rounded-2lg sm:p-4 p-3">
+            <span class="flex items-center gap-2 text-sm mb-1.25"><i class="feather icon-target text-primary"></i>تا وزن هدف</span>
+            <strong class="block text-lg text-secondary">
+                {% if health.target_diff > 0 %}{{ health.target_diff|num }} کیلوگرم کاهش{% elif health.target_diff < 0 %}{{ health.target_diff|num|cut:"-" }} کیلوگرم افزایش{% else %}به هدف رسیده‌اید 🎉{% endif %}
+            </strong>
+        </div>
+        {% endif %}
+
+        {% if health.tdee or health.bmr %}
+        <div class="bg-light rounded-2lg sm:p-4 p-3">
+            <span class="flex items-center gap-2 text-sm mb-1.25"><i class="feather icon-zap text-primary"></i>کالری روزانه</span>
+            {% if health.tdee %}<strong class="block text-lg text-secondary">{{ health.tdee }} <small class="text-sm font-normal">کیلوکالری</small></strong>{% endif %}
+            <span class="text-xs">متابولیسم پایه: {{ health.bmr }}</span>
+        </div>
+        {% endif %}
+
+        <div class="bg-light rounded-2lg sm:p-4 p-3">
+            <span class="flex items-center gap-2 text-sm mb-1.25"><i class="feather icon-droplet text-primary"></i>آب پیشنهادی</span>
+            <strong class="block text-lg text-secondary">حدود {{ health.water }} <small class="text-sm font-normal">لیتر در روز</small></strong>
+        </div>
+
+        {% if health.whtr %}
+        <div class="bg-light rounded-2lg sm:p-4 p-3">
+            <span class="flex items-center gap-2 text-sm mb-1.25"><i class="feather icon-circle text-primary"></i>نسبت دور کمر به قد</span>
+            <div class="flex items-center gap-2.5">
+                <strong class="text-lg text-secondary">{{ health.whtr.value }}</strong>
+                {% include "diet/_badge.html" with color=health.whtr.color label=health.whtr.label %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if health.chart %}
+    <div class="mb-5">
+        <p class="text-sm font-semibold text-secondary mb-2.5">روند وزن (آخرین {{ health.chart.dots|length }} ثبت)</p>
+        <div class="bg-light rounded-2lg p-3 text-primary" dir="ltr">
+            <svg viewBox="0 0 {{ health.chart.width }} {{ health.chart.height }}" class="w-full h-30" role="img" aria-label="نمودار روند وزن از {{ health.chart.min|num }} تا {{ health.chart.max|num }} کیلوگرم" preserveAspectRatio="none">
+                <polyline points="{{ health.chart.points }}" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+                {% for dot in health.chart.dots %}
+                <circle cx="{{ dot.x }}" cy="{{ dot.y }}" r="3" fill="currentColor"><title>{{ dot.measurement.recorded_at|to_jalali:"%Y/%m/%d" }}: {{ dot.measurement.weight_kg|num }}</title></circle>
+                {% endfor %}
+            </svg>
+            <div class="flex justify-between text-xs text-bodycolor mt-1"><span>{{ health.chart.dots.0.measurement.recorded_at|to_jalali:"%Y/%m/%d" }}</span><span>{{ health.latest.recorded_at|to_jalali:"%Y/%m/%d" }}</span></div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <form method="post" action="{% url 'diet:add_measurement' %}" class="flex flex-wrap items-end gap-2.5 mb-3.75" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <label class="flex-1 min-w-35">
+            <span class="block text-sm font-medium text-secondary mb-2">{{ measurement_form.weight_kg.label }}</span>
+            {{ measurement_form.weight_kg }}
+        </label>
+        <label class="flex-1 min-w-35">
+            <span class="block text-sm font-medium text-secondary mb-2">{{ measurement_form.waist_cm.label }} <small class="font-normal">(اختیاری)</small></span>
+            {{ measurement_form.waist_cm }}
+        </label>
+        <button type="submit" class="btn btn-lg btn-secondary max-sm:w-full justify-center">ثبت وزن</button>
+    </form>
+
+    {% if health.missing and health.weight %}
+    <p class="text-sm mb-1.25">برای آمار کامل‌تر، این موارد را در <a href="{% url 'diet:health_profile' %}" class="text-primary">پروفایل سلامت</a> وارد کنید: {{ health.missing|join:"، " }}.</p>
+    {% endif %}
+    <p class="text-xs text-bodycolor mb-0">این آمار جنبه‌ی اطلاع‌رسانی دارد و جایگزین نظر کارشناس تغذیه نیست.</p>
+</div>

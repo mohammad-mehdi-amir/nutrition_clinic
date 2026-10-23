@@ -106,6 +106,8 @@ def verify_and_reset(phone, code, new_password):
 def get_dashboard_summary(user):
     """داده‌ی داشبورد کاربر؛ همه‌ی کوئری‌ها محدود به خود کاربر."""
     from apps.appointments.models import ACTIVE_APPOINTMENT_STATUSES
+    from apps.diet.forms import MeasurementForm
+    from apps.diet.services import get_health_stats
     from apps.payments.models import Payment
     from apps.shop.services import get_purchased_packages
 
@@ -127,6 +129,8 @@ def get_dashboard_summary(user):
         "orders_count": user.orders.count(),
         "active_packages": [p for p in packages if p.is_active],
         "payments_needing_review": Payment.objects.filter(user=user, needs_review=True).count(),
+        "health": get_health_stats(user),
+        "measurement_form": MeasurementForm(),
     }
 
 

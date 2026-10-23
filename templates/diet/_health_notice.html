@@ -1,0 +1,26 @@
+{% if show %}
+<div class="py-3.75 px-5 text-base rounded relative mb-7.5 {% if urgent %}text-warning bg-warning-light{% else %}text-info bg-info-light{% endif %} flex flex-wrap items-center justify-between gap-3.75" role="status">
+    <span class="flex items-start gap-2.5 leading-[1.9]">
+        <i class="feather {% if urgent %}icon-alert-circle{% else %}icon-info{% endif %} text-xl mt-0.5"></i>
+        <span>
+            {% if urgent %}
+            کارشناس ما در حال آماده‌سازی رژیم شماست. با تکمیل پروفایل سلامت (قد، وزن، هدف، بیماری‌ها و...) رژیم دقیق‌تری دریافت می‌کنید.
+            {% else %}
+            پروفایل سلامت خود را تکمیل کنید تا BMI، کالری روزانه و روند وزن خود را ببینید و کارشناس رژیم دقیق‌تری برایتان بنویسد.
+            {% endif %}
+        </span>
+    </span>
+    <span class="flex items-center gap-2.5 max-sm:w-full">
+        <a href="{% url 'diet:health_profile' %}" class="btn btn-sm btn-primary max-sm:flex-1 justify-center">تکمیل پروفایل</a>
+        {% if not urgent %}
+        <form method="post" action="{% url 'diet:dismiss_health_notice' %}">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <input type="hidden" name="next" value="{{ next }}">
+            <button type="submit" class="size-9 rounded-full flex items-center justify-center hover:bg-white/60 cursor-pointer" aria-label="بستن اعلان" title="بعداً">
+                <i class="feather icon-x text-lg"></i>
+            </button>
+        </form>
+        {% endif %}
+    </span>
+</div>
+{% endif %}
