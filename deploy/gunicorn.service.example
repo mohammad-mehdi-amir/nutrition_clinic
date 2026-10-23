@@ -1,0 +1,21 @@
+# /etc/systemd/system/nutrition_clinic.service
+[Unit]
+Description=Nutrition clinic (gunicorn)
+After=network.target postgresql.service
+
+[Service]
+User=clinic
+Group=www-data
+WorkingDirectory=/srv/nutrition_clinic
+EnvironmentFile=/srv/nutrition_clinic/.env
+RuntimeDirectory=nutrition_clinic
+ExecStart=/srv/nutrition_clinic/venv/bin/gunicorn config.wsgi:application \
+    --bind unix:/run/nutrition_clinic/gunicorn.sock \
+    --workers 3 \
+    --timeout 60 \
+    --access-logfile - \
+    --error-logfile -
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

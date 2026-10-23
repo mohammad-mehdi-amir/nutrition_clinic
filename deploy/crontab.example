@@ -1,0 +1,8 @@
+# crontab -e  (کاربر clinic)
+# انقضای نوبت‌ها و سفارش‌های پرداخت‌نشده (هر ۵ دقیقه)
+*/5 * * * * cd /srv/nutrition_clinic && venv/bin/python manage.py expire_pending_appointments >> /var/log/nutrition_clinic/cron.log 2>&1
+*/5 * * * * cd /srv/nutrition_clinic && venv/bin/python manage.py expire_pending_orders >> /var/log/nutrition_clinic/cron.log 2>&1
+# پاک کردن sessionهای منقضی (روزانه)
+30 3 * * * cd /srv/nutrition_clinic && venv/bin/python manage.py clearsessions >> /var/log/nutrition_clinic/cron.log 2>&1
+# پشتیبان‌گیری روزانه
+0 4 * * * /srv/nutrition_clinic/deploy/backup.sh >> /var/log/nutrition_clinic/backup.log 2>&1
