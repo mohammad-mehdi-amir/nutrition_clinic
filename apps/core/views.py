@@ -1,13 +1,19 @@
+import logging
+
 from django.contrib import messages
+from django.db import connection
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.templatetags.static import static
+from django.urls import reverse
 
 from apps.appointments.models import Doctor
 from apps.blog.models import Post
-
 from utils.ratelimit import ratelimit
 from .forms import ContactForm
 from .models import FAQ, Service, SiteSettings, TransformationCase
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -91,3 +97,31 @@ def favicon(request):
     site_settings = SiteSettings.load()
     url = site_settings.favicon.url if site_settings.favicon else static("clinicmaster/src/images/favicon.png")
     return redirect(url)
+
+
+ROBOTS_DISALLOW = [
+    "/admin/",
+    "/accounts/",
+    "/appointments/book/",
+    "/appointments/my/",
+    "/shop/cart/",
+    "/shop/checkout/",
+    "/shop/orders/",
+    "/payments/",
+]
+
+
+def robots_txt(request):
+    lines = ["User-agent: *", *[f"Disallow: {path}" for path in ROBOTS_DISALLOW], ""]
+    lines.append(f"Sitemap: {request.build_absolute_uri(reverse('sitemap'))}")
+    return HttpResponse("\n".join(lines) + "\n", content_type="text/plain; charset=utf-8")
+
+
+def health(request):
+    """برای مانیتورینگ سرور: دیتابیس در دسترس است؟"""
+    try:
+        connection.ensure_connection()
+    except Exception:  # noqa: BLE001
+        logger.exception("Health check: database unavailable")
+        return JsonResponse({"status": "error", "database": False}, status=503)
+    return JsonResponse({"status": "ok", "database": True})

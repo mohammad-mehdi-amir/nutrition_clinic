@@ -281,3 +281,41 @@ class ImageUploadValidationTests(TestCase):
         svg = SimpleUploadedFile("logo.svg", b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>', content_type="image/svg+xml")
         form = LogoForm({"clinic_name": "c", "phone": "1"}, {"logo": svg})
         self.assertFalse(form.is_valid())
+
+
+class SeoEndpointTests(TestCase):
+
+    def test_robots_txt(self):
+        response = self.client.get("/robots.txt")
+        self.assertEqual(response["Content-Type"], "text/plain; charset=utf-8")
+        body = response.content.decode()
+        self.assertIn("Disallow: /admin/", body)
+        self.assertIn("Disallow: /shop/checkout/", body)
+        self.assertIn("Sitemap: http://testserver/sitemap.xml", body)
+
+    def test_sitemap_lists_public_content_only(self):
+        from apps.blog.models import Post
+        from apps.shop.models import Product
+        from django.utils import timezone
+
+        Service.objects.create(title="فعال", slug="active-service", summary="s")
+        Service.objects.create(title="غیرفعال", slug="hidden-service", summary="s", is_active=False)
+        Post.objects.create(title="p", slug="published-post", summary="s", body="b", status="published", published_at=timezone.now())
+        Post.objects.create(title="d", slug="draft-post", summary="s", body="b", status="draft")
+        Product.objects.create(product_type="physical", name="x", slug="visible-product", short_description="s", price=1, stock=1)
+
+        response = self.client.get("/sitemap.xml")
+        body = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("http://testserver/", body)
+        self.assertIn("active-service", body)
+        self.assertNotIn("hidden-service", body)
+        self.assertIn("published-post", body)
+        self.assertNotIn("draft-post", body)
+        self.assertIn("visible-product", body)
+        self.assertNotIn("/accounts/", body)
+
+    def test_health(self):
+        response = self.client.get("/health/")
+        self.assertEqual(response.json(), {"status": "ok", "database": True})

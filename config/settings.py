@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sitemaps',
     'apps.core.apps.ClinicStaticFilesConfig',  # django.contrib.staticfiles + ignore_patterns
     
     "jalali_date",
