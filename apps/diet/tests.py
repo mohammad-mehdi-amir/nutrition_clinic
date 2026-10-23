@@ -10,7 +10,7 @@ from apps.shop.models import Order, OrderItem, Product
 from apps.shop.services import mark_order_paid
 from utils.validators import validate_pdf
 
-from .models import BodyMeasurement, DietRequest, DietTemplate, HealthProfile
+from .models import BodyMeasurement, DietRequest, DietTemplate, HealthProfile, PatientDiet
 from .services import create_requests_for_order
 
 PDF_BYTES = b"%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n"
@@ -319,3 +319,146 @@ class HealthNoticeTests(TestCase):
         response = self.client.get(self.dashboard)
         self.assertNotContains(response, "پروفایل سلامت خود را تکمیل کنید")
         self.assertContains(response, "24.7")  # BMI
+
+
+class DeliveryServiceTests(TestCase):
+
+    def setUp(self):
+        self.user = make_user(first_name="سارا")
+        mark_order_paid(make_order(self.user))
+        self.request = DietRequest.objects.get()
+        self.template = DietTemplate.objects.create(title="رژیم ۱۵۰۰ کالری", file=pdf_file())
+
+    def test_deliver_from_template_copies_file(self):
+        from .services import deliver_diet
+        with self.captureOnCommitCallbacks(execute=True):
+            diet = deliver_diet(self.request, template=self.template)
+
+        self.request.refresh_from_db()
+        self.assertEqual(self.request.status, DietRequest.STATUS_DELIVERED)
+        self.assertIsNotNone(self.request.delivered_at)
+        self.assertEqual(diet.title, "رژیم ۱۵۰۰ کالری")
+        self.assertNotEqual(diet.file.name, self.template.file.name)
+        with diet.file.open("rb") as f:
+            self.assertEqual(f.read(), PDF_BYTES)
+
+        # حذف رژیم آماده و فایلش، نسخه‌ی بیمار را از بین نمی‌برد
+        self.template.file.delete(save=False)
+        self.template.delete()
+        diet.refresh_from_db()
+        self.assertIsNone(diet.template)
+        self.assertTrue(diet.file.storage.exists(diet.file.name))
+
+    def test_deliver_uploaded_file(self):
+        from .services import deliver_diet
+        diet = deliver_diet(self.request, title="رژیم اختصاصی", uploaded_file=pdf_file(), note="روزی ۸ لیوان آب")
+        self.assertEqual(diet.note, "روزی ۸ لیوان آب")
+        self.assertTrue(diet.file.name.startswith("patient_diets/"))
+
+    def test_exactly_one_source_required(self):
+        from .services import DeliveryError, deliver_diet
+        with self.assertRaises(DeliveryError):
+            deliver_diet(self.request, title="x")
+        with self.assertRaises(DeliveryError):
+            deliver_diet(self.request, title="x", template=self.template, uploaded_file=pdf_file())
+        with self.assertRaises(DeliveryError):
+            deliver_diet(self.request, uploaded_file=pdf_file())  # بدون عنوان
+
+    def test_sms_sent_after_commit_and_failure_does_not_break_delivery(self):
+        from unittest import mock
+        from apps.accounts.sms import SMSError
+        from .services import deliver_diet
+
+        with mock.patch("apps.accounts.sms.send_diet_ready") as send:
+            with self.captureOnCommitCallbacks(execute=True):
+                deliver_diet(self.request, template=self.template)
+        send.assert_called_once_with("09120000001", "سارا")
+
+        with mock.patch("apps.accounts.sms.send_diet_ready", side_effect=SMSError("down")):
+            with self.captureOnCommitCallbacks(execute=True):
+                deliver_diet(self.request, template=self.template)
+        self.assertEqual(self.request.diets.count(), 2)
+
+    def test_diet_ready_sms_skipped_without_template_on_real_backend(self):
+        from unittest import mock
+        from apps.accounts.sms import send_diet_ready
+        with self.settings(SMS_BACKEND="apps.accounts.sms.KavenegarSMSBackend", SMS_DIET_READY_TEMPLATE=""):
+            with mock.patch("urllib.request.urlopen") as urlopen:
+                self.assertFalse(send_diet_ready("09120000001", "سارا"))
+            urlopen.assert_not_called()
+
+    def test_lookup_token_has_no_spaces(self):
+        from apps.accounts.sms import lookup_token
+        self.assertEqual(lookup_token("سارا احمدی"), "سارا‌احمدی")
+        self.assertEqual(lookup_token(""), "مراجع")
+
+
+class DietAdminTests(TestCase):
+
+    def setUp(self):
+        self.admin = make_user("09120000010", is_staff=True, is_superuser=True)
+        self.patient = make_user()
+        mark_order_paid(make_order(self.patient))
+        self.request = DietRequest.objects.get()
+        self.template = DietTemplate.objects.create(title="رژیم کاهش وزن", calories=1600, file=pdf_file())
+        self.client.force_login(self.admin)
+        self.url = reverse("admin:diet_dietrequest_change", args=[self.request.pk])
+
+    def post_delivery(self, **delivery):
+        data = {
+            "doctor": "", "staff_note": "",
+            "diets-TOTAL_FORMS": "1", "diets-INITIAL_FORMS": "0", "diets-MIN_NUM_FORMS": "0", "diets-MAX_NUM_FORMS": "1000",
+            "diets-0-template": "", "diets-0-title": "", "diets-0-note": "",
+        }
+        data.update({f"diets-0-{k}": v for k, v in delivery.items()})
+        return self.client.post(self.url, data)
+
+    def test_queue_and_change_page_render(self):
+        HealthProfile.objects.create(user=self.patient, height_cm=170, allergies="لاکتوز")
+        self.assertContains(self.client.get(reverse("admin:diet_dietrequest_changelist")), "پکیج یک‌ماهه")
+        response = self.client.get(self.url)
+        self.assertContains(response, "لاکتوز")
+        self.assertContains(response, "رژیم کاهش وزن")  # در فهرست رژیم‌های آماده
+
+    def test_deliver_by_choosing_template(self):
+        response = self.post_delivery(template=str(self.template.pk))
+        self.assertEqual(response.status_code, 302)
+        diet = self.request.diets.get()
+        self.assertEqual(diet.title, "رژیم کاهش وزن")
+        self.assertEqual(diet.delivered_by, self.admin)
+        self.request.refresh_from_db()
+        self.assertEqual(self.request.status, DietRequest.STATUS_DELIVERED)
+
+    def test_deliver_by_upload(self):
+        response = self.post_delivery(title="رژیم اختصاصی سارا", file=pdf_file())
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.request.diets.get().title, "رژیم اختصاصی سارا")
+
+    def test_both_or_neither_source_rejected(self):
+        response = self.post_delivery(template=str(self.template.pk), title="x", file=pdf_file())
+        self.assertEqual(response.status_code, 200)
+        response = self.post_delivery(title="فقط عنوان")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(PatientDiet.objects.exists())
+
+    def test_upload_requires_title_and_real_pdf(self):
+        self.assertEqual(self.post_delivery(file=pdf_file()).status_code, 200)
+        self.assertEqual(self.post_delivery(title="x", file=pdf_file(content=b"MZ fake")).status_code, 200)
+        self.assertFalse(PatientDiet.objects.exists())
+
+    def test_empty_inline_just_saves_request(self):
+        response = self.post_delivery()
+        self.assertEqual(response.status_code, 302)
+        self.request.refresh_from_db()
+        self.assertEqual(self.request.status, DietRequest.STATUS_PENDING)
+
+    def test_requests_cannot_be_added_or_deleted_manually(self):
+        self.assertEqual(self.client.get(reverse("admin:diet_dietrequest_add")).status_code, 403)
+        self.assertEqual(self.client.get(reverse("admin:diet_dietrequest_delete", args=[self.request.pk])).status_code, 403)
+
+    def test_template_admin_records_creator(self):
+        self.client.post(
+            reverse("admin:diet_diettemplate_add"),
+            {"title": "رژیم گیاهی", "goal": "", "calories": "", "description": "", "file": pdf_file(), "is_active": "on"},
+        )
+        self.assertEqual(DietTemplate.objects.get(title="رژیم گیاهی").created_by, self.admin)

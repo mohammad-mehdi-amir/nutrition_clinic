@@ -1,0 +1,26 @@
+{% load jalali_tags diet_tags %}
+{% if not profile and not stats.weight %}
+<p>بیمار هنوز پروفایل سلامت را تکمیل نکرده است (اختیاری). در صورت نیاز با او تماس بگیرید.</p>
+{% else %}
+<table>
+    <tbody>
+        {% if profile %}
+        <tr><th>جنسیت / سن</th><td>{{ profile.get_sex_display|default:"—" }} / {% if profile.age %}{{ profile.age }} سال{% else %}—{% endif %}</td></tr>
+        <tr><th>قد</th><td>{% if profile.height_cm %}{{ profile.height_cm }} سانتی‌متر{% else %}—{% endif %}</td></tr>
+        {% endif %}
+        <tr><th>وزن فعلی</th><td>{% if stats.weight %}{{ stats.weight|num }} کیلوگرم ({{ stats.latest.recorded_at|to_jalali:"%Y/%m/%d" }}){% if stats.weight_change is not None %} — تغییر از اولین ثبت: {{ stats.weight_change|num }}{% endif %}{% else %}—{% endif %}</td></tr>
+        {% if stats.bmi %}<tr><th>BMI</th><td>{{ stats.bmi.value }} ({{ stats.bmi.label }})</td></tr>{% endif %}
+        {% if stats.whtr %}<tr><th>نسبت کمر به قد</th><td>{{ stats.whtr.value }} ({{ stats.whtr.label }})</td></tr>{% endif %}
+        {% if stats.bmr %}<tr><th>BMR / TDEE</th><td>{{ stats.bmr }} / {{ stats.tdee|default:"—" }} کیلوکالری</td></tr>{% endif %}
+        {% if profile %}
+        <tr><th>هدف</th><td>{{ profile.get_goal_display|default:"—" }}{% if profile.target_weight_kg %} — وزن هدف {{ profile.target_weight_kg|num }}{% endif %}</td></tr>
+        <tr><th>فعالیت</th><td>{{ profile.get_activity_level_display|default:"—" }}</td></tr>
+        <tr><th>بیماری‌ها</th><td>{{ profile.medical_conditions|default:"—"|linebreaksbr }}</td></tr>
+        <tr><th>داروها و مکمل‌ها</th><td>{{ profile.medications|default:"—"|linebreaksbr }}</td></tr>
+        <tr><th>حساسیت‌ها</th><td>{{ profile.allergies|default:"—"|linebreaksbr }}</td></tr>
+        <tr><th>ترجیحات غذایی</th><td>{{ profile.food_preferences|default:"—"|linebreaksbr }}</td></tr>
+        <tr><th>آخرین به‌روزرسانی</th><td>{{ profile.updated_at|to_jalali:"%Y/%m/%d %H:%M" }}</td></tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endif %}

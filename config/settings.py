@@ -199,6 +199,7 @@ LOGOUT_REDIRECT_URL = "core:home"
 SMS_BACKEND = os.getenv("SMS_BACKEND", "apps.accounts.sms.ConsoleSMSBackend")
 SMS_API_KEY = os.getenv("SMS_API_KEY", "")
 SMS_TEMPLATE = os.getenv("SMS_TEMPLATE", "")
+SMS_DIET_READY_TEMPLATE = os.getenv("SMS_DIET_READY_TEMPLATE", "")  # پیامک «رژیم شما آماده است»
 
 # Payments. PAYMENT_GATEWAY: "zarinpal" (Production) | "fake" (توسعه؛ فقط با DEBUG)
 PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "fake" if DEBUG else "zarinpal")

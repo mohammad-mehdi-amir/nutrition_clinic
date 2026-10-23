@@ -1,7 +1,12 @@
+import logging
+
+from django.core.files import File
 from django.db import transaction
 from django.utils import timezone
 
-from .models import BodyMeasurement, DietRequest, HealthProfile
+from .models import BodyMeasurement, DietRequest, HealthProfile, PatientDiet
+
+logger = logging.getLogger(__name__)
 
 
 def create_requests_for_order(order):
@@ -218,3 +223,54 @@ def save_health_profile(user, profile_data, weight_kg=None, waist_cm=None):
 
 def add_measurement(user, weight_kg, waist_cm=None):
     return BodyMeasurement.objects.create(user=user, weight_kg=weight_kg, waist_cm=waist_cm)
+
+
+# ---------- تحویل رژیم ----------
+
+class DeliveryError(Exception):
+    pass
+
+
+def deliver_diet(diet_request, *, title="", uploaded_file=None, template=None, note="", by=None):
+    """
+    تحویل PDF رژیم به بیمار: یا فایل آپلودی یا یک رژیم آماده (که فایلش کپی می‌شود تا تغییر/حذف
+    رژیم آماده روی نسخه‌ی بیمار اثر نگذارد). پیامک بعد از commit ارسال می‌شود.
+    """
+    if bool(uploaded_file) == bool(template):
+        raise DeliveryError("یا یک فایل PDF آپلود کنید یا یکی از رژیم‌های آماده را انتخاب کنید (فقط یکی).")
+
+    title = (title or (template.title if template else "")).strip()
+    if not title:
+        raise DeliveryError("عنوان رژیم را وارد کنید.")
+
+    with transaction.atomic():
+        diet_request = DietRequest.objects.select_for_update().get(pk=diet_request.pk)
+        diet = PatientDiet(request=diet_request, title=title, template=template, note=note, delivered_by=by)
+
+        if template:
+            with template.file.open("rb") as source:
+                diet.file.save("diet.pdf", File(source), save=False)
+        else:
+            diet.file = uploaded_file
+        diet.save()
+
+        if diet_request.status != DietRequest.STATUS_DELIVERED:
+            diet_request.status = DietRequest.STATUS_DELIVERED
+            diet_request.delivered_at = diet.delivered_at
+            diet_request.save(update_fields=["status", "delivered_at"])
+
+        user = diet_request.user
+        transaction.on_commit(lambda: _notify_diet_ready(user))
+
+    return diet
+
+
+def _notify_diet_ready(user):
+    from apps.accounts.sms import SMSError, send_diet_ready
+
+    phone = user.phone_number or user.username
+    try:
+        send_diet_ready(phone, user.first_name)
+    except SMSError:
+        # خطای پیامک نباید تحویل رژیم را خراب کند؛ رژیم در پنل بیمار هست
+        logger.exception("ارسال پیامک آماده بودن رژیم به %s ناموفق بود.", phone)
