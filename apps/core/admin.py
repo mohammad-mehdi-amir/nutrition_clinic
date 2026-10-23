@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from .models import FAQ, ContactMessage, Service, SiteSettings
+from django.utils.html import format_html
+
+from .models import FAQ, ContactMessage, Service, SiteSettings, TransformationCase
 
 
 @admin.register(SiteSettings)
@@ -58,3 +60,26 @@ class ContactMessageAdmin(admin.ModelAdmin):
     @admin.action(description="علامت‌گذاری به‌عنوان خوانده شده")
     def mark_as_read(self, request, queryset):
         queryset.update(is_read=True)
+
+
+@admin.register(TransformationCase)
+class TransformationCaseAdmin(admin.ModelAdmin):
+    list_display = ("title", "result", "duration", "thumbnails", "client_consent", "is_active", "order")
+    list_editable = ("order", "is_active")
+    list_filter = ("client_consent", "is_active")
+    search_fields = ("title", "result")
+    fieldsets = (
+        (None, {"fields": ("title", "result", "duration", "description")}),
+        ("تصاویر", {
+            "fields": ("before_image", "after_image"),
+            "description": "از هر دو تصویر با زاویه و کادر مشابه استفاده کنید (عمودی، حدود ۶۰۰×۸۰۰ پیکسل).",
+        }),
+        ("نمایش", {"fields": ("client_consent", "is_active", "order")}),
+    )
+
+    @admin.display(description="تصاویر")
+    def thumbnails(self, obj):
+        return format_html(
+            '<img src="{}" style="height:48px;border-radius:6px"> <img src="{}" style="height:48px;border-radius:6px">',
+            obj.before_image.url, obj.after_image.url,
+        )

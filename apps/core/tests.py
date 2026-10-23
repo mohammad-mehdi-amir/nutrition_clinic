@@ -157,3 +157,89 @@ class SiteImageTests(TestCase):
         response = self.client.get(reverse("core:home"))
         self.assertContains(response, "/media/site/hero.webp")
         self.assertNotContains(response, "hero-banner/1.png")
+
+
+class SeedDemoContentTests(TestCase):
+
+    def setUp(self):
+        self.media_root = tempfile.mkdtemp()
+        self.override = override_settings(MEDIA_ROOT=self.media_root)
+        self.override.enable()
+
+    def tearDown(self):
+        self.override.disable()
+        shutil.rmtree(self.media_root, ignore_errors=True)
+
+    def _run(self):
+        from django.core.management import call_command
+        from io import StringIO
+        call_command("seed_demo_content", stdout=StringIO())
+
+    def test_fills_site_and_is_idempotent(self):
+        from apps.blog.models import Post
+        from apps.shop.models import Product
+
+        self._run()
+        counts = (Service.objects.count(), FAQ.objects.count(), Post.objects.count(), Product.objects.count())
+        self.assertEqual(counts, (6, 8, 6, 8))
+        self.assertTrue(all(s.image for s in Service.objects.all()))
+        self.assertTrue(Post.objects.published().count() == 6)
+        settings_obj = SiteSettings.load()
+        self.assertTrue(settings_obj.hero_image.name.endswith(".webp"))
+        self.assertTrue(settings_obj.about_text)
+
+        self._run()  # دوباره: چیز تکراری ساخته نمی‌شود
+        self.assertEqual(
+            (Service.objects.count(), FAQ.objects.count(), Post.objects.count(), Product.objects.count()),
+            counts,
+        )
+
+    def test_does_not_overwrite_existing_content(self):
+        SiteSettings.objects.create(clinic_name="کلینیک من", phone="02100000000", tagline="شعار خودم")
+        Service.objects.create(slug="کاهش-وزن", title="عنوان خودم", summary="خلاصه‌ی خودم")
+
+        self._run()
+
+        self.assertEqual(SiteSettings.load().tagline, "شعار خودم")
+        self.assertEqual(SiteSettings.load().clinic_name, "کلینیک من")
+        self.assertEqual(Service.objects.get(slug="کاهش-وزن").title, "عنوان خودم")
+
+
+class TransformationSectionTests(TestCase):
+
+    def setUp(self):
+        self.media_root = tempfile.mkdtemp()
+        self.override = override_settings(MEDIA_ROOT=self.media_root)
+        self.override.enable()
+
+    def tearDown(self):
+        self.override.disable()
+        shutil.rmtree(self.media_root, ignore_errors=True)
+
+    def _image(self, name):
+        buffer = BytesIO()
+        Image.new("RGB", (30, 40), "green").save(buffer, format="JPEG")
+        return SimpleUploadedFile(name, buffer.getvalue(), content_type="image/jpeg")
+
+    def _case(self, title, **extra):
+        from .models import TransformationCase
+        return TransformationCase.objects.create(
+            title=title, result="۱۰ کیلوگرم کاهش وزن",
+            before_image=self._image("b.jpg"), after_image=self._image("a.jpg"), **extra,
+        )
+
+    def test_only_consented_active_cases_shown_on_home(self):
+        self._case("با رضایت", client_consent=True)
+        self._case("بدون رضایت", client_consent=False)
+        self._case("غیرفعال", client_consent=True, is_active=False)
+
+        response = self.client.get(reverse("core:home"))
+
+        self.assertContains(response, "تغییرات واقعی مراجعان ما")
+        self.assertContains(response, "با رضایت")
+        self.assertNotContains(response, "بدون رضایت")
+        self.assertNotContains(response, "غیرفعال")
+        self.assertContains(response, 'type="range"')
+
+    def test_section_hidden_without_cases(self):
+        self.assertNotContains(self.client.get(reverse("core:home")), "تغییرات واقعی مراجعان ما")

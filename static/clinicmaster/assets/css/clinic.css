@@ -120,3 +120,24 @@ body jdp-container {
         content: none;
     }
 }
+
+/* ---------- مقایسه‌ی قبل/بعد (بخش نتایج مراجعان) ----------
+ * --pos: محل خط جداکننده از سمت چپ. «قبل» سمت راست خط (شروع خواندن در RTL) است.
+ */
+.compare {
+    --pos: 50%;
+}
+
+.compare-before {
+    clip-path: inset(0 0 0 var(--pos));
+}
+
+.compare-divider {
+    left: var(--pos);
+}
+
+.compare-range:focus-visible + *,
+.compare:focus-within .compare-divider > span {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}

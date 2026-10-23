@@ -199,3 +199,51 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.phone}"
+
+
+class TransformationCaseQuerySet(models.QuerySet):
+    def public(self):
+        # بدون رضایت کتبی مراجع هیچ تصویری در سایت نمایش داده نمی‌شود
+        return self.filter(is_active=True, client_consent=True)
+
+
+class TransformationCase(models.Model):
+    """نمونه‌کار قبل/بعد مراجعان (فقط با تصاویر واقعی و رضایت مراجع)."""
+
+    title = models.CharField(
+        max_length=150,
+        verbose_name="عنوان",
+        help_text="مثال: کاهش وزن با برنامه‌ی غذایی شخصی",
+    )
+    result = models.CharField(
+        max_length=100,
+        verbose_name="نتیجه",
+        help_text="مثال: ۱۲ کیلوگرم کاهش وزن",
+    )
+    duration = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="مدت",
+        help_text="مثال: ۴ ماه",
+    )
+    description = models.TextField(blank=True, max_length=600, verbose_name="توضیح کوتاه")
+    before_image = WebPImageField(upload_to="transformations/", verbose_name="تصویر قبل")
+    after_image = WebPImageField(upload_to="transformations/", verbose_name="تصویر بعد")
+    client_consent = models.BooleanField(
+        default=False,
+        verbose_name="رضایت کتبی مراجع گرفته شده است",
+        help_text="تا این گزینه تأیید نشود، نمونه‌کار در سایت نمایش داده نمی‌شود.",
+    )
+    order = models.PositiveIntegerField(default=0, verbose_name="ترتیب")
+    is_active = models.BooleanField(default=True, verbose_name="فعال")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ایجاد")
+
+    objects = TransformationCaseQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["order", "-created_at"]
+        verbose_name = "نمونه‌کار قبل و بعد"
+        verbose_name_plural = "نمونه‌کارهای قبل و بعد"
+
+    def __str__(self):
+        return self.title
