@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
 
@@ -53,6 +54,15 @@ class SiteSettings(models.Model):
         default=12,
         verbose_name="حداقل فاصله‌ی لغو تا نوبت (ساعت)",
         help_text="بیمار تا این تعداد ساعت قبل از شروع نوبت می‌تواند آن را لغو کند.",
+    )
+    deposit_percent = models.PositiveSmallIntegerField(
+        default=100,
+        validators=[MinValueValidator(1), MaxValueValidator(100)],
+        verbose_name="درصد بیعانه‌ی نوبت",
+        help_text=(
+            "بیمار هنگام رزرو فقط این درصد از هزینه‌ی ویزیت را آنلاین پرداخت می‌کند و مابقی را در مطب می‌پردازد. "
+            "مثال: ۳۰ یعنی برای ویزیت ۳۰۰٬۰۰۰ تومانی، ۹۰٬۰۰۰ تومان آنلاین. عدد ۱۰۰ یعنی پرداخت کامل هزینه به‌صورت آنلاین."
+        ),
     )
 
     # تصاویر سایت — در صورت خالی بودن، تصویر پیش‌فرض قالب نمایش داده می‌شود

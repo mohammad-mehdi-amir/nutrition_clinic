@@ -18,7 +18,7 @@
                 {% if payment.needs_review %}
                 <p class="leading-[1.9] mb-5">پرداخت شما انجام شد، اما مهلت رزرو هنگام پرداخت به پایان رسیده بود و {% if payment.appointment_id %}این زمان دیگر آزاد نیست{% else %}موجودی کافی نبود{% endif %}. همکاران ما برای بازگرداندن وجه با شما تماس می‌گیرند.</p>
                 {% else %}
-                <p class="leading-[1.9] mb-5">{% if payment.appointment_id %}نوبت شما تأیید شد.{% else %}سفارش شما پرداخت شد و به‌زودی پردازش می‌شود.{% endif %}</p>
+                <p class="leading-[1.9] mb-5">{% if payment.appointment_id %}نوبت شما ثبت و تأیید شد.{% else %}سفارش شما پرداخت شد و به‌زودی پردازش می‌شود.{% endif %}</p>
                 {% endif %}
             {% elif payment.status == "redirected" %}
                 <i class="feather icon-clock text-6xl text-warning"></i>
@@ -31,8 +31,19 @@
             {% endif %}
 
             <ul class="text-base text-start mb-7.5">
+                {% with appointment=payment.appointment %}
+                {% if appointment %}
+                <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>پزشک</span><span class="font-semibold text-secondary">{{ appointment.availability.doctor.name }}</span></li>
+                <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>زمان نوبت</span><span class="font-semibold text-secondary">{{ appointment.date|to_jalali:"%Y/%m/%d" }} — ساعت {{ appointment.start_time|time:"H:i" }}</span></li>
+                <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>{% if appointment.has_deposit_only %}بیعانه{% else %}مبلغ{% endif %}{% if payment.status == "paid" %} پرداخت‌شده{% endif %}</span><span class="font-semibold text-secondary">{{ payment.amount|price }}</span></li>
+                {% if payment.status == "paid" and not payment.needs_review and appointment.remaining %}
+                <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>مابقی (پرداخت در مطب)</span><span class="font-bold text-primary">{{ appointment.remaining|price }}</span></li>
+                {% endif %}
+                {% else %}
                 <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>بابت</span><span class="font-semibold text-secondary">{{ payment.description }}</span></li>
                 <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>مبلغ</span><span class="font-semibold text-secondary">{{ payment.amount|price }}</span></li>
+                {% endif %}
+                {% endwith %}
                 {% if payment.ref_id %}
                 <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>شماره‌ی پیگیری</span><span class="font-semibold text-secondary ltr-text">{{ payment.ref_id }}</span></li>
                 {% endif %}

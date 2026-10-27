@@ -13,7 +13,7 @@
 
             {% if appointments %}
             <div class="overflow-x-auto">
-                <table class="table-stack w-full text-center border-collapse min-w-200">
+                <table class="table-stack w-full text-center border-collapse">
                     <thead>
                         <tr class="bg-light text-secondary">
                             <th class="py-3.75 px-3 font-semibold">پزشک</th>
@@ -32,7 +32,18 @@
                             <td data-label="تخصص" class="py-3.75 px-3">{{ appointment.availability.doctor.specialty }}</td>
                             <td data-label="تاریخ" class="py-3.75 px-3">{{ appointment.date|to_jalali:"%Y/%m/%d" }}</td>
                             <td data-label="ساعت" class="py-3.75 px-3">{{ appointment.start_time|time:"H:i" }}</td>
-                            <td data-label="هزینه" class="py-3.75 px-3">{% if appointment.fee %}{{ appointment.fee|price }}<small class="block text-xs">{{ appointment.get_payment_status_display }}</small>{% else %}رایگان{% endif %}</td>
+                            <td data-label="هزینه" class="py-3.75 px-3">
+                                {% if appointment.fee %}
+                                <div>
+                                    {{ appointment.fee|price }}
+                                    <small class="block text-xs">{{ appointment.get_payment_status_display }}</small>
+                                    {% if appointment.paid_amount and appointment.status != "cancelled" %}
+                                    <small class="block text-xs">پرداخت‌شده: {{ appointment.paid_amount|price }}</small>
+                                    {% if appointment.remaining %}<small class="block text-xs">مابقی در مطب: {{ appointment.remaining|price }}</small>{% endif %}
+                                    {% endif %}
+                                </div>
+                                {% else %}رایگان{% endif %}
+                            </td>
                             <td data-label="وضعیت" class="py-3.75 px-3">
                                 {% if appointment.status == "pending" %}
                                 <span class="inline-block rounded-full px-3 py-1 text-sm text-warning bg-warning-light">{{ appointment.get_status_display }}</span>
@@ -45,16 +56,17 @@
                                 {% endif %}
                             </td>
                             <td class="py-3.75 px-3">
-                                {% if appointment.status == "pending" and appointment.payment_status == "unpaid" and appointment.fee %}
+                                {% if appointment.status == "pending" and appointment.payment_status == "unpaid" and appointment.deposit %}
                                 <form method="post" action="{% url 'payments:pay_appointment' appointment.id %}" class="inline-block mb-1.25">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-primary">پرداخت</button>
+                                    <button type="submit" class="btn btn-sm btn-primary">{% if appointment.has_deposit_only %}پرداخت بیعانه{% else %}پرداخت{% endif %} ({{ appointment.deposit|price }})</button>
                                 </form>
                                 {% endif %}
                                 {% if appointment.can_cancel %}
                                 <form method="post" action="{% url 'appointments:cancel_appointment' appointment.id %}" class="inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="text-danger text-sm font-semibold cursor-pointer hover:underline" onclick="return confirm('آیا از لغو این نوبت مطمئن هستید؟');">لغو نوبت</button>
+                                    <button type="submit" class="text-danger text-sm font-semibold cursor-pointer hover:underline" onclick="return confirm('{% if appointment.paid_amount %}نوبت لغو و مبلغ پرداختی ({{ appointment.paid_amount|price }}) برای بازپرداخت ثبت می‌شود. ادامه می‌دهید؟{% else %}آیا از لغو این نوبت مطمئن هستید؟{% endif %}');">لغو نوبت</button>
+                                    <small class="block text-xs mt-1 leading-[1.7]">{% if appointment.paid_amount %}با بازگشت وجه {% endif %}تا {{ appointment.cancel_until|to_jalali:"%Y/%m/%d" }}<br>ساعت {{ appointment.cancel_until|time:"H:i" }}</small>
                                 </form>
                                 {% else %}
                                 <span class="text-sm">-</span>

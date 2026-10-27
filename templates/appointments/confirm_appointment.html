@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load clinic_tags %}
+{% load clinic_tags jalali_tags %}
 
 {% block title %}تأیید نوبت{% endblock %}
 {% block meta_robots %}noindex, nofollow{% endblock %}
@@ -16,25 +16,49 @@
             <h2 class="text-2xxl font-bold mb-2.5">خلاصه‌ی نوبت</h2>
             <p class="mb-7.5">اطلاعات زیر را بررسی کنید و در صورت درست بودن، نوبت را ثبت کنید.</p>
 
-            <ul class="mb-7.5 text-base">
+            <ul class="mb-5 text-base">
                 <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>پزشک</span><span class="font-semibold text-secondary text-end">{{ doctor.name }}<small class="block font-normal text-sm text-bodycolor">{{ doctor.specialty }}</small></span></li>
                 <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>تاریخ</span><span class="font-semibold text-secondary">{{ selected_date_jalali }}</span></li>
                 <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>ساعت</span><span class="font-semibold text-secondary">{{ availability.time|time:"H:i" }}</span></li>
-                <li class="flex justify-between gap-5 py-3 text-lg"><span class="font-semibold text-secondary">هزینه‌ی ویزیت</span><span class="font-bold text-primary">{% if fee %}{{ fee|price }}{% else %}رایگان{% endif %}</span></li>
+                <li class="flex justify-between gap-5 py-3 {% if deposit and remaining %}border-b border-black/5{% endif %}"><span>هزینه‌ی ویزیت</span><span class="font-semibold text-secondary">{% if fee %}{{ fee|price }}{% else %}رایگان{% endif %}</span></li>
+                {% if deposit and remaining %}
+                <li class="flex justify-between gap-5 py-3 border-b border-black/5"><span>مابقی (پرداخت در مطب)</span><span class="font-semibold text-secondary">{{ remaining|price }}</span></li>
+                {% endif %}
             </ul>
 
-            <div class="py-3.75 px-5 text-sm rounded relative mb-7.5 text-info bg-info-light leading-[1.9]">
-                {% if fee %}
-                پس از ثبت، نوبت به مدت {{ payment_timeout }} دقیقه برای پرداخت رزرو می‌شود و در صورت عدم پرداخت به‌طور خودکار آزاد می‌شود.<br>
-                {% endif %}
+            {% if deposit %}
+            <div class="flex justify-between items-center gap-5 rounded-2lg bg-primary/10 px-5 py-3.75 mb-5">
+                <span class="font-semibold text-secondary">{% if remaining %}قابل پرداخت اکنون (بیعانه){% else %}قابل پرداخت اکنون{% endif %}</span>
+                <span class="text-xl font-bold text-primary">{{ deposit|price }}</span>
+            </div>
+            {% endif %}
+
+            <div class="py-3.75 px-5 text-sm rounded relative mb-5 text-info bg-info-light leading-[1.9]">
+                {% if deposit %}
+                <strong class="block mb-1">قوانین لغو{% if remaining %} و بیعانه{% endif %}</strong>
+                <ul class="list-disc ps-5">
+                    <li>اگر تا <strong>{{ cancel_until|to_jalali:"%Y/%m/%d" }} ساعت {{ cancel_until|time:"H:i" }}</strong> نوبت را از بخش «نوبت‌های من» لغو کنید، {% if remaining %}بیعانه{% else %}مبلغ پرداختی{% endif %} به شما بازگردانده می‌شود.</li>
+                    <li>پس از این زمان امکان لغو وجود ندارد و در صورت عدم حضور، {% if remaining %}بیعانه{% else %}مبلغ پرداختی{% endif %} بازگردانده نمی‌شود.</li>
+                    <li>پس از ثبت، این زمان به مدت {{ payment_timeout }} دقیقه برای پرداخت برای شما نگه داشته می‌شود.</li>
+                </ul>
+                {% else %}
                 لغو نوبت تا {{ cancellation_hours }} ساعت قبل از شروع آن از بخش «نوبت‌های من» امکان‌پذیر است.
+                {% endif %}
             </div>
 
-            <form method="post" class="flex flex-wrap gap-3.75">
+            <form method="post">
                 {% csrf_token %}
                 <input type="hidden" name="availability" value="{{ availability.id }}">
-                <button type="submit" class="btn btn-lg btn-primary flex-1 justify-center">ثبت نوبت</button>
-                <a href="{{ select_url }}" class="btn btn-lg btn-primary-outline">تغییر ساعت</a>
+                {% if deposit %}
+                <label class="flex items-start gap-2.5 cursor-pointer leading-[1.9] mb-5" for="accept-terms">
+                    <input type="checkbox" name="accept_terms" id="accept-terms" class="size-5 min-w-5 mt-1 accent-primary cursor-pointer" required>
+                    <span>قوانین لغو نوبت{% if remaining %} و بیعانه{% endif %} را خواندم و می‌پذیرم.</span>
+                </label>
+                {% endif %}
+                <div class="flex flex-wrap gap-3.75">
+                    <button type="submit" class="btn btn-lg btn-primary flex-1 justify-center">{% if deposit and remaining %}پرداخت بیعانه و ثبت نوبت{% elif deposit %}پرداخت و ثبت نوبت{% else %}ثبت نوبت{% endif %}</button>
+                    <a href="{{ select_url }}" class="btn btn-lg btn-primary-outline">تغییر ساعت</a>
+                </div>
             </form>
         </div>
     </div>

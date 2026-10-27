@@ -35,7 +35,7 @@ class NotificationTests(TestCase):
 
     def appointment(self, **extra):
         defaults = dict(availability=self.slot, patient=self.patient, date=self.date, status="pending",
-                        fee=300_000, payment_status="unpaid", payment_deadline=timezone.now() + timedelta(minutes=10))
+                        fee=300_000, deposit=300_000, payment_status="unpaid", payment_deadline=timezone.now() + timedelta(minutes=10))
         defaults.update(extra)
         return Appointment.objects.create(**defaults)
 
@@ -72,7 +72,7 @@ class NotificationTests(TestCase):
 
     def test_clinic_cancel_notifies_but_patient_cancel_does_not(self):
         with self.captureOnCommitCallbacks(execute=True):
-            cancel_by_clinic(self.appointment(status="confirmed", payment_status="paid"))
+            cancel_by_clinic(self.appointment(status="confirmed", payment_status="paid", paid_amount=300_000))
         self.assertEqual(self.sent()[0][0], "SMS_APPOINTMENT_CANCELLED_TEMPLATE")
 
         self.send.reset_mock()

@@ -48,7 +48,9 @@ def callback(request, payment_id):
     تراکنش با UUID تصادفی و تطبیق Authority شناسایی و سمت سرور verify می‌شود.
     """
     get_object_or_404(Payment, pk=payment_id)
-    payment = handle_callback(payment_id, request.GET)
+    handle_callback(payment_id, request.GET)
+    # بعد از تأیید، نوبت/سفارش تغییر کرده؛ نسخه‌ی تازه برای رسید (مبلغ پرداخت‌شده و مابقی)
+    payment = Payment.objects.select_related("appointment__availability__doctor", "order").get(pk=payment_id)
     return render(request, "payments/result.html", {"payment": payment})
 
 

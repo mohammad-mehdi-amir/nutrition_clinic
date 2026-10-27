@@ -1,3 +1,5 @@
+import math
+
 from django.conf import settings
 from django.db import models
 from utils.fields import WebPImageField
@@ -5,6 +7,14 @@ from jalali_date import date2jalali
 
 # وضعیت‌هایی که اسلات را اشغال می‌کنند
 ACTIVE_APPOINTMENT_STATUSES = ["pending", "confirmed", "completed"]
+
+
+def calculate_deposit(fee, percent):
+    """بیعانه = درصدی از هزینه‌ی ویزیت، گرد به بالا تا هزار تومان و حداکثر برابر هزینه."""
+    if not fee:
+        return 0
+    deposit = math.ceil(fee * percent / 100 / 1000) * 1000
+    return min(deposit, fee)
 
 
 class Doctor(models.Model):
@@ -40,6 +50,11 @@ class Doctor(models.Model):
 
         from apps.core.models import SiteSettings
         return SiteSettings.load().default_visit_fee
+
+    def get_deposit(self):
+        """مبلغی که هنگام رزرو آنلاین پرداخت می‌شود (بیعانه)."""
+        from apps.core.models import SiteSettings
+        return calculate_deposit(self.get_visit_fee(), SiteSettings.load().deposit_percent)
 
 
 
@@ -100,19 +115,22 @@ class Appointment(models.Model):
         ("confirmed", "تایید شده"),
         ("cancelled", "لغو شده"),
         ("completed", "انجام شده"),
+        ("no_show", "عدم حضور"),
     ]
 
     ACTIVE_STATUSES = ACTIVE_APPOINTMENT_STATUSES
 
     PAYMENT_NOT_REQUIRED = "not_required"
     PAYMENT_UNPAID = "unpaid"
+    PAYMENT_DEPOSIT_PAID = "deposit_paid"
     PAYMENT_PAID = "paid"
     PAYMENT_REFUND_REQUESTED = "refund_requested"
     PAYMENT_REFUNDED = "refunded"
     PAYMENT_STATUS_CHOICES = [
         (PAYMENT_NOT_REQUIRED, "رایگان"),
         (PAYMENT_UNPAID, "پرداخت‌نشده"),
-        (PAYMENT_PAID, "پرداخت‌شده"),
+        (PAYMENT_DEPOSIT_PAID, "بیعانه پرداخت‌شده"),
+        (PAYMENT_PAID, "پرداخت‌شده (کامل)"),
         (PAYMENT_REFUND_REQUESTED, "در انتظار بازپرداخت"),
         (PAYMENT_REFUNDED, "بازپرداخت‌شده"),
     ]
@@ -137,7 +155,11 @@ class Appointment(models.Model):
     # کپی ساعت شیفت برای قید یکتایی «یک بیمار، یک نوبت در هر ساعت»
     start_time = models.TimeField(verbose_name="ساعت")
 
-    fee = models.PositiveIntegerField(default=0, verbose_name="هزینه (تومان)")
+    fee = models.PositiveIntegerField(default=0, verbose_name="هزینه‌ی ویزیت (تومان)")
+    # snapshot بیعانه در لحظه‌ی رزرو؛ همین مبلغ آنلاین پرداخت می‌شود
+    deposit = models.PositiveIntegerField(default=0, verbose_name="بیعانه (تومان)")
+    # مبلغ واقعاً دریافت‌شده (آنلاین یا در مطب)؛ مبنای بازپرداخت
+    paid_amount = models.PositiveIntegerField(default=0, verbose_name="مبلغ دریافت‌شده (تومان)")
 
     payment_status = models.CharField(
         max_length=20,
@@ -188,6 +210,16 @@ class Appointment(models.Model):
             f"{jalali_date.strftime('%Y/%m/%d')} - "
             f"{self.start_time:%H:%M}"
         )
+
+    @property
+    def remaining(self):
+        """مبلغی که بیمار باید در مطب بپردازد."""
+        return max(self.fee - self.paid_amount, 0)
+
+    @property
+    def has_deposit_only(self):
+        """بیعانه کمتر از کل هزینه است (مابقی در مطب پرداخت می‌شود)."""
+        return 0 < self.deposit < self.fee
 
     def save(self, *args, **kwargs):
         if self.start_time is None and self.availability_id:

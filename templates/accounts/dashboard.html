@@ -49,7 +49,7 @@
         {% for appointment in upcoming_appointments %}
         <li class="flex flex-wrap items-center justify-between gap-3 py-3.75 {% if not forloop.last %}border-b border-black/5{% endif %}">
             <span class="font-semibold text-secondary">{{ appointment.availability.doctor.name }}</span>
-            <span class="sm:text-sm text-xs">{{ appointment.date|to_jalali:"%Y/%m/%d" }} — ساعت {{ appointment.start_time|time:"H:i" }}</span>
+            <span class="sm:text-sm text-xs">{{ appointment.date|to_jalali:"%Y/%m/%d" }} — ساعت {{ appointment.start_time|time:"H:i" }}{% if appointment.status == "confirmed" and appointment.remaining and appointment.paid_amount %}<span class="block">مابقی در مطب: {{ appointment.remaining|price }}</span>{% endif %}</span>
             <span class="inline-block rounded-full px-3 py-1 text-sm {% if appointment.status == 'confirmed' %}text-success bg-success-light{% else %}text-warning bg-warning-light{% endif %}">{{ appointment.get_status_display }}</span>
         </li>
         {% endfor %}

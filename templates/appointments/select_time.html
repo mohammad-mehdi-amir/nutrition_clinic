@@ -16,7 +16,7 @@
             <div class="flex flex-wrap gap-5 justify-between items-center mb-7.5">
                 <div>
                     <h2 class="text-2xxl font-bold mb-1.25">{{ doctor.name }}</h2>
-                    <p class="mb-0">{{ doctor.specialty }} — تاریخ: <strong class="text-secondary">{{ selected_date_jalali }}</strong> — هزینه‌ی ویزیت: <strong class="text-secondary">{% if fee %}{{ fee|price }}{% else %}رایگان{% endif %}</strong></p>
+                    <p class="mb-0">{{ doctor.specialty }} — تاریخ: <strong class="text-secondary">{{ selected_date_jalali }}</strong> — هزینه‌ی ویزیت: <strong class="text-secondary">{% if fee %}{{ fee|price }}{% else %}رایگان{% endif %}</strong>{% if deposit and deposit < fee %} — بیعانه‌ی آنلاین: <strong class="text-secondary">{{ deposit|price }}</strong>{% endif %}</p>
                 </div>
                 <a href="{% url 'appointments:book_appointment' %}" class="btn btn-sm btn-primary-outline">تغییر پزشک یا تاریخ</a>
             </div>

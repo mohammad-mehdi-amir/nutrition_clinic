@@ -24,7 +24,7 @@
                     <div class="p-5 border-t-0 border border-primary/10 rounded-b-2lg">
                         <h3 class="text-2xl font-semibold mb-0">{{ doctor.name }}</h3>
                         <span class="text-sm text-primary font-poppins block">{{ doctor.specialty }}</span>
-                        {% with fee=doctor.get_visit_fee %}<span class="text-sm block mt-1.25">ویزیت: {% if fee %}{{ fee|price }}{% else %}رایگان{% endif %}</span>{% endwith %}
+                        {% with fee=doctor.get_visit_fee deposit=doctor.get_deposit %}<span class="text-sm block mt-1.25">ویزیت: {% if fee %}{{ fee|price }}{% else %}رایگان{% endif %}{% if deposit and deposit < fee %}<span class="block text-xs">بیعانه‌ی آنلاین: {{ deposit|price }}</span>{% endif %}</span>{% endwith %}
                     </div>
                     <div class="absolute bottom-0 p-5 bg-primary rounded-2xl h-full w-full flex flex-col duration-500 rotate-z-180 translate-y-full [.box-hover.active_&]:translate-0 [.box-hover.active_&]:rotate-z-0">
                         <p class="text-white text-[17px] leading-[1.8] mb-5">{{ doctor.bio|default:"برای دریافت مشاوره‌ی تخصصی تغذیه نوبت بگیرید."|truncatewords:30 }}</p>

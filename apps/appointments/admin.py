@@ -13,6 +13,8 @@ from .services import (
     cancel_by_clinic,
     confirm_manual_payment,
     mark_completed,
+    mark_no_show,
+    settle_remaining,
     validate_slot,
     get_active_slot_keys,
     mark_refunded,
@@ -164,6 +166,9 @@ class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
         "date",
         "get_time",
         "fee",
+        "deposit",
+        "paid_amount",
+        "get_remaining",
         "status",
         "payment_status",
         "created_at",
@@ -186,11 +191,18 @@ class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
 
     # وضعیت‌ها فقط از مسیر اکشن‌ها (services) تغییر می‌کنند تا قوانین لغو، پرداخت و بازپرداخت دور زده نشود
     readonly_fields = (
-        "patient", "availability", "date", "start_time", "fee",
+        "patient", "availability", "date", "start_time", "fee", "deposit", "paid_amount", "get_remaining",
         "status", "payment_status", "payment_deadline", "created_at",
     )
 
-    actions = ["confirm_payment", "mark_as_completed", "cancel_selected_by_clinic", "mark_as_refunded"]
+    actions = [
+        "confirm_payment", "settle_remaining_at_clinic", "mark_as_completed", "mark_as_no_show",
+        "cancel_selected_by_clinic", "mark_as_refunded",
+    ]
+
+    @admin.display(description="مابقی (تومان)")
+    def get_remaining(self, obj):
+        return obj.remaining
 
     def get_form(self, request, obj=None, **kwargs):
         if obj is None:
@@ -235,6 +247,14 @@ class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     @admin.action(description="تأیید پرداخت دستی (نوبت‌های در انتظار پرداخت)")
     def confirm_payment(self, request, queryset):
         self._run(request, queryset, confirm_manual_payment, "تأیید شد")
+
+    @admin.action(description="تسویه‌ی مابقی در مطب (نوبت‌هایی که بیعانه‌ی آن‌ها پرداخت شده)")
+    def settle_remaining_at_clinic(self, request, queryset):
+        self._run(request, queryset, settle_remaining, "به‌عنوان پرداخت کامل ثبت شد")
+
+    @admin.action(description="ثبت «عدم حضور» (بیعانه بازگردانده نمی‌شود)")
+    def mark_as_no_show(self, request, queryset):
+        self._run(request, queryset, mark_no_show, "عدم حضور ثبت شد")
 
     @admin.action(description="ثبت «انجام‌شده» (نوبت‌های تأییدشده‌ای که زمانشان رسیده)")
     def mark_as_completed(self, request, queryset):

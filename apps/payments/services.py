@@ -23,11 +23,12 @@ def _payable_amount(target):
     now = timezone.now()
 
     if isinstance(target, Appointment):
-        if target.status != "pending" or target.payment_status != Appointment.PAYMENT_UNPAID or not target.fee:
+        if target.status != "pending" or target.payment_status != Appointment.PAYMENT_UNPAID or not target.deposit:
             raise PaymentError("این نوبت در انتظار پرداخت نیست.")
         if target.payment_deadline and target.payment_deadline <= now:
             raise PaymentError("مهلت پرداخت این نوبت تمام شده است؛ لطفاً دوباره نوبت بگیرید.")
-        return target.fee
+        # آنلاین فقط بیعانه پرداخت می‌شود (اگر درصد بیعانه ۱۰۰ باشد، همان کل هزینه)
+        return target.deposit
 
     if isinstance(target, Order):
         if target.status != Order.STATUS_PENDING or not target.total:

@@ -56,7 +56,7 @@ class PaymentTestMixin:
     def make_appointment(self, **extra):
         defaults = dict(
             availability=self.slot, patient=self.user, date=self.date, status="pending",
-            fee=300_000, payment_status="unpaid", payment_deadline=timezone.now() + timedelta(minutes=10),
+            fee=300_000, deposit=300_000, payment_status="unpaid", payment_deadline=timezone.now() + timedelta(minutes=10),
         )
         defaults.update(extra)
         return Appointment.objects.create(**defaults)
@@ -283,10 +283,27 @@ class PaymentViewTests(PaymentTestMixin, TestCase):
         self.client.force_login(self.user)
         date = format_jalali(self.date, "-")
         url = reverse("appointments:confirm_appointment", kwargs={"doctor_id": self.doctor.pk, "date": date})
-        response = self.client.post(url, {"availability": self.slot.pk})
+        response = self.client.post(url, {"availability": self.slot.pk, "accept_terms": "on"})
         payment = Payment.objects.get()
-        self.assertEqual(payment.amount, 300_000)
+        self.assertEqual(payment.amount, 300_000)  # درصد بیعانه‌ی پیش‌فرض ۱۰۰
         self.assertTrue(response["Location"].startswith(reverse("payments:fake_gateway", args=[payment.pk])))
+
+    def test_gateway_charges_only_the_deposit(self):
+        from apps.core.models import SiteSettings
+        from utils.jalali import format_jalali
+        SiteSettings.objects.create(clinic_name="c", phone="1", deposit_percent=30)
+        self.client.force_login(self.user)
+        url = reverse("appointments:confirm_appointment", kwargs={"doctor_id": self.doctor.pk, "date": format_jalali(self.date, "-")})
+        self.client.post(url, {"availability": self.slot.pk, "accept_terms": "on"})
+        payment = Payment.objects.get()
+        self.assertEqual((payment.amount, payment.amount_rial), (90_000, 900_000))
+        result = self.client.get(reverse("payments:callback", args=[payment.pk]),
+                                 {"Authority": payment.authority, "Status": "OK"})
+        appointment = payment.appointment
+        appointment.refresh_from_db()
+        self.assertEqual((appointment.payment_status, appointment.paid_amount, appointment.remaining), ("deposit_paid", 90_000, 210_000))
+        self.assertContains(result, "مابقی (پرداخت در مطب)")
+        self.assertContains(result, "210,000 تومان")
 
     @override_settings(PAYMENT_ALLOW_FAKE_GATEWAY=False)
     def test_fake_gateway_disabled_without_debug(self):

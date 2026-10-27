@@ -1,7 +1,10 @@
+from datetime import datetime, timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.core.models import SiteSettings
 from apps.payments.views import redirect_to_gateway
@@ -10,6 +13,7 @@ from utils.ratelimit import ratelimit
 from .models import Doctor
 from .services import (
     book_appointment,
+    cancellation_deadline,
     get_payment_timeout,
     validate_slot,
     can_cancel_appointment,
@@ -122,6 +126,7 @@ def select_time(request, doctor_id, date):
             "slots": slots,
             "has_available_slots": has_available_slots,
             "fee": doctor.get_visit_fee(),
+            "deposit": doctor.get_deposit(),
         },
     )
     
@@ -153,7 +158,17 @@ def confirm_appointment(request, doctor_id, date):
         messages.error(request, str(error))
         return redirect(select_url)
 
+    fee = doctor.get_visit_fee()
+    deposit = doctor.get_deposit()
+    cancellation_hours = SiteSettings.load().cancellation_deadline_hours
+    start = timezone.make_aware(datetime.combine(selected_date, availability.time))
+
     if request.method == "POST":
+        # پذیرش قانون لغو و بیعانه فقط وقتی پرداختی در کار است (سمت سرور هم بررسی می‌شود)
+        if deposit and request.POST.get("accept_terms") != "on":
+            messages.error(request, "برای ادامه، لطفاً قوانین لغو نوبت و بیعانه را تأیید کنید.")
+            return redirect(f"{request.path}?availability={availability.id}")
+
         try:
             appointment = book_appointment(
                 patient=request.user,
@@ -179,8 +194,11 @@ def confirm_appointment(request, doctor_id, date):
             "availability": availability,
             "selected_date_jalali": format_jalali(selected_date),
             "date": date,
-            "fee": doctor.get_visit_fee(),
-            "cancellation_hours": SiteSettings.load().cancellation_deadline_hours,
+            "fee": fee,
+            "deposit": deposit,
+            "remaining": fee - deposit,
+            "cancellation_hours": cancellation_hours,
+            "cancel_until": start - timedelta(hours=cancellation_hours),
             "payment_timeout": get_payment_timeout(),
             "select_url": select_url,
         },
@@ -199,12 +217,8 @@ def my_appointments(request):
         .order_by("-date", "-start_time")
     )
     for appointment in appointments:
-
-        appointment.can_cancel = can_cancel_appointment(
-
-            appointment
-
-        )
+        appointment.can_cancel = can_cancel_appointment(appointment)
+        appointment.cancel_until = cancellation_deadline(appointment)
     return render(
         request,
         "appointments/my_appointments.html",

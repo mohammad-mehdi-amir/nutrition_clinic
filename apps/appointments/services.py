@@ -81,6 +81,7 @@ def book_appointment(patient, availability_id, selected_date):
 
     availability = validate_slot(patient, availability_id, selected_date)
     fee = availability.doctor.get_visit_fee()
+    deposit = availability.doctor.get_deposit()
 
     if fee:
         status = "pending"
@@ -100,6 +101,7 @@ def book_appointment(patient, availability_id, selected_date):
                 date=selected_date,
                 start_time=availability.time,
                 fee=fee,
+                deposit=deposit,
                 status=status,
                 payment_status=payment_status,
                 payment_deadline=payment_deadline,
@@ -196,7 +198,8 @@ def cancel_appointment(patient, appointment_id):
         appointment.status = "cancelled"
         appointment.payment_deadline = None
 
-        if appointment.payment_status == Appointment.PAYMENT_PAID:
+        # لغو در مهلت مجاز ⇒ مبلغ دریافت‌شده (بیعانه یا کل) بازپرداخت می‌شود
+        if appointment.paid_amount:
             appointment.payment_status = Appointment.PAYMENT_REFUND_REQUESTED
 
         appointment.save(update_fields=["status", "payment_deadline", "payment_status"])
@@ -212,10 +215,12 @@ def confirm_manual_payment(appointment):
         if appointment.status != "pending":
             raise ValueError("فقط نوبت‌های در انتظار پرداخت قابل تأیید هستند.")
 
+        # پرداخت کامل هزینه به‌صورت حضوری
         appointment.status = "confirmed"
         appointment.payment_status = Appointment.PAYMENT_PAID
+        appointment.paid_amount = appointment.fee
         appointment.payment_deadline = None
-        appointment.save(update_fields=["status", "payment_status", "payment_deadline"])
+        appointment.save(update_fields=["status", "payment_status", "paid_amount", "payment_deadline"])
         notifications.appointment_confirmed(appointment)
 
     return appointment
@@ -237,6 +242,39 @@ def mark_completed(appointment):
     return appointment
 
 
+def settle_remaining(appointment):
+    """دریافت مابقی هزینه در مطب (پس از پرداخت بیعانه)."""
+    with transaction.atomic():
+        appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)
+
+        if appointment.payment_status != Appointment.PAYMENT_DEPOSIT_PAID:
+            raise ValueError("فقط برای نوبت‌هایی که بیعانه‌ی آن‌ها پرداخت شده قابل ثبت است.")
+        if appointment.status not in ("confirmed", "completed"):
+            raise ValueError("این نوبت تأییدشده یا انجام‌شده نیست.")
+
+        appointment.payment_status = Appointment.PAYMENT_PAID
+        appointment.paid_amount = appointment.fee
+        appointment.save(update_fields=["payment_status", "paid_amount"])
+
+    return appointment
+
+
+def mark_no_show(appointment):
+    """بیمار در زمان نوبت مراجعه نکرده است؛ بیعانه بازپرداخت نمی‌شود."""
+    with transaction.atomic():
+        appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)
+
+        if appointment.status not in ("confirmed", "completed"):
+            raise ValueError("فقط برای نوبت‌های تأییدشده قابل ثبت است.")
+        if appointment_start(appointment) > timezone.now():
+            raise ValueError("زمان این نوبت هنوز نرسیده است.")
+
+        appointment.status = "no_show"
+        appointment.save(update_fields=["status"])
+
+    return appointment
+
+
 def cancel_by_clinic(appointment):
     """
     لغو نوبت توسط کلینیک (بدون محدودیت مهلت لغو بیمار).
@@ -250,7 +288,7 @@ def cancel_by_clinic(appointment):
 
         appointment.status = "cancelled"
         appointment.payment_deadline = None
-        if appointment.payment_status == Appointment.PAYMENT_PAID:
+        if appointment.paid_amount:
             appointment.payment_status = Appointment.PAYMENT_REFUND_REQUESTED
         appointment.save(update_fields=["status", "payment_deadline", "payment_status"])
         notifications.appointment_cancelled_by_clinic(appointment)
@@ -363,6 +401,14 @@ def get_active_slot_keys(doctor):
     }
 
 
+def _apply_online_payment(appointment):
+    """پرداخت آنلاین همیشه به اندازه‌ی بیعانه است؛ اگر بیعانه کمتر از هزینه باشد مابقی در مطب گرفته می‌شود."""
+    appointment.paid_amount = appointment.deposit
+    appointment.payment_status = (
+        Appointment.PAYMENT_DEPOSIT_PAID if appointment.deposit < appointment.fee else Appointment.PAYMENT_PAID
+    )
+
+
 def mark_appointment_paid(appointment):
     """
     اعمال پرداخت موفق درگاه. True یعنی نوبت تأیید شد؛
@@ -371,14 +417,16 @@ def mark_appointment_paid(appointment):
     with transaction.atomic():
         appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)
 
-        if appointment.status == "confirmed" and appointment.payment_status == Appointment.PAYMENT_PAID:
+        if appointment.status == "confirmed" and appointment.payment_status in (
+            Appointment.PAYMENT_PAID, Appointment.PAYMENT_DEPOSIT_PAID,
+        ):
             return True
 
         if appointment.status == "pending":
             appointment.status = "confirmed"
-            appointment.payment_status = Appointment.PAYMENT_PAID
+            _apply_online_payment(appointment)
             appointment.payment_deadline = None
-            appointment.save(update_fields=["status", "payment_status", "payment_deadline"])
+            appointment.save(update_fields=["status", "payment_status", "paid_amount", "payment_deadline"])
             notifications.appointment_confirmed(appointment)
             return True
 
@@ -387,9 +435,9 @@ def mark_appointment_paid(appointment):
             try:
                 with transaction.atomic():
                     appointment.status = "confirmed"
-                    appointment.payment_status = Appointment.PAYMENT_PAID
+                    _apply_online_payment(appointment)
                     appointment.payment_deadline = None
-                    appointment.save(update_fields=["status", "payment_status", "payment_deadline"])
+                    appointment.save(update_fields=["status", "payment_status", "paid_amount", "payment_deadline"])
                 notifications.appointment_confirmed(appointment)
                 return True
             except IntegrityError:
