@@ -1,5 +1,5 @@
 /*
- * پوسته‌ی پنل ادمین هم‌رنگ و هم‌وزن قالب ClinicMaster (skin-6).
+ * پوسته‌ی پنل ادمین هم‌رنگ و هم‌وزن قالب ClinicMaster (پالت بنر کلینیک: سبز جنگلی، زیتونی-مریمی، طلایی-بژ).
  * فقط متغیرهای CSS خود ادمین جنگو و ظاهر اجزا تغییر می‌کند؛ ساختار HTML ادمین دست‌نخورده است.
  * بعد از base.css و dark_mode.css و قبل از rtl.css لود می‌شود (block extrastyle).
  */
@@ -16,22 +16,22 @@
 /* ---------- حالت روشن (رنگ‌های قالب) ---------- */
 html[data-theme="light"],
 :root {
-    --clinic-primary: #71B606;
-    --clinic-primary-dark: #609b05;
-    --clinic-secondary: #23281C;
-    --clinic-light: #F4F8E9;
+    --clinic-primary: #667249;
+    --clinic-primary-dark: #535D3B;
+    --clinic-secondary: #2E3426;
+    --clinic-light: #F6F1E9;
     --clinic-radius: 15px;
     --clinic-radius-sm: 10px;
 
     --primary: var(--clinic-primary);
     --secondary: var(--clinic-secondary);
-    --accent: var(--clinic-primary); /* رنگ عنوان هدر ادمین (#site-name) */
+    --accent: #D9C9A0; /* رنگ عنوان هدر ادمین (#site-name): طلایی پالت */
     --primary-fg: #fff;
 
-    --body-fg: #555555;
+    --body-fg: #5C5A4E;
     --body-bg: #ffffff;
-    --body-quiet-color: #6b6f66;
-    --body-medium-color: #3d4235;
+    --body-quiet-color: #7A776A;
+    --body-medium-color: #3F4535;
     --body-loud-color: var(--clinic-secondary);
 
     --header-color: var(--clinic-light);
@@ -39,7 +39,7 @@ html[data-theme="light"],
     --header-bg: var(--clinic-secondary);
     --header-link-color: #ffffff;
 
-    --breadcrumbs-fg: #eaf5d4;
+    --breadcrumbs-fg: #EFEADF;
     --breadcrumbs-link-fg: #ffffff;
     --breadcrumbs-bg: var(--clinic-primary);
 
@@ -47,25 +47,25 @@ html[data-theme="light"],
     --link-hover-color: var(--clinic-secondary);
     --link-selected-fg: var(--clinic-primary-dark);
 
-    --hairline-color: #E1EBF1;
-    --border-color: #d6dccd;
+    --hairline-color: #ECE6DA;
+    --border-color: #DDD6C8;
 
     --error-fg: #d93636;
 
-    --message-success-bg: #e6f3cf;
+    --message-success-bg: #E8EADB;
     --message-warning-bg: #fff6d6;
     --message-error-bg: #fdeaea;
 
     --darkened-bg: var(--clinic-light);
-    --selected-bg: #e6f3cf;
-    --selected-row: #eef7dc;
+    --selected-bg: #E8EADB;
+    --selected-row: #F1EFE4;
 
     --button-fg: #fff;
     --button-bg: var(--clinic-secondary);
-    --button-hover-bg: #3a4230;
+    --button-hover-bg: #444B38;
     --default-button-bg: var(--clinic-primary);
     --default-button-hover-bg: var(--clinic-primary-dark);
-    --close-button-bg: #8a8f83;
+    --close-button-bg: #8C887A;
     --close-button-hover-bg: var(--clinic-secondary);
     --delete-button-bg: #d93636;
     --delete-button-hover-bg: #b92828;
@@ -80,74 +80,74 @@ html[data-theme="light"],
 /* ---------- حالت تیره ---------- */
 @media (prefers-color-scheme: dark) {
     :root {
-        --primary: #5f9a05;
-        --secondary: #161a12;
-        --header-bg: #161a12;
-        --breadcrumbs-bg: #4d7d05;
+        --primary: #667249;
+        --secondary: #1C2017;
+        --header-bg: #1C2017;
+        --breadcrumbs-bg: #535D3B;
 
         --body-fg: #e6e9e1;
-        --body-bg: #121410;
+        --body-bg: #14160F;
         --body-quiet-color: #b8bdb0;
         --body-medium-color: #d6dacf;
         --body-loud-color: #ffffff;
 
-        --link-fg: #9bd84a;
-        --link-hover-color: #c3ec8a;
-        --link-selected-fg: #9bd84a;
+        --link-fg: #C2C9A3;
+        --link-hover-color: #D9C9A0;
+        --link-selected-fg: #C2C9A3;
 
         --hairline-color: #262b20;
         --border-color: #343b2b;
 
-        --message-success-bg: #2c4a0a;
+        --message-success-bg: #36402A;
         --message-warning-bg: #4d3d06;
         --message-error-bg: #5a1414;
 
         --darkened-bg: #1b1f17;
         --selected-bg: #232a1b;
-        --selected-row: #26340f;
+        --selected-row: #2C3322;
 
         --button-bg: #343b2b;
         --button-hover-bg: #454e39;
-        --default-button-bg: #5f9a05;
-        --default-button-hover-bg: #71B606;
-        --object-tools-bg: #5f9a05;
-        --object-tools-hover-bg: #71B606;
+        --default-button-bg: #667249;
+        --default-button-hover-bg: #7A8458;
+        --object-tools-bg: #667249;
+        --object-tools-hover-bg: #7A8458;
     }
 }
 
 html[data-theme="dark"] {
-    --primary: #5f9a05;
-    --secondary: #161a12;
-    --header-bg: #161a12;
-    --breadcrumbs-bg: #4d7d05;
+    --primary: #667249;
+    --secondary: #1C2017;
+    --header-bg: #1C2017;
+    --breadcrumbs-bg: #535D3B;
 
     --body-fg: #e6e9e1;
-    --body-bg: #121410;
+    --body-bg: #14160F;
     --body-quiet-color: #b8bdb0;
     --body-medium-color: #d6dacf;
     --body-loud-color: #ffffff;
 
-    --link-fg: #9bd84a;
-    --link-hover-color: #c3ec8a;
-    --link-selected-fg: #9bd84a;
+    --link-fg: #C2C9A3;
+    --link-hover-color: #D9C9A0;
+    --link-selected-fg: #C2C9A3;
 
     --hairline-color: #262b20;
     --border-color: #343b2b;
 
-    --message-success-bg: #2c4a0a;
+    --message-success-bg: #36402A;
     --message-warning-bg: #4d3d06;
     --message-error-bg: #5a1414;
 
     --darkened-bg: #1b1f17;
     --selected-bg: #232a1b;
-    --selected-row: #26340f;
+    --selected-row: #2C3322;
 
     --button-bg: #343b2b;
     --button-hover-bg: #454e39;
-    --default-button-bg: #5f9a05;
-    --default-button-hover-bg: #71B606;
-    --object-tools-bg: #5f9a05;
-    --object-tools-hover-bg: #71B606;
+    --default-button-bg: #667249;
+    --default-button-hover-bg: #7A8458;
+    --object-tools-bg: #667249;
+    --object-tools-hover-bg: #7A8458;
 }
 
 /* ---------- تایپوگرافی هم‌وزن قالب ---------- */
@@ -175,7 +175,7 @@ h1, h2, h3, h4, h5,
 /* ---------- هدر و مسیر صفحه ---------- */
 #header {
     padding-block: 14px;
-    box-shadow: 0 10px 20px rgba(35, 40, 28, 0.12);
+    box-shadow: 0 10px 20px rgba(46, 52, 38, 0.12);
 }
 
 #site-name a {
@@ -254,7 +254,7 @@ textarea, select, .vTextField {
 
 input:focus, textarea:focus, select:focus {
     border-color: var(--clinic-primary);
-    outline: 2px solid rgba(113, 182, 6, 0.25);
+    outline: 2px solid rgba(102, 114, 73, 0.25);
     outline-offset: 0;
 }
 
@@ -279,7 +279,7 @@ ul.messagelist li {
 /* ---------- صفحه‌ی ورود ---------- */
 .login #container {
     border-radius: var(--clinic-radius);
-    box-shadow: 0 10px 30px rgba(35, 40, 28, 0.12);
+    box-shadow: 0 10px 30px rgba(46, 52, 38, 0.12);
     overflow: hidden;
 }
 

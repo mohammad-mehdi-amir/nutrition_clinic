@@ -23,20 +23,31 @@
 }
 
 /* ---------- توکن‌های ظاهری سایت (تنها محل تغییر رنگ و فونت) ----------
- * پایه: skin-6 قالب (سبز، مناسب کلینیک تغذیه).
- * برای تغییر هویت بصری فقط مقادیر زیر را عوض کنید.
+ * پالت برگرفته از بنر کلینیک (دکتر مرجان فدایی): سبز جنگلی تیره، زیتونی-مریمی، طلایی-بژ و کرم.
+ * کنتراست (WCAG AA): primary با متن سفید ۵.۲ و روی کرم ۴.۶؛ secondary روی سفید ۱۲.۸.
+ * طلایی (--accent) فقط برای جزئیات تزئینی و متن درشت روی زمینه‌ی تیره، نه متن معمولی روی سفید.
+ * skin-6.css قالب گرادیان/سایه‌ی ثابت سبز و آبی دارد؛ آن‌ها هم این‌جا بازنویسی شده‌اند.
+ * تصاویر تزئینی هم‌رنگ: tools/recolor_theme_images.py ⇒ static/img/theme/
  */
 html[data-theme-color="skin-6"] {
-    --primary: #71B606;
-    --primarydark: #609b05;
-    --primary-rgb: 113, 182, 6;
-    --primarylight: #e6f3cf;
-    --secondary: #23281C;
-    --secondary-rgb: 35, 40, 28;
-    --heading-color: #23281C;
-    --body-color: #555555;
+    --primary: #667249;          /* زیتونی-مریمی (روبان بنر) */
+    --primarydark: #535D3B;
+    --primary-rgb: 102, 114, 73;
+    --primarylight: #E8EADB;
+    --secondary: #2E3426;        /* سبز جنگلی تیره (پنل و عنوان بنر) */
+    --secondarydark: #1F241A;
+    --secondary-rgb: 46, 52, 38;
+    --heading-color: #2E3426;
+    --body-color: #5C5A4E;       /* خاکستری گرم */
     --body-bg: #FFFFFF;
-    --light: #F4F8E9;
+    --light: #F6F1E9;            /* کرم (دیوار بنر) */
+    --accent: #9A8B66;           /* طلایی-بژ (زیرعنوان و لوگو) */
+    --accent-light: #D9C9A0;
+
+    --accordion-shadow: inset 0 calc(-1 * 1px) 0 #ECE6DA;
+    --service-card-gradient: linear-gradient(90deg, rgb(102 114 73 / 60%) 0%, rgb(46 52 38 / 80%) 100%);
+    --icon-bx-gradient: 180deg, #FFFFFF 0%, #E8EADB 100%;
+    --shadow-20: 0px 20px 40px rgba(102, 114, 73, 0.1);
 
     --font-base: "Vazirmatn", Tahoma, sans-serif;
     --font-title: "Vazirmatn", Tahoma, sans-serif;
@@ -44,6 +55,14 @@ html[data-theme-color="skin-6"] {
     --font-poppins: "Vazirmatn", Tahoma, sans-serif;
     --font-arizonia: "Vazirmatn", Tahoma, sans-serif;
     --font-montserrat: "Vazirmatn", Tahoma, sans-serif;
+}
+
+/* زرد فسفری قالب ⇒ طلایی پالت (زیرعنوان هیرو و خط/برگ تزئینی زیر آن) */
+@theme {
+    --color-primary-second: #D9C9A0;
+    --color-accent: var(--accent);
+    --background-image-sub-title-before: url('data:image/svg+xml,<svg width="32" height="50" viewBox="0 0 32 50" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M32 45.0623C32 45.0623 17.0015 39.7396 13.1391 41.2797C9.27679 42.8195 8.791 49.055 12.7337 49.9123C16.6761 50.7695 32 45.0623 32 45.0623Z" fill="%23D9C9A0"/><path fill-rule="evenodd" clip-rule="evenodd" d="M29 22C29 22 13.5823 2.25687 10.0949 0.619816C6.60755 -1.01747 0.219845 0.66262 0.00498873 4.78999C-0.210099 8.91783 6.57221 11.7253 12.1541 14.3918C17.736 17.0582 29 22 29 22Z" fill="%23D9C9A0"/></svg>');
+    --background-image-sub-title-after: url('data:image/svg+xml,<svg width="300" height="15" viewBox="0 0 300 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 15C0.0101745 14.9988 42.6458 -3.42065 112.043 0.56456C164.622 3.58412 300 2.70398 300 2.70398C300 2.70398 176.533 10.3953 111.416 6.91522C78.3833 5.14961 0 15 0 15Z" fill="%23D9C9A0"/></svg>');
 }
 
 /* ---------- تنظیمات فارسی ---------- */

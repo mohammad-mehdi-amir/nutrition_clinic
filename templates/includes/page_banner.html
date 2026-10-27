@@ -2,7 +2,7 @@
 {% comment %}
 Usage: {% include "includes/page_banner.html" with title="..." parent_title="..." parent_url="..." %}
 {% endcomment %}
-<div class="lg:min-h-125 md:min-h-100 sm:min-h-87.5 min-h-75 bg-cover bg-center bg-light relative z-1 w-full overflow-hidden flex" style="background-image:url({% static 'clinicmaster/src/images/banner/bnr1.webp' %});">
+<div class="lg:min-h-125 md:min-h-100 sm:min-h-87.5 min-h-75 bg-cover bg-center bg-light relative z-1 w-full overflow-hidden flex" style="background-image:url({% static 'img/theme/page-banner-bg.webp' %});">
     <div class="container relative z-1 h-auto table">
         <div class="row">
             <div class="lg:w-2/3 w-full">
@@ -27,7 +27,7 @@ Usage: {% include "includes/page_banner.html" with title="..." parent_title="...
     <div class="absolute z-9 bottom-[5%] ltr:right-[45%] rtl:left-[45%] max-xl:hidden"><img class="animate-move1" src="{% static 'clinicmaster/src/images/banner/item1.png' %}" alt=""></div>
     <div class="absolute z-9 3xl:top-[30%] top-2/5 ltr:right-[35%] rtl:left-[35%] max-xl:hidden"><img class="animate-move2" src="{% static 'clinicmaster/src/images/banner/item2.png' %}" alt=""></div>
     <div class="absolute z-9 3xl:bottom-[20%] ltr:right-[10%] rtl:left-[10%] bottom-[30%] max-xl:hidden"><img class="animate-move3" src="{% static 'clinicmaster/src/images/banner/item3.png' %}" alt=""></div>
-    <div class="absolute z-9 bottom-[20%] ltr:3xl:right-[18%] ltr:right-[5%] rtl:3xl:left-[18%] rtl:left-[5%] max-xl:hidden"><img class="animate-move3" src="{% static 'clinicmaster/src/images/banner/item4.png' %}" alt=""></div>
+    <div class="absolute z-9 bottom-[20%] ltr:3xl:right-[18%] ltr:right-[5%] rtl:3xl:left-[18%] rtl:left-[5%] max-xl:hidden"><img class="animate-move3" src="{% static 'img/theme/sparkle-gold.png' %}" alt=""></div>
     <div class="h-full w-25 min-w-25 absolute bottom-0 flex justify-end items-center flex-col py-6.25 px-3.75 ltr:left-0 rtl:right-0 border-e border-white/10 z-1 max-xl:hidden">
         <a href="{% url 'core:contact' %}" class="btn btn-white btn-sm !py-2 !px-4 shadow-btn [writing-mode:sideways-lr] rounded-2xl!">مشاوره بگیرید</a>
     </div>
