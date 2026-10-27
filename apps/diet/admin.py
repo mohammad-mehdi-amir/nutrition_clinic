@@ -19,7 +19,7 @@ def download_link(field_file, label="دانلود PDF"):
 
 
 @admin.register(DietTemplate)
-class DietTemplateAdmin(admin.ModelAdmin):
+class DietTemplateAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     list_display = ("title", "goal", "calories", "deliveries_count", "is_active", "file_link")
     list_editable = ("is_active",)
     list_filter = ("is_active", "goal")

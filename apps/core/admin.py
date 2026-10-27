@@ -1,6 +1,6 @@
 from django.contrib import admin
-
 from django.utils.html import format_html
+from jalali_date.admin import ModelAdminJalaliMixin
 
 from .models import FAQ, ContactMessage, Service, SiteSettings, TransformationCase
 
@@ -47,9 +47,9 @@ class FAQAdmin(admin.ModelAdmin):
 
 
 @admin.register(ContactMessage)
-class ContactMessageAdmin(admin.ModelAdmin):
+class ContactMessageAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     list_display = ("name", "phone", "email", "created_at", "is_read")
-    list_filter = ("is_read",)
+    list_filter = ("is_read", "created_at")
     search_fields = ("name", "phone", "email", "message")
     readonly_fields = ("name", "phone", "email", "message", "created_at")
     actions = ["mark_as_read"]
@@ -63,7 +63,7 @@ class ContactMessageAdmin(admin.ModelAdmin):
 
 
 @admin.register(TransformationCase)
-class TransformationCaseAdmin(admin.ModelAdmin):
+class TransformationCaseAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     list_display = ("title", "result", "duration", "thumbnails", "client_consent", "is_active", "order")
     list_editable = ("order", "is_active")
     list_filter = ("client_consent", "is_active")

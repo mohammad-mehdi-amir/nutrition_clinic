@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from jalali_date.admin import ModelAdminJalaliMixin
 
 from .models import ShippingAddress, User
 
@@ -11,7 +12,7 @@ class ShippingAddressInline(admin.StackedInline):
 
 
 @admin.register(User)
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(ModelAdminJalaliMixin, BaseUserAdmin):
     inlines = [ShippingAddressInline]
     fieldsets = BaseUserAdmin.fieldsets + (
         ("اطلاعات تماس", {"fields": ("phone_number",)}),
@@ -26,6 +27,7 @@ class UserAdmin(BaseUserAdmin):
         "phone_number",
         "is_staff",
         "is_active",
+        "date_joined",
     )
     search_fields = (
         "username",

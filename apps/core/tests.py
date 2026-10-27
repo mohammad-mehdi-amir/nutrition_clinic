@@ -345,3 +345,44 @@ class ErrorEmailTests(TestCase):
         logging.getLogger("django.security.DisallowedHost").error("Invalid HTTP_HOST header")
         logging.getLogger("apps.payments.services").info("Payment reconciled")
         self.assertEqual(mail.outbox, [])
+
+
+class AdminJalaliDatesTests(TestCase):
+    """تاریخ‌ها در پنل ادمین شمسی نمایش داده شوند (سند: بخش ۶)."""
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        self.admin = get_user_model().objects.create_superuser(username="admin", password="x")
+        self.client.force_login(self.admin)
+        import jdatetime
+        self.jalali_year = str(jdatetime.date.today().year)
+
+    def test_contact_messages_list_and_detail(self):
+        message = ContactMessage.objects.create(name="سارا", phone="09121234567", message="سلام")
+        changelist = self.client.get(reverse("admin:core_contactmessage_changelist"))
+        self.assertContains(changelist, self.jalali_year)
+        detail = self.client.get(reverse("admin:core_contactmessage_change", args=[message.pk]))
+        self.assertContains(detail, self.jalali_year)
+
+    def test_user_admin_pages_still_work_with_jalali_dates(self):
+        self.assertContains(self.client.get(reverse("admin:accounts_user_changelist")), self.jalali_year)
+        change = self.client.get(reverse("admin:accounts_user_change", args=[self.admin.pk]))
+        self.assertEqual(change.status_code, 200)
+        self.assertContains(change, self.jalali_year)
+        self.assertEqual(self.client.get(reverse("admin:accounts_user_add")).status_code, 200)
+        # Django نام این مسیر را برای مدل کاربر سفارشی هم auth_user_password_change می‌گذارد
+        password_url = reverse("admin:auth_user_password_change", args=[self.admin.pk])
+        self.assertEqual(self.client.get(password_url).status_code, 200)
+
+    def test_user_can_still_be_created_and_edited_in_admin(self):
+        from django.contrib.auth import get_user_model
+        response = self.client.post(reverse("admin:accounts_user_add"), {
+            "username": "09129998877", "password1": "Strong-Pass-123", "password2": "Strong-Pass-123",
+            "phone_number": "09129998877", "usable_password": "true",
+            # inline نشانی پیش‌فرض
+            "shipping_address-TOTAL_FORMS": "0", "shipping_address-INITIAL_FORMS": "0",
+            "shipping_address-MIN_NUM_FORMS": "0", "shipping_address-MAX_NUM_FORMS": "1",
+        })
+        errors = response.context["adminform"].form.errors if response.status_code == 200 else None
+        self.assertEqual(response.status_code, 302, errors)
+        self.assertTrue(get_user_model().objects.filter(username="09129998877").exists())
