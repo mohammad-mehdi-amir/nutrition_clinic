@@ -29,3 +29,7 @@ class FakeGateway(BaseGateway):
     def verify(self, payment):
         self._ensure_allowed()
         return VerifyResult(success=True, ref_id=f"T{secrets.randbelow(10 ** 8):08d}", card_pan="603799******0000", message="Fake OK")
+
+    def inquire(self, payment):
+        # در درگاه آزمایشی فقط انتخاب کاربر در صفحه‌ی آزمایشی معتبر است؛ تراکنش رهاشده یعنی پرداخت‌نشده
+        return VerifyResult(success=False, message="پرداخت آزمایشی تکمیل نشد.")

@@ -34,3 +34,10 @@ class BaseGateway:
     def verify(self, payment):
         """تأیید سمت سرور تراکنش؛ مبلغ از دیتابیس خوانده می‌شود، نه از مرورگر."""
         raise NotImplementedError
+
+    def inquire(self, payment):
+        """
+        استعلام تراکنشی که callback آن نرسیده (کاربر برنگشت یا verify با خطای شبکه مواجه شد).
+        در زرین‌پال همان verify است: برای پرداخت‌نشده خطا و برای قبلاً تأییدشده کد ۱۰۱ برمی‌گرداند.
+        """
+        return self.verify(payment)

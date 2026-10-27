@@ -110,26 +110,90 @@ def handle_callback(payment_id, params):
         try:
             result = gateway.verify(payment)
         except GatewayError as error:
-            # وضعیت نامشخص: تراکنش redirected می‌ماند تا با callback/استعلام بعدی دوباره verify شود
+            # وضعیت نامشخص: تراکنش redirected می‌ماند تا reconcile_payments دوباره استعلام کند
             payment.gateway_message = str(error)[:255]
             payment.save(update_fields=["gateway_message"])
             return payment
 
-        if not result.success:
-            payment.status = Payment.STATUS_FAILED
-            payment.gateway_message = result.message[:255]
-            payment.save(update_fields=["status", "gateway_message"])
-            return payment
-
-        payment.status = Payment.STATUS_PAID
-        payment.ref_id = result.ref_id
-        payment.card_pan = result.card_pan
-        payment.gateway_message = result.message[:255]
-        payment.verified_at = timezone.now()
-        payment.needs_review = not _fulfil(payment)
-        payment.save(update_fields=["status", "ref_id", "card_pan", "gateway_message", "verified_at", "needs_review"])
+        _apply_verify_result(payment, result)
 
     return payment
+
+
+def _apply_verify_result(payment, result):
+    """نتیجه‌ی verify/استعلام را روی تراکنش قفل‌شده اعمال می‌کند (مشترک callback و reconcile)."""
+    if not result.success:
+        payment.status = Payment.STATUS_FAILED
+        payment.gateway_message = result.message[:255]
+        payment.save(update_fields=["status", "gateway_message"])
+        return
+
+    payment.status = Payment.STATUS_PAID
+    payment.ref_id = result.ref_id
+    payment.card_pan = result.card_pan
+    payment.gateway_message = result.message[:255]
+    payment.verified_at = timezone.now()
+    payment.needs_review = not _fulfil(payment)
+    payment.save(update_fields=["status", "ref_id", "card_pan", "gateway_message", "verified_at", "needs_review"])
+
+
+RECONCILE_PAID = "paid"
+RECONCILE_FAILED = "failed"
+RECONCILE_PENDING = "pending"
+RECONCILE_SKIPPED = "skipped"
+
+
+def reconcile_payment(payment_id, now=None):
+    """
+    استعلام یک تراکنش «در حال پرداخت» که callback آن نرسیده.
+
+    - موفق ⇒ مثل callback: پرداخت‌شده و نوبت/سفارش از مسیر _fulfil تکمیل می‌شود.
+    - ناموفق ⇒ فقط وقتی failed می‌شود که از PAYMENT_RECONCILE_GIVE_UP_MINUTES گذشته باشد؛
+      قبل از آن ممکن است کاربر هنوز در درگاه باشد و دیرتر پرداخت کند.
+    - خطای شبکه ⇒ بدون تغییر (هیچ‌وقت به‌خاطر خطای ارتباط، پرداخت را ناموفق فرض نمی‌کنیم).
+    قفل ردیف مانع تکمیل دوباره در صورت رسیدن هم‌زمان callback می‌شود.
+    """
+    now = now or timezone.now()
+
+    with transaction.atomic():
+        payment = Payment.objects.select_for_update().get(pk=payment_id)
+        if payment.status != Payment.STATUS_REDIRECTED or not payment.authority:
+            return RECONCILE_SKIPPED
+
+        try:
+            result = get_gateway(payment.gateway).inquire(payment)
+        except GatewayError as error:
+            logger.warning("Payment %s inquiry failed: %s", payment.pk, error)
+            payment.gateway_message = str(error)[:255]
+            payment.save(update_fields=["gateway_message"])
+            return RECONCILE_PENDING
+
+        give_up_at = payment.created_at + timedelta(minutes=settings.PAYMENT_RECONCILE_GIVE_UP_MINUTES)
+        if not result.success and now < give_up_at:
+            return RECONCILE_PENDING
+
+        _apply_verify_result(payment, result)
+        logger.info("Payment %s reconciled: %s", payment.pk, payment.status)
+        return RECONCILE_PAID if payment.status == Payment.STATUS_PAID else RECONCILE_FAILED
+
+
+def reconcile_payments(now=None):
+    """
+    استعلام همه‌ی تراکنش‌های redirected قدیمی‌تر از PAYMENT_RECONCILE_AFTER_MINUTES (برای cron).
+    نتیجه: شمارش هر حالت.
+    """
+    now = now or timezone.now()
+    threshold = now - timedelta(minutes=settings.PAYMENT_RECONCILE_AFTER_MINUTES)
+    ids = list(
+        Payment.objects.filter(status=Payment.STATUS_REDIRECTED, created_at__lte=threshold)
+        .order_by("created_at")
+        .values_list("pk", flat=True)
+    )
+
+    counts = {RECONCILE_PAID: 0, RECONCILE_FAILED: 0, RECONCILE_PENDING: 0, RECONCILE_SKIPPED: 0}
+    for payment_id in ids:
+        counts[reconcile_payment(payment_id, now=now)] += 1
+    return counts
 
 
 def _fulfil(payment):

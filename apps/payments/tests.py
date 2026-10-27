@@ -283,3 +283,129 @@ class PaymentViewTests(PaymentTestMixin, TestCase):
         self.client.force_login(self.user)
         response = self.client.post(reverse("payments:pay_appointment", args=[appointment.pk]), follow=True)
         self.assertContains(response, "درگاه آزمایشی در محیط اصلی فعال نیست")
+
+
+@override_settings(PAYMENT_GATEWAY="zarinpal", ZARINPAL_MERCHANT_ID=MERCHANT, ZARINPAL_SANDBOX=True,
+                   PAYMENT_RECONCILE_AFTER_MINUTES=20, PAYMENT_RECONCILE_GIVE_UP_MINUTES=120)
+class ReconcileTests(PaymentTestMixin, TestCase):
+    """تراکنش‌هایی که callback آن‌ها نرسیده (کاربر برنگشت / خطای شبکه)."""
+
+    NOT_PAID = {"data": [], "errors": {"code": -51, "message": "Session is not valid"}}
+
+    def abandoned_payment(self, minutes_ago=30, target=None):
+        target = target or self.make_appointment()
+        authority = f"S{Payment.objects.count():035d}"  # Authority در دیتابیس یکتاست
+        request_body = {"data": {"code": 100, "authority": authority}, "errors": []}
+        with mock.patch("urllib.request.urlopen", zarinpal_router(request_body=request_body)):
+            payment, _ = start_payment(self.user, target, self.callback_url)
+        Payment.objects.filter(pk=payment.pk).update(created_at=timezone.now() - timedelta(minutes=minutes_ago))
+        return payment
+
+    def reconcile(self, verify_body=None, side_effect=None, calls=None):
+        from .services import reconcile_payments
+        patch = (mock.patch("urllib.request.urlopen", side_effect=side_effect) if side_effect
+                 else mock.patch("urllib.request.urlopen", zarinpal_router(verify_body=verify_body, calls=calls)))
+        with patch:
+            return reconcile_payments()
+
+    def test_paid_but_user_never_returned_is_confirmed(self):
+        payment = self.abandoned_payment()
+        calls = []
+        counts = self.reconcile(calls=calls)
+
+        self.assertEqual(counts["paid"], 1)
+        self.assertTrue(calls[0][0].endswith("verify.json"))
+        self.assertEqual(calls[0][1]["amount"], 3_000_000)  # مبلغ از دیتابیس
+        payment.refresh_from_db()
+        self.assertEqual((payment.status, payment.ref_id), (Payment.STATUS_PAID, "201"))
+        appointment = payment.appointment
+        appointment.refresh_from_db()
+        self.assertEqual((appointment.status, appointment.payment_status), ("confirmed", "paid"))
+
+    def test_order_paid_via_reconcile_creates_paid_order(self):
+        product = Product.objects.create(product_type="physical", name="p", slug="p", short_description="x", price=100_000, stock=3)
+        order = Order.objects.create(user=self.user, recipient_name="x", recipient_phone="09120000000",
+                                     subtotal=100_000, total=100_000, payment_deadline=timezone.now() + timedelta(minutes=30))
+        OrderItem.objects.create(order=order, product=product, product_name="p", product_type="physical",
+                                 unit_price=100_000, quantity=1, line_total=100_000)
+        self.abandoned_payment(target=order)
+        self.reconcile()
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.STATUS_PAID)
+
+    def test_recent_payment_is_not_inquired(self):
+        self.abandoned_payment(minutes_ago=5)  # کاربر احتمالاً هنوز در درگاه است
+        calls = []
+        counts = self.reconcile(calls=calls)
+        self.assertEqual(calls, [])
+        self.assertEqual(sum(counts.values()), 0)
+
+    def test_unpaid_stays_pending_until_give_up_time(self):
+        payment = self.abandoned_payment(minutes_ago=30)
+        counts = self.reconcile(verify_body=self.NOT_PAID)
+        self.assertEqual(counts["pending"], 1)
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, Payment.STATUS_REDIRECTED)
+
+    def test_unpaid_after_give_up_time_is_failed(self):
+        payment = self.abandoned_payment(minutes_ago=180)
+        counts = self.reconcile(verify_body=self.NOT_PAID)
+        self.assertEqual(counts["failed"], 1)
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, Payment.STATUS_FAILED)
+        payment.appointment.refresh_from_db()
+        self.assertEqual(payment.appointment.payment_status, "unpaid")
+
+    def test_network_error_never_fails_payment(self):
+        import urllib.error
+        payment = self.abandoned_payment(minutes_ago=600)
+        counts = self.reconcile(side_effect=urllib.error.URLError("down"))
+        self.assertEqual(counts["pending"], 1)
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, Payment.STATUS_REDIRECTED)
+
+    def test_callback_after_reconcile_does_not_fulfil_twice(self):
+        payment = self.abandoned_payment()
+        self.reconcile()
+        calls = []
+        with mock.patch("urllib.request.urlopen", zarinpal_router(calls=calls)):
+            again = handle_callback(payment.pk, {"Authority": payment.authority, "Status": "OK"})
+        self.assertEqual(again.status, Payment.STATUS_PAID)
+        self.assertEqual(calls, [])  # تراکنش نهایی‌شده دوباره verify نمی‌شود
+        self.assertEqual(Payment.objects.filter(status=Payment.STATUS_PAID).count(), 1)
+
+    def test_finished_payments_are_skipped(self):
+        payment = self.abandoned_payment()
+        Payment.objects.filter(pk=payment.pk).update(status=Payment.STATUS_CANCELLED)
+        calls = []
+        self.reconcile(calls=calls)
+        self.assertEqual(calls, [])
+
+    @override_settings(PAYMENT_GATEWAY="fake", PAYMENT_ALLOW_FAKE_GATEWAY=True)
+    def test_abandoned_fake_payment_is_not_treated_as_paid(self):
+        payment = start_payment(self.user, self.make_appointment(), self.callback_url)[0]
+        Payment.objects.filter(pk=payment.pk).update(created_at=timezone.now() - timedelta(minutes=180))
+        from .services import reconcile_payments
+        reconcile_payments()
+        payment.refresh_from_db()
+        self.assertEqual(payment.status, Payment.STATUS_FAILED)
+
+    def test_management_command_and_admin_action(self):
+        from io import StringIO
+        from django.core.management import call_command
+        payment = self.abandoned_payment()
+        out = StringIO()
+        with mock.patch("urllib.request.urlopen", zarinpal_router()):
+            call_command("reconcile_payments", stdout=out)
+        self.assertIn("موفق: 1", out.getvalue())
+
+        other = self.abandoned_payment(target=self.make_appointment(date=self.date + timedelta(days=7)))
+        admin = get_user_model().objects.create_superuser(username="admin", password="x")
+        self.client.force_login(admin)
+        with mock.patch("urllib.request.urlopen", zarinpal_router()):
+            response = self.client.post(reverse("admin:payments_payment_changelist"), {
+                "action": "inquire_from_gateway", "_selected_action": [str(other.pk), str(payment.pk)],
+            }, follow=True)
+        self.assertContains(response, "1 تراکنش استعلام شد: 1 موفق")
+        other.refresh_from_db()
+        self.assertEqual(other.status, Payment.STATUS_PAID)

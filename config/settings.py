@@ -222,6 +222,10 @@ ZARINPAL_SANDBOX = os.getenv("ZARINPAL_SANDBOX", "True").lower() in ("1", "true"
 ZARINPAL_TIMEOUT = int(os.getenv("ZARINPAL_TIMEOUT", "20"))  # ثانیه
 # مدت تمدید رزرو نوبت/سفارش هنگام رفتن کاربر به درگاه
 PAYMENT_GATEWAY_WINDOW_MINUTES = 15
+# استعلام تراکنش‌هایی که callback آن‌ها نرسیده (reconcile_payments در cron):
+# بعد از این مدت استعلام می‌شوند، و اگر تا GIVE_UP هنوز پرداخت نشده باشند ناموفق ثبت می‌شوند.
+PAYMENT_RECONCILE_AFTER_MINUTES = 20
+PAYMENT_RECONCILE_GIVE_UP_MINUTES = 120
 
 JALALI_DATE_DEFAULTS = {
     "LIST_DISPLAY_AUTO_CONVERT": True,

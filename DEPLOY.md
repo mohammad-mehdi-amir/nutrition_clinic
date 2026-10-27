@@ -103,7 +103,7 @@ sudo nginx -t && sudo systemctl reload nginx
 ```bash
 sudo -u clinic crontab deploy/crontab.example
 ```
-شامل: انقضای نوبت‌ها و سفارش‌های پرداخت‌نشده (هر ۵ دقیقه)، پاک‌سازی sessionها و پشتیبان‌گیری روزانه.
+شامل: انقضای نوبت‌ها و سفارش‌های پرداخت‌نشده و استعلام پرداخت‌هایی که callback درگاه برایشان نرسیده (هر ۵ دقیقه)، پاک‌سازی sessionها و پشتیبان‌گیری روزانه.
 
 ## ۹. بررسی نهایی
 - `https://example.com/health/` ⇒ `{"status": "ok", "database": true}`
