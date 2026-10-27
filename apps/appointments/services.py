@@ -216,6 +216,50 @@ def confirm_manual_payment(appointment):
     return appointment
 
 
+def mark_completed(appointment):
+    """ثبت انجام شدن نوبت تأییدشده‌ای که زمانش رسیده (ادمین)."""
+    with transaction.atomic():
+        appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)
+
+        if appointment.status != "confirmed":
+            raise ValueError("فقط نوبت‌های تأییدشده را می‌توان انجام‌شده ثبت کرد.")
+        if appointment_start(appointment) > timezone.now():
+            raise ValueError("زمان این نوبت هنوز نرسیده است.")
+
+        appointment.status = "completed"
+        appointment.save(update_fields=["status"])
+
+    return appointment
+
+
+def cancel_by_clinic(appointment):
+    """
+    لغو نوبت توسط کلینیک (بدون محدودیت مهلت لغو بیمار).
+    نوبت پرداخت‌شده «در انتظار بازپرداخت» می‌شود تا ادمین وجه را برگرداند.
+    """
+    with transaction.atomic():
+        appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)
+
+        if appointment.status not in ("pending", "confirmed"):
+            raise ValueError("فقط نوبت‌های در انتظار پرداخت یا تأییدشده قابل لغو هستند.")
+
+        appointment.status = "cancelled"
+        appointment.payment_deadline = None
+        if appointment.payment_status == Appointment.PAYMENT_PAID:
+            appointment.payment_status = Appointment.PAYMENT_REFUND_REQUESTED
+        appointment.save(update_fields=["status", "payment_deadline", "payment_status"])
+
+    return appointment
+
+
+def complete_past_appointments():
+    """
+    نوبت‌های تأییدشده‌ی روزهای گذشته «انجام‌شده» می‌شوند (برای cron)؛ تعداد را برمی‌گرداند.
+    نوبت امروز تا پایان روز تأییدشده می‌ماند تا ادمین در صورت لزوم آن را لغو کند.
+    """
+    return Appointment.objects.filter(status="confirmed", date__lt=timezone.localdate()).update(status="completed")
+
+
 def mark_refunded(appointment):
     with transaction.atomic():
         appointment = Appointment.objects.select_for_update().get(pk=appointment.pk)

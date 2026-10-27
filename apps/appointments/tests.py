@@ -351,3 +351,103 @@ class ConfirmFlowTests(TestCase):
         response = self.client.post(self.confirm_url, {"availability": other_slot.id})
         self.assertRedirects(response, self.select_url, fetch_redirect_response=False)
         self.assertFalse(Appointment.objects.exists())
+
+
+class AppointmentLifecycleAdminTests(TestCase):
+    """وضعیت نوبت فقط از مسیر services تغییر می‌کند: انجام‌شده، لغو توسط کلینیک، رزرو از ادمین."""
+
+    def setUp(self):
+        self.admin = get_user_model().objects.create_superuser(username="admin", password="x")
+        self.patient = get_user_model().objects.create_user(username="09120000001", phone_number="09120000001")
+        self.doctor = Doctor.objects.create(name="Dr", specialty="x", visit_fee=300_000)
+        self.slot = DoctorAvailability.objects.create(doctor=self.doctor, day_of_week=0, time=time(10, 0))
+        self.client.force_login(self.admin)
+
+    def make(self, days=7, **extra):
+        defaults = dict(availability=self.slot, patient=self.patient, date=next_saturday() + timedelta(days=days),
+                        status="confirmed", fee=300_000, payment_status="paid")
+        defaults.update(extra)
+        return Appointment.objects.create(**defaults)
+
+    def action(self, name, *appointments):
+        return self.client.post(reverse("admin:appointments_appointment_changelist"), {
+            "action": name, "_selected_action": [str(a.pk) for a in appointments],
+        }, follow=True)
+
+    def test_mark_completed_only_after_start(self):
+        from .services import mark_completed
+        past = self.make(days=-14)
+        future = self.make(days=7)
+        mark_completed(past)
+        past.refresh_from_db()
+        self.assertEqual(past.status, "completed")
+        with self.assertRaises(ValueError):
+            mark_completed(future)
+        with self.assertRaises(ValueError):
+            mark_completed(self.make(days=-21, status="cancelled"))
+
+    def test_clinic_cancel_requests_refund_for_paid_and_ignores_deadline(self):
+        from .services import cancel_by_clinic
+        tomorrowish = self.make(days=0)  # حتی نزدیک به زمان نوبت (بیمار دیگر نمی‌تواند لغو کند)
+        cancel_by_clinic(tomorrowish)
+        tomorrowish.refresh_from_db()
+        self.assertEqual((tomorrowish.status, tomorrowish.payment_status), ("cancelled", "refund_requested"))
+
+        free = self.make(days=14, payment_status="not_required", fee=0)
+        cancel_by_clinic(free)
+        free.refresh_from_db()
+        self.assertEqual(free.payment_status, "not_required")
+        with self.assertRaises(ValueError):
+            cancel_by_clinic(free)
+
+    def test_complete_past_appointments_for_cron(self):
+        from .services import complete_past_appointments
+        past = self.make(days=-14)
+        pending_past = self.make(days=-21, status="pending", payment_status="unpaid")
+        future = self.make(days=7)
+        self.assertEqual(complete_past_appointments(), 1)
+        for obj, expected in ((past, "completed"), (pending_past, "pending"), (future, "confirmed")):
+            obj.refresh_from_db()
+            self.assertEqual(obj.status, expected)
+
+    def test_admin_actions(self):
+        past = self.make(days=-14)
+        future = self.make(days=7)
+        response = self.action("mark_as_completed", past, future)
+        self.assertContains(response, "1 نوبت انجام‌شده ثبت شد. 1 مورد قابل انجام نبود.")
+        self.action("cancel_selected_by_clinic", future)
+        future.refresh_from_db()
+        self.assertEqual((future.status, future.payment_status), ("cancelled", "refund_requested"))
+        self.action("mark_as_refunded", future)
+        future.refresh_from_db()
+        self.assertEqual(future.payment_status, "refunded")
+
+    def test_status_cannot_be_edited_directly_in_change_form(self):
+        appointment = self.make(days=7)
+        url = reverse("admin:appointments_appointment_change", args=[appointment.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'name="status"')
+        self.assertNotContains(response, 'name="payment_status"')
+        self.client.post(url, {"status": "cancelled", "payment_status": "unpaid"})
+        appointment.refresh_from_db()
+        self.assertEqual((appointment.status, appointment.payment_status), ("confirmed", "paid"))
+
+    def test_admin_booking_uses_site_rules(self):
+        from utils.jalali import gregorian_to_jalali
+        date = next_saturday() + timedelta(days=7)
+        jalali = gregorian_to_jalali(date).strftime("%Y-%m-%d")
+        url = reverse("admin:appointments_appointment_add")
+        self.assertEqual(self.client.get(url).status_code, 200)
+
+        response = self.client.post(url, {"patient": self.patient.pk, "availability": self.slot.pk, "date": jalali})
+        self.assertEqual(response.status_code, 302, response.content[:3000] if response.status_code != 302 else "")
+        booked = Appointment.objects.get()
+        self.assertEqual((booked.status, booked.payment_status, booked.fee), ("pending", "unpaid", 300_000))
+        self.assertIsNotNone(booked.payment_deadline)
+
+        # همان اسلات دوباره ⇒ خطای فرم، نه نوبت دوم
+        other = get_user_model().objects.create_user(username="09120000002")
+        response = self.client.post(url, {"patient": other.pk, "availability": self.slot.pk, "date": jalali})
+        self.assertContains(response, "این زمان قبلاً رزرو شده است")
+        self.assertEqual(Appointment.objects.count(), 1)

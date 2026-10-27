@@ -1,5 +1,5 @@
 # crontab -e  (کاربر clinic)
-# انقضای نوبت‌ها و سفارش‌های پرداخت‌نشده (هر ۵ دقیقه)
+# انقضای نوبت‌ها و سفارش‌های پرداخت‌نشده و ثبت «انجام‌شده» برای نوبت‌های تأییدشده‌ی روزهای گذشته (هر ۵ دقیقه)
 */5 * * * * cd /srv/nutrition_clinic && venv/bin/python manage.py expire_pending_appointments >> /var/log/nutrition_clinic/cron.log 2>&1
 */5 * * * * cd /srv/nutrition_clinic && venv/bin/python manage.py expire_pending_orders >> /var/log/nutrition_clinic/cron.log 2>&1
 # استعلام پرداخت‌هایی که callback درگاه برایشان نرسیده (هر ۵ دقیقه)

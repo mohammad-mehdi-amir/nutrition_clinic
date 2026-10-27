@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin, messages
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect
@@ -8,7 +9,11 @@ from jalali_date.admin import ModelAdminJalaliMixin
 
 from .models import Doctor, DoctorAvailability, Appointment
 from .services import (
+    book_appointment,
+    cancel_by_clinic,
     confirm_manual_payment,
+    mark_completed,
+    validate_slot,
     get_active_slot_keys,
     mark_refunded,
     get_schedule_time_slots,
@@ -131,6 +136,24 @@ class DoctorAvailabilityAdmin(admin.ModelAdmin):
         return obj.time.strftime("%H:%M")
 
 
+class AppointmentAddForm(forms.ModelForm):
+    """ثبت نوبت از ادمین (مثلاً رزرو تلفنی) با همان قواعد رزرو سایت."""
+
+    class Meta:
+        model = Appointment
+        fields = ("patient", "availability", "date")
+
+    def clean(self):
+        cleaned = super().clean()
+        patient, availability, date = cleaned.get("patient"), cleaned.get("availability"), cleaned.get("date")
+        if patient and availability and date:
+            try:
+                validate_slot(patient, availability.pk, date)
+            except ValueError as error:
+                raise forms.ValidationError(str(error))
+        return cleaned
+
+
 @admin.register(Appointment)
 class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     list_select_related = ("patient", "availability", "availability__doctor")
@@ -161,9 +184,34 @@ class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
         "availability__doctor__name",
     )
 
-    readonly_fields = ("start_time", "fee", "created_at", "payment_deadline")
+    # وضعیت‌ها فقط از مسیر اکشن‌ها (services) تغییر می‌کنند تا قوانین لغو، پرداخت و بازپرداخت دور زده نشود
+    readonly_fields = (
+        "patient", "availability", "date", "start_time", "fee",
+        "status", "payment_status", "payment_deadline", "created_at",
+    )
 
-    actions = ["confirm_payment", "mark_as_refunded"]
+    actions = ["confirm_payment", "mark_as_completed", "cancel_selected_by_clinic", "mark_as_refunded"]
+
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None:
+            kwargs["form"] = AppointmentAddForm
+        return super().get_form(request, obj, **kwargs)
+
+    def get_readonly_fields(self, request, obj=None):
+        return () if obj is None else self.readonly_fields
+
+    def get_fields(self, request, obj=None):
+        return ("patient", "availability", "date") if obj is None else self.readonly_fields
+
+    def save_model(self, request, obj, form, change):
+        if change:
+            return  # همه‌ی فیلدها فقط‌خواندنی‌اند؛ تغییر فقط با اکشن‌ها
+        try:
+            appointment = book_appointment(obj.patient, obj.availability_id, obj.date)
+        except ValueError as error:  # رزرو هم‌زمان بین اعتبارسنجی فرم و ثبت
+            raise forms.ValidationError(str(error))
+        obj.pk = appointment.pk
+        obj.refresh_from_db()
 
     @admin.display(description="دکتر")
     def get_doctor(self, obj):
@@ -187,6 +235,14 @@ class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     @admin.action(description="تأیید پرداخت دستی (نوبت‌های در انتظار پرداخت)")
     def confirm_payment(self, request, queryset):
         self._run(request, queryset, confirm_manual_payment, "تأیید شد")
+
+    @admin.action(description="ثبت «انجام‌شده» (نوبت‌های تأییدشده‌ای که زمانشان رسیده)")
+    def mark_as_completed(self, request, queryset):
+        self._run(request, queryset, mark_completed, "انجام‌شده ثبت شد")
+
+    @admin.action(description="لغو توسط کلینیک (پرداخت‌شده ⇒ در انتظار بازپرداخت)")
+    def cancel_selected_by_clinic(self, request, queryset):
+        self._run(request, queryset, cancel_by_clinic, "لغو شد")
 
     @admin.action(description="ثبت بازپرداخت انجام‌شده")
     def mark_as_refunded(self, request, queryset):

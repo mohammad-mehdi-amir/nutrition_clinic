@@ -1,11 +1,15 @@
 from django.core.management.base import BaseCommand
 
-from apps.appointments.services import expire_pending_appointments
+from apps.appointments.services import complete_past_appointments, expire_pending_appointments
 
 
 class Command(BaseCommand):
-    help = "لغو نوبت‌های پرداخت‌نشده‌ای که مهلت پرداختشان گذشته (برای اجرا با cron)."
+    help = (
+        "لغو نوبت‌های پرداخت‌نشده‌ای که مهلت پرداختشان گذشته و ثبت «انجام‌شده» برای نوبت‌های "
+        "تأییدشده‌ی روزهای گذشته (برای اجرا با cron)."
+    )
 
     def handle(self, *args, **options):
-        count = expire_pending_appointments()
-        self.stdout.write(self.style.SUCCESS(f"{count} نوبت منقضی شد."))
+        expired = expire_pending_appointments()
+        completed = complete_past_appointments()
+        self.stdout.write(self.style.SUCCESS(f"{expired} نوبت منقضی و {completed} نوبت انجام‌شده ثبت شد."))
