@@ -20,6 +20,10 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         }),
         ("نوبت‌دهی", {"fields": ("default_visit_fee", "payment_timeout_minutes", "cancellation_deadline_hours")}),
         ("فروشگاه", {"fields": ("shipping_cost", "free_shipping_threshold", "order_payment_timeout_minutes")}),
+        ("اعلان‌های پیامکی", {
+            "fields": ("sms_appointment_confirmed", "sms_appointment_cancelled", "sms_order_paid", "sms_order_shipped", "sms_diet_ready"),
+            "description": "هر پیامک فقط وقتی ارسال می‌شود که روشن باشد و نام قالب آن در تنظیمات سرور (.env) وارد شده باشد.",
+        }),
     )
 
     def has_add_permission(self, request):

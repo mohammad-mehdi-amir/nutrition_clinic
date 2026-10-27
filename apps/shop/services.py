@@ -167,11 +167,16 @@ def mark_order_paid(order):
     """
     from apps.diet.services import create_requests_for_order
 
+    from apps.core import notifications
+
     with transaction.atomic():
         order = Order.objects.select_for_update().get(pk=order.pk)
+        was_paid = order.status == Order.STATUS_PAID
         paid = _apply_payment(order)
         if paid:
             create_requests_for_order(order)
+            if not was_paid:
+                notifications.order_paid(order)
         return paid
 
 

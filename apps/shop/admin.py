@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
 from jalali_date.admin import ModelAdminJalaliMixin
 
+from apps.core import notifications
 from apps.diet.services import create_requests_for_order
 
 from .models import Category, Order, OrderItem, Product
@@ -60,6 +61,8 @@ class OrderAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
+        if change and "status" in form.changed_data and obj.status == Order.STATUS_SHIPPED:
+            notifications.order_shipped(obj)
         # اگر ادمین پرداخت را دستی ثبت کند، درخواست رژیم پکیج‌ها هم ساخته شود
         if obj.status in PAID_ORDER_STATUSES:
             create_requests_for_order(obj)

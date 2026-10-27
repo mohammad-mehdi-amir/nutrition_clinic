@@ -4,6 +4,8 @@ from django.core.files import File
 from django.db import transaction
 from django.utils import timezone
 
+from apps.core import notifications
+
 from .models import BodyMeasurement, DietRequest, HealthProfile, PatientDiet
 
 logger = logging.getLogger(__name__)
@@ -259,18 +261,6 @@ def deliver_diet(diet_request, *, title="", uploaded_file=None, template=None, n
             diet_request.delivered_at = diet.delivered_at
             diet_request.save(update_fields=["status", "delivered_at"])
 
-        user = diet_request.user
-        transaction.on_commit(lambda: _notify_diet_ready(user))
+        notifications.diet_ready(diet_request.user)
 
     return diet
-
-
-def _notify_diet_ready(user):
-    from apps.accounts.sms import SMSError, send_diet_ready
-
-    phone = user.phone_number or user.username
-    try:
-        send_diet_ready(phone, user.first_name)
-    except SMSError:
-        # خطای پیامک نباید تحویل رژیم را خراب کند؛ رژیم در پنل بیمار هست
-        logger.exception("ارسال پیامک آماده بودن رژیم به %s ناموفق بود.", phone)

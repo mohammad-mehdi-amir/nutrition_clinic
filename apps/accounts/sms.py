@@ -3,8 +3,9 @@
 
 - ConsoleSMSBackend: توسعه؛ پیام در لاگ چاپ می‌شود.
 - KavenegarSMSBackend: ارسال با سرویس verify/lookup کاوه‌نگار.
-  تنظیمات از env: SMS_API_KEY، SMS_TEMPLATE (قالب کد بازیابی) و SMS_DIET_READY_TEMPLATE
-  (قالب «رژیم آماده است»؛ خالی ⇒ این پیامک ارسال نمی‌شود). نام قالب‌ها همان قالب تأییدشده در پنل کاوه‌نگار است.
+  تنظیمات از env: SMS_API_KEY، SMS_TEMPLATE (قالب کد بازیابی) و قالب‌های اعلان (SMS_*_TEMPLATE؛
+  خالی ⇒ همان پیامک ارسال نمی‌شود). نام قالب‌ها همان قالب تأییدشده در پنل کاوه‌نگار است.
+  اعلان‌ها از apps/core/notifications.py ارسال می‌شوند.
 """
 import json
 import logging
@@ -23,8 +24,11 @@ class SMSError(Exception):
 
 
 class BaseSMSBackend:
-    def send_lookup(self, phone, template, token):
-        """ارسال پیامک قالب‌دار (template در پنل سرویس پیامک تعریف شده؛ token جایگزین %token می‌شود)."""
+    def send_lookup(self, phone, template, token, token2="", token3=""):
+        """
+        ارسال پیامک قالب‌دار (template در پنل سرویس پیامک تعریف شده؛
+        token و token2 و token3 جایگزین %token و %token2 و %token3 می‌شوند).
+        """
         raise NotImplementedError
 
     def send_verification_code(self, phone, code):
@@ -32,8 +36,9 @@ class BaseSMSBackend:
 
 
 class ConsoleSMSBackend(BaseSMSBackend):
-    def send_lookup(self, phone, template, token):
-        logger.warning("[SMS] to %s: template=%s token=%s", phone, template or "-", token)
+    def send_lookup(self, phone, template, token, token2="", token3=""):
+        tokens = " | ".join(t for t in (token, token2, token3) if t)
+        logger.warning("[SMS] to %s: template=%s tokens=%s", phone, template or "-", tokens)
 
     def send_verification_code(self, phone, code):
         logger.warning("[SMS] to %s: verification code %s", phone, code)
@@ -42,13 +47,18 @@ class ConsoleSMSBackend(BaseSMSBackend):
 class KavenegarSMSBackend(BaseSMSBackend):
     url = "https://api.kavenegar.com/v1/{api_key}/verify/lookup.json"
 
-    def send_lookup(self, phone, template, token):
+    def send_lookup(self, phone, template, token, token2="", token3=""):
         api_key = settings.SMS_API_KEY
 
         if not api_key or not template:
             raise SMSError("SMS_API_KEY یا نام قالب پیامک تنظیم نشده است.")
 
-        data = urllib.parse.urlencode({"receptor": phone, "token": token, "template": template}).encode()
+        params = {"receptor": phone, "token": token, "template": template}
+        if token2:
+            params["token2"] = token2
+        if token3:
+            params["token3"] = token3
+        data = urllib.parse.urlencode(params).encode()
         request = urllib.request.Request(self.url.format(api_key=api_key), data=data, method="POST")
 
         try:
@@ -75,12 +85,16 @@ def lookup_token(text, fallback="مراجع"):
     return text.replace(" ", "\u200c")[:30] if text else fallback
 
 
-def send_diet_ready(phone, name):
-    """پیامک «رژیم شما آماده است». بدون قالب تنظیم‌شده (SMS_DIET_READY_TEMPLATE) ارسال نمی‌شود."""
+def send_template(template_setting, phone, *tokens):
+    """
+    پیامک قالب‌دار با نام قالب از settings (مثلاً SMS_DIET_READY_TEMPLATE) و حداکثر سه token.
+    اگر قالب تنظیم نشده باشد ارسال نمی‌شود (در توسعه ConsoleSMSBackend همیشه در لاگ چاپ می‌کند).
+    """
     backend = get_backend()
-    template = settings.SMS_DIET_READY_TEMPLATE
+    template = getattr(settings, template_setting, "")
     if not template and not isinstance(backend, ConsoleSMSBackend):
-        logger.info("SMS_DIET_READY_TEMPLATE تنظیم نشده؛ پیامک آماده بودن رژیم ارسال نشد.")
+        logger.info("%s تنظیم نشده؛ پیامک ارسال نشد.", template_setting)
         return False
-    backend.send_lookup(phone, template, lookup_token(name))
+    tokens = [lookup_token(str(t)) for t in tokens][:3]
+    backend.send_lookup(phone, template or template_setting, *tokens)
     return True

@@ -4,6 +4,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.utils import timezone
 
+from apps.core import notifications
 from apps.core.models import SiteSettings
 from .models import (
     ACTIVE_APPOINTMENT_STATUSES,
@@ -106,6 +107,9 @@ def book_appointment(patient, availability_id, selected_date):
     except IntegrityError:
         # درخواست هم‌زمان: همین اسلات یا همین ساعت برای بیمار در همین لحظه ثبت شد
         raise ValueError("این زمان هم‌اکنون رزرو شد؛ لطفاً زمان دیگری انتخاب کنید.")
+
+    if appointment.status == "confirmed":
+        notifications.appointment_confirmed(appointment)
 
     return appointment
 
@@ -212,6 +216,7 @@ def confirm_manual_payment(appointment):
         appointment.payment_status = Appointment.PAYMENT_PAID
         appointment.payment_deadline = None
         appointment.save(update_fields=["status", "payment_status", "payment_deadline"])
+        notifications.appointment_confirmed(appointment)
 
     return appointment
 
@@ -248,6 +253,7 @@ def cancel_by_clinic(appointment):
         if appointment.payment_status == Appointment.PAYMENT_PAID:
             appointment.payment_status = Appointment.PAYMENT_REFUND_REQUESTED
         appointment.save(update_fields=["status", "payment_deadline", "payment_status"])
+        notifications.appointment_cancelled_by_clinic(appointment)
 
     return appointment
 
@@ -373,6 +379,7 @@ def mark_appointment_paid(appointment):
             appointment.payment_status = Appointment.PAYMENT_PAID
             appointment.payment_deadline = None
             appointment.save(update_fields=["status", "payment_status", "payment_deadline"])
+            notifications.appointment_confirmed(appointment)
             return True
 
         # نوبت هنگام حضور کاربر در درگاه منقضی شده؛ اگر اسلات هنوز آزاد است دوباره فعالش می‌کنیم
@@ -383,6 +390,7 @@ def mark_appointment_paid(appointment):
                     appointment.payment_status = Appointment.PAYMENT_PAID
                     appointment.payment_deadline = None
                     appointment.save(update_fields=["status", "payment_status", "payment_deadline"])
+                notifications.appointment_confirmed(appointment)
                 return True
             except IntegrityError:
                 appointment.refresh_from_db()

@@ -213,7 +213,12 @@ LOGOUT_REDIRECT_URL = "core:home"
 SMS_BACKEND = os.getenv("SMS_BACKEND", "apps.accounts.sms.ConsoleSMSBackend")
 SMS_API_KEY = os.getenv("SMS_API_KEY", "")
 SMS_TEMPLATE = os.getenv("SMS_TEMPLATE", "")
-SMS_DIET_READY_TEMPLATE = os.getenv("SMS_DIET_READY_TEMPLATE", "")  # پیامک «رژیم شما آماده است»
+# قالب‌های اعلان (کاوه‌نگار lookup؛ خالی ⇒ آن پیامک ارسال نمی‌شود). روشن/خاموش هر اعلان: تنظیمات سایت در ادمین.
+SMS_DIET_READY_TEMPLATE = os.getenv("SMS_DIET_READY_TEMPLATE", "")                    # %token=نام
+SMS_APPOINTMENT_CONFIRMED_TEMPLATE = os.getenv("SMS_APPOINTMENT_CONFIRMED_TEMPLATE", "")  # نام، تاریخ، ساعت
+SMS_APPOINTMENT_CANCELLED_TEMPLATE = os.getenv("SMS_APPOINTMENT_CANCELLED_TEMPLATE", "")  # نام، تاریخ، ساعت
+SMS_ORDER_PAID_TEMPLATE = os.getenv("SMS_ORDER_PAID_TEMPLATE", "")                    # نام، شماره سفارش
+SMS_ORDER_SHIPPED_TEMPLATE = os.getenv("SMS_ORDER_SHIPPED_TEMPLATE", "")              # نام، شماره سفارش
 
 # Payments. PAYMENT_GATEWAY: "zarinpal" (Production) | "fake" (توسعه؛ فقط با DEBUG)
 PAYMENT_GATEWAY = os.getenv("PAYMENT_GATEWAY", "fake" if DEBUG else "zarinpal")

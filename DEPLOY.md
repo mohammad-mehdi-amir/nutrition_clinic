@@ -60,7 +60,12 @@ ZARINPAL_SANDBOX=False
 SMS_BACKEND=apps.accounts.sms.KavenegarSMSBackend
 SMS_API_KEY=<کلید کاوه‌نگار>
 SMS_TEMPLATE=<نام قالب verify در پنل کاوه‌نگار>
-SMS_DIET_READY_TEMPLATE=<نام قالب «رژیم شما آماده است»؛ ‎%token = نام کوچک بیمار>
+# قالب‌های اعلان در پنل کاوه‌نگار (خالی ⇒ آن پیامک ارسال نمی‌شود؛ روشن/خاموش: ادمین ← تنظیمات سایت)
+SMS_DIET_READY_TEMPLATE=<«رژیم شما آماده است»؛ ‎%token = نام>
+SMS_APPOINTMENT_CONFIRMED_TEMPLATE=<«نوبت شما تأیید شد»؛ ‎%token = نام، ‎%token2 = تاریخ، ‎%token3 = ساعت>
+SMS_APPOINTMENT_CANCELLED_TEMPLATE=<«نوبت شما لغو شد»؛ ‎%token = نام، ‎%token2 = تاریخ، ‎%token3 = ساعت>
+SMS_ORDER_PAID_TEMPLATE=<«سفارش شما ثبت شد»؛ ‎%token = نام، ‎%token2 = شماره سفارش>
+SMS_ORDER_SHIPPED_TEMPLATE=<«سفارش شما ارسال شد»؛ ‎%token = نام، ‎%token2 = شماره سفارش>
 
 PRIVATE_MEDIA_SERVE=nginx
 

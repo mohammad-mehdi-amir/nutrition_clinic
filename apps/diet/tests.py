@@ -369,22 +369,22 @@ class DeliveryServiceTests(TestCase):
         from apps.accounts.sms import SMSError
         from .services import deliver_diet
 
-        with mock.patch("apps.accounts.sms.send_diet_ready") as send:
+        with mock.patch("apps.accounts.sms.send_template") as send:
             with self.captureOnCommitCallbacks(execute=True):
                 deliver_diet(self.request, template=self.template)
-        send.assert_called_once_with("09120000001", "سارا")
+        send.assert_called_once_with("SMS_DIET_READY_TEMPLATE", "09120000001", "سارا")
 
-        with mock.patch("apps.accounts.sms.send_diet_ready", side_effect=SMSError("down")):
+        with mock.patch("apps.accounts.sms.send_template", side_effect=SMSError("down")):
             with self.captureOnCommitCallbacks(execute=True):
                 deliver_diet(self.request, template=self.template)
         self.assertEqual(self.request.diets.count(), 2)
 
     def test_diet_ready_sms_skipped_without_template_on_real_backend(self):
         from unittest import mock
-        from apps.accounts.sms import send_diet_ready
+        from apps.accounts.sms import send_template
         with self.settings(SMS_BACKEND="apps.accounts.sms.KavenegarSMSBackend", SMS_DIET_READY_TEMPLATE=""):
             with mock.patch("urllib.request.urlopen") as urlopen:
-                self.assertFalse(send_diet_ready("09120000001", "سارا"))
+                self.assertFalse(send_template("SMS_DIET_READY_TEMPLATE", "09120000001", "سارا"))
             urlopen.assert_not_called()
 
     def test_lookup_token_has_no_spaces(self):

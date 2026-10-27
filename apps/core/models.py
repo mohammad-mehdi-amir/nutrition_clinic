@@ -114,6 +114,13 @@ class SiteSettings(models.Model):
         help_text="پس از این مدت سفارش پرداخت‌نشده لغو و موجودی آزاد می‌شود.",
     )
 
+    # اعلان‌های پیامکی (نام قالب هر پیامک در .env؛ apps/core/notifications.py)
+    sms_appointment_confirmed = models.BooleanField(default=True, verbose_name="پیامک تأیید نوبت")
+    sms_appointment_cancelled = models.BooleanField(default=True, verbose_name="پیامک لغو نوبت توسط کلینیک")
+    sms_order_paid = models.BooleanField(default=True, verbose_name="پیامک ثبت و پرداخت سفارش")
+    sms_order_shipped = models.BooleanField(default=True, verbose_name="پیامک ارسال سفارش")
+    sms_diet_ready = models.BooleanField(default=True, verbose_name="پیامک آماده شدن رژیم")
+
 
     class Meta:
 
