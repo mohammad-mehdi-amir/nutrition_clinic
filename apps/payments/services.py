@@ -135,6 +135,12 @@ def _apply_verify_result(payment, result):
     payment.verified_at = timezone.now()
     payment.needs_review = not _fulfil(payment)
     payment.save(update_fields=["status", "ref_id", "card_pan", "gateway_message", "verified_at", "needs_review"])
+    if payment.needs_review:
+        # پول گرفته شده ولی نوبت/سفارش قابل تأیید نبود ⇒ ادمین باید بازپرداخت کند (ایمیل به ADMINS)
+        logger.error(
+            "Payment %s (%s, %s تومان, ref %s) succeeded but its target could not be fulfilled; refund needed.",
+            payment.pk, payment.description, payment.amount, payment.ref_id,
+        )
 
 
 RECONCILE_PAID = "paid"

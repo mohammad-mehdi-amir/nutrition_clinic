@@ -237,6 +237,17 @@ class OrderPaymentTests(PaymentTestMixin, TestCase):
         self.assertTrue(payment.needs_review)
         self.assertEqual(order.status, Order.STATUS_CANCELLED)
 
+    @override_settings(ADMINS=[("Admin", "admin@clinic.test")])
+    def test_payment_needing_refund_emails_admins(self):
+        from django.core import mail
+        order, _ = self.make_order(quantity=2, stock_after=1)
+        with mock.patch("urllib.request.urlopen", zarinpal_router()):
+            payment, _ = start_payment(self.user, order, self.callback_url)
+            Order.objects.filter(pk=order.pk).update(status=Order.STATUS_CANCELLED)
+            handle_callback(payment.pk, {"Authority": payment.authority, "Status": "OK"})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn("refund needed", mail.outbox[0].subject + mail.outbox[0].body)
+
 
 @override_settings(PAYMENT_GATEWAY="fake", PAYMENT_ALLOW_FAKE_GATEWAY=True)
 class PaymentViewTests(PaymentTestMixin, TestCase):

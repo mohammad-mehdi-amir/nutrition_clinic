@@ -281,16 +281,41 @@ LOGGING = {
     "formatters": {
         "standard": {"format": "{asctime} {levelname} {name}: {message}", "style": "{"},
     },
+    "filters": {
+        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
+    },
     "handlers": {
         "console": {"class": "logging.StreamHandler", "formatter": "standard"},
+        # خطاهای ۵۰۰ و رویدادهای مهم (مثلاً پرداخت موفقی که نوبت/سفارشش قابل تأیید نبود) به ADMINS ایمیل می‌شوند
+        "mail_admins": {
+            "class": "django.utils.log.AdminEmailHandler",
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+        },
     },
     "root": {"handlers": ["console"], "level": LOG_LEVEL},
     "loggers": {
-        "django": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
-        # خطاهای امنیتی (DisallowedHost، CSRF) حتماً ثبت شوند
+        "django": {"handlers": ["console", "mail_admins"], "level": LOG_LEVEL, "propagate": False},
+        # خطاهای امنیتی (DisallowedHost، CSRF) حتماً ثبت شوند؛ ایمیل نمی‌شوند تا ربات‌ها صندوق را پر نکنند
         "django.security": {"handlers": ["console"], "level": "WARNING", "propagate": False},
-        "apps": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        "apps": {"handlers": ["console", "mail_admins"], "level": LOG_LEVEL, "propagate": False},
     },
 }
 
 ADMINS = [("Admin", email) for email in env_list("ADMINS")]
+
+# ایمیل (خطاهای سایت برای ADMINS). توسعه: چاپ در کنسول؛ Production: SMTP از env.
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND") or (
+    "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend"
+)
+# «or» چون متغیر خالی در .env (EMAIL_PORT=) رشته‌ی خالی است، نه None
+EMAIL_HOST = os.getenv("EMAIL_HOST") or "localhost"
+EMAIL_PORT = int(os.getenv("EMAIL_PORT") or 587)
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True) if os.getenv("EMAIL_USE_TLS") else True
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
+EMAIL_TIMEOUT = 10
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL") or "webmaster@localhost"
+SERVER_EMAIL = os.getenv("SERVER_EMAIL") or DEFAULT_FROM_EMAIL
+EMAIL_SUBJECT_PREFIX = "[کلینیک] "

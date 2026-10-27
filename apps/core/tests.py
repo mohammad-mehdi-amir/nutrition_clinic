@@ -319,3 +319,29 @@ class SeoEndpointTests(TestCase):
     def test_health(self):
         response = self.client.get("/health/")
         self.assertEqual(response.json(), {"status": "ok", "database": True})
+
+
+@override_settings(ADMINS=[("Admin", "admin@clinic.test")])
+class ErrorEmailTests(TestCase):
+    """خطاهای ۵۰۰ و رویدادهای مهم برنامه به ADMINS ایمیل می‌شوند؛ هشدارهای امنیتی نه."""
+
+    def test_server_error_is_emailed_to_admins(self):
+        import logging
+        from django.core import mail
+        logging.getLogger("django.request").error("Internal Server Error: /x/")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["admin@clinic.test"])
+        self.assertTrue(mail.outbox[0].subject.startswith("[کلینیک] "))
+
+    def test_app_error_is_emailed(self):
+        import logging
+        from django.core import mail
+        logging.getLogger("apps.payments.services").error("refund needed")
+        self.assertEqual(len(mail.outbox), 1)
+
+    def test_security_warnings_and_info_are_not_emailed(self):
+        import logging
+        from django.core import mail
+        logging.getLogger("django.security.DisallowedHost").error("Invalid HTTP_HOST header")
+        logging.getLogger("apps.payments.services").info("Payment reconciled")
+        self.assertEqual(mail.outbox, [])

@@ -65,6 +65,12 @@ SMS_DIET_READY_TEMPLATE=<نام قالب «رژیم شما آماده است»؛
 PRIVATE_MEDIA_SERVE=nginx
 
 ADMINS=admin@example.com
+EMAIL_HOST=<سرور SMTP، مثلاً smtp.gmail.com یا ایمیل هاست>
+EMAIL_PORT=587
+EMAIL_HOST_USER=<نام کاربری SMTP>
+EMAIL_HOST_PASSWORD=<رمز یا App Password>
+DEFAULT_FROM_EMAIL=no-reply@example.com
+SERVER_EMAIL=no-reply@example.com
 ```
 ```bash
 chmod 600 .env
@@ -110,6 +116,7 @@ sudo -u clinic crontab deploy/crontab.example
 - `https://example.com/robots.txt` و `https://example.com/sitemap.xml`
 - یک نوبت و یک سفارش آزمایشی با **زرین‌پال sandbox** (`ZARINPAL_SANDBOX=True` و یک UUID دلخواه به‌عنوان مرچنت) تا انتها؛ بعد از تأیید callback، مرچنت واقعی و `ZARINPAL_SANDBOX=False`.
 - بازیابی رمز با شماره‌ی خودتان (ارسال پیامک واقعی).
+- ایمیل خطا: `venv/bin/python manage.py sendtestemail --admins` باید به نشانی‌های `ADMINS` برسد.
 - رژیم: خرید یک پکیج آزمایشی، تحویل یک PDF از ادمین («درخواست‌های رژیم»)، دریافت پیامک و دانلود از «رژیم‌های من». سپس مطمئن شوید آدرس مستقیم `https://example.com/protected-media/...` و `https://example.com/media/patient_diets/...` هر دو ۴۰۴ هستند.
 - دسترسی کارکنان به پرونده‌ها: فقط به کاربرانی که لازم است مجوزهای «رژیم و پرونده‌ی سلامت» را بدهید (Groups در ادمین).
 - آدرس sitemap را در Google Search Console ثبت کنید.
