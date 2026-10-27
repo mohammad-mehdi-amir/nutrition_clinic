@@ -24,7 +24,7 @@ venv/bin/pip install -r requirements.txt
 # فایل‌های پزشکی (PDF رژیم‌ها) خارج از media؛ Nginx (گروه www-data) فقط می‌خواند
 install -d -m 750 private_media && chgrp www-data private_media
 ```
-فایل CSS نهایی (`clinic.build.css`) داخل مخزن است؛ روی سرور به Node نیازی نیست.
+فایل CSS نهایی (`clinic.build.css`) داخل مخزن است؛ روی سرور به Node نیازی نیست. با `DEBUG=False` نام فایل‌های استاتیک هش محتوا دارد (`ManifestStaticFilesStorage`)، پس بعد از هر به‌روزرسانی حتماً `collectstatic` اجرا شود؛ در غیر این صورت صفحات خطای ۵۰۰ می‌دهند.
 
 ## ۳. دیتابیس PostgreSQL
 ```bash

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -179,6 +180,19 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# در Production نام فایل‌های استاتیک هش محتوا دارد (clinic.build.3f2a….css) تا با هر تغییر،
+# مرورگر و کش Nginx (expires 30d, immutable) نسخه‌ی جدید را بگیرند. نیازمند collectstatic.
+# در توسعه و تست خاموش است؛ آنجا versioned_static زمان تغییر فایل را به آدرس اضافه می‌کند.
+STATIC_MANIFEST = env_bool("STATIC_MANIFEST", not DEBUG) and "test" not in sys.argv
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+        if STATIC_MANIFEST
+        else "django.contrib.staticfiles.storage.StaticFilesStorage"
+    },
+}
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
