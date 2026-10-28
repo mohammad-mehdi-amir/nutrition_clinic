@@ -25,8 +25,14 @@ class PostAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     actions = ["publish", "unpublish"]
     fieldsets = (
         (None, {"fields": ("title", "slug", "category", "image")}),
-        ("محتوا", {"fields": ("summary", "body")}),
-        ("انتشار", {"fields": ("status", "published_at", "author", "created_at", "updated_at")}),
+        ("محتوا", {
+            "fields": ("summary", "body"),
+            "description": "خلاصه روی کارت مقاله و در نتایج گوگل نمایش داده می‌شود؛ متن کامل در صفحه‌ی مقاله.",
+        }),
+        ("انتشار", {
+            "fields": ("status", "published_at", "author", "created_at", "updated_at"),
+            "description": "تا وضعیت «منتشرشده» نباشد و زمان انتشار نرسیده باشد، مقاله فقط برای کارکنان قابل مشاهده است.",
+        }),
     )
 
     def save_model(self, request, obj, form, change):
@@ -34,12 +40,12 @@ class PostAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
             obj.author = request.user
         super().save_model(request, obj, form, change)
 
-    @admin.action(description="انتشار مقاله‌های انتخاب‌شده")
+    @admin.action(description="انتشار مقاله‌های انتخاب‌شده (نمایش در سایت)")
     def publish(self, request, queryset):
         updated = queryset.filter(status=Post.STATUS_DRAFT).update(status=Post.STATUS_PUBLISHED)
         self.message_user(request, f"{updated} مقاله منتشر شد.")
 
-    @admin.action(description="بازگرداندن به پیش‌نویس")
+    @admin.action(description="بازگرداندن به پیش‌نویس (پنهان شدن از سایت)")
     def unpublish(self, request, queryset):
         updated = queryset.update(status=Post.STATUS_DRAFT)
         self.message_user(request, f"{updated} مقاله به پیش‌نویس برگشت.")

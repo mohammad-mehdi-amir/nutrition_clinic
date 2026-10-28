@@ -25,11 +25,14 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ("name", "short_description")
     prepopulated_fields = {"slug": ("name",)}
     fieldsets = (
-        (None, {"fields": ("product_type", "name", "slug", "category", "is_active")}),
-        ("قیمت", {"fields": ("price", "discount_price")}),
-        ("محصول فیزیکی", {"fields": ("stock",)}),
-        ("پکیج رژیم", {"fields": ("duration_days", "features")}),
-        ("محتوا", {"fields": ("image", "short_description", "description")}),
+        (None, {
+            "fields": ("product_type", "name", "slug", "category", "is_active"),
+            "description": "ابتدا نوع را انتخاب کنید؛ سپس فقط بخش مربوط به همان نوع (محصول فیزیکی یا پکیج رژیم) را پر کنید.",
+        }),
+        ("قیمت", {"fields": ("price", "discount_price"), "description": "مبالغ به تومان، بدون ممیز. مثال: 450000"}),
+        ("محصول فیزیکی", {"fields": ("stock",), "description": "فقط برای محصول فیزیکی پر شود؛ برای پکیج رژیم خالی بماند."}),
+        ("پکیج رژیم", {"fields": ("duration_days", "features"), "description": "فقط برای پکیج رژیم پر شود؛ برای محصول فیزیکی خالی بماند."}),
+        ("محتوا", {"fields": ("image", "short_description", "description"), "description": "متن و تصویری که مشتری در فروشگاه می‌بیند."}),
     )
 
 
@@ -54,9 +57,18 @@ class OrderAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     inlines = [OrderItemInline]
     actions = ["cancel_orders"]
     fieldsets = (
-        (None, {"fields": ("user", "status", "payment_deadline", "created_at", "updated_at")}),
-        ("گیرنده", {"fields": ("recipient_name", "recipient_phone", "province", "city", "address", "postal_code", "note")}),
-        ("مبالغ (تومان)", {"fields": ("subtotal", "shipping_cost", "total")}),
+        (None, {
+            "fields": ("user", "status", "payment_deadline", "created_at", "updated_at"),
+            "description": "برای پیشبرد سفارش، «وضعیت» را تغییر دهید و ذخیره کنید (مثلاً پس از تحویل بسته به پست: «ارسال‌شده»).",
+        }),
+        ("گیرنده", {
+            "fields": ("recipient_name", "recipient_phone", "province", "city", "address", "postal_code", "note"),
+            "description": "اطلاعات ارسال که مشتری هنگام خرید وارد کرده است.",
+        }),
+        ("مبالغ (تومان)", {
+            "fields": ("subtotal", "shipping_cost", "total"),
+            "description": "مبالغ در لحظه‌ی خرید ثبت شده‌اند و قابل تغییر نیستند.",
+        }),
     )
 
     def save_model(self, request, obj, form, change):
@@ -71,7 +83,7 @@ class OrderAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
         # سفارش فقط از مسیر تسویه‌حساب ساخته می‌شود تا مبالغ و موجودی معتبر بمانند
         return False
 
-    @admin.action(description="لغو سفارش‌های در انتظار پرداخت (با برگشت موجودی)")
+    @admin.action(description="لغو سفارش‌های در انتظار پرداخت (موجودی کالاها به انبار برمی‌گردد)")
     def cancel_orders(self, request, queryset):
         cancelled = 0
         for order in queryset:

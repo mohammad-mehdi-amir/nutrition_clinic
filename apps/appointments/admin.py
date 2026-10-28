@@ -212,8 +212,29 @@ class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         return () if obj is None else self.readonly_fields
 
-    def get_fields(self, request, obj=None):
-        return ("patient", "availability", "date") if obj is None else self.readonly_fields
+    def get_fieldsets(self, request, obj=None):
+        if obj is None:
+            return (
+                ("ثبت نوبت (مثلاً رزرو تلفنی)", {
+                    "fields": ("patient", "availability", "date"),
+                    "description": (
+                        "بیمار، شیفت پزشک و تاریخ را انتخاب کنید. روز هفته‌ی تاریخ باید با روز شیفت یکی باشد. "
+                        "نوبت با همان قوانین سایت ثبت می‌شود: ویزیت رایگان فوراً تأیید می‌شود و ویزیت پولی "
+                        "«در انتظار پرداخت» می‌ماند؛ اگر بیمار حضوری پرداخت کرد، از عملیات «تأیید پرداخت دستی» استفاده کنید."
+                    ),
+                }),
+            )
+        return (
+            ("نوبت", {"fields": ("patient", "availability", "date", "start_time", "created_at")}),
+            ("وضعیت", {
+                "fields": ("status", "payment_status", "payment_deadline"),
+                "description": "برای تغییر وضعیت، به فهرست نوبت‌ها برگردید، این نوبت را تیک بزنید و از «عملیات» استفاده کنید.",
+            }),
+            ("مبالغ (تومان)", {
+                "fields": ("fee", "deposit", "paid_amount", "get_remaining"),
+                "description": "هزینه‌ی ویزیت و بیعانه در لحظه‌ی رزرو ثبت شده‌اند. «مابقی» مبلغی است که بیمار باید در مطب بپردازد.",
+            }),
+        )
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -244,26 +265,26 @@ class AppointmentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
         skipped = queryset.count() - done
         self.message_user(request, f"{done} نوبت {done_message}." + (f" {skipped} مورد قابل انجام نبود." if skipped else ""))
 
-    @admin.action(description="تأیید پرداخت دستی (نوبت‌های در انتظار پرداخت)")
+    @admin.action(description="تأیید پرداخت دستی (بیمار کل هزینه را حضوری پرداخت کرده است)")
     def confirm_payment(self, request, queryset):
         self._run(request, queryset, confirm_manual_payment, "تأیید شد")
 
-    @admin.action(description="تسویه‌ی مابقی در مطب (نوبت‌هایی که بیعانه‌ی آن‌ها پرداخت شده)")
+    @admin.action(description="تسویه‌ی مابقی در مطب (بیمار مابقی هزینه را در مطب پرداخت کرده است)")
     def settle_remaining_at_clinic(self, request, queryset):
         self._run(request, queryset, settle_remaining, "به‌عنوان پرداخت کامل ثبت شد")
 
-    @admin.action(description="ثبت «عدم حضور» (بیعانه بازگردانده نمی‌شود)")
+    @admin.action(description="ثبت «عدم حضور» (بیمار در زمان نوبت نیامده؛ بیعانه بازگردانده نمی‌شود)")
     def mark_as_no_show(self, request, queryset):
         self._run(request, queryset, mark_no_show, "عدم حضور ثبت شد")
 
-    @admin.action(description="ثبت «انجام‌شده» (نوبت‌های تأییدشده‌ای که زمانشان رسیده)")
+    @admin.action(description="ثبت «انجام‌شده» (بیمار در زمان نوبت مراجعه کرده است)")
     def mark_as_completed(self, request, queryset):
         self._run(request, queryset, mark_completed, "انجام‌شده ثبت شد")
 
-    @admin.action(description="لغو توسط کلینیک (پرداخت‌شده ⇒ در انتظار بازپرداخت)")
+    @admin.action(description="لغو توسط کلینیک (اگر بیمار پرداخت کرده، به «در انتظار بازپرداخت» می‌رود)")
     def cancel_selected_by_clinic(self, request, queryset):
         self._run(request, queryset, cancel_by_clinic, "لغو شد")
 
-    @admin.action(description="ثبت بازپرداخت انجام‌شده")
+    @admin.action(description="ثبت بازپرداخت انجام‌شده (پس از واریز وجه به بیمار)")
     def mark_as_refunded(self, request, queryset):
         self._run(request, queryset, mark_refunded, "به‌عنوان بازپرداخت‌شده ثبت شد")

@@ -18,22 +18,43 @@ def calculate_deposit(fee, percent):
 
 
 class Doctor(models.Model):
-    name = models.CharField(max_length=100, verbose_name="نام")
-    specialty = models.CharField(max_length=100, verbose_name="تخصص")
-    bio = models.TextField(blank=True, verbose_name="معرفی")
+    name = models.CharField(
+        max_length=100,
+        verbose_name="نام",
+        help_text="نام کامل پزشک یا کارشناس، همان‌طور که در سایت نمایش داده می‌شود. مثال: دکتر مرجان فدایی",
+    )
+    specialty = models.CharField(
+        max_length=100,
+        verbose_name="تخصص",
+        help_text="عنوان تخصص که زیر نام پزشک نمایش داده می‌شود. مثال: کارشناس ارشد تغذیه و رژیم‌درمانی",
+    )
+    bio = models.TextField(
+        blank=True,
+        verbose_name="معرفی",
+        help_text="معرفی کوتاه پزشک (چند جمله) که روی کارت پزشک در سایت نمایش داده می‌شود.",
+    )
     image = WebPImageField(
         upload_to="doctors/",
         blank=True,
         null=True,
         verbose_name="تصویر",
+        help_text=(
+            "عکس پرسنلی پزشک؛ عمودی و حدود ۶۰۰×۷۵۰ پیکسل، حداکثر ۵ مگابایت. عکس بدون واترمارک و با پس‌زمینه‌ی ساده توصیه می‌شود."
+        ),
     )
-    is_active = models.BooleanField(default=True, verbose_name="فعال")
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="فعال",
+        help_text="اگر غیرفعال شود، پزشک از سایت و فرم رزرو پنهان می‌شود ولی نوبت‌های قبلی او حذف نمی‌شوند.",
+    )
 
     visit_fee = models.PositiveIntegerField(
         null=True,
         blank=True,
         verbose_name="هزینه‌ی ویزیت (تومان)",
-        help_text="خالی یعنی هزینه‌ی پیش‌فرض تنظیمات سایت؛ ۰ یعنی رایگان.",
+        help_text=(
+            "هزینه‌ی ویزیت این پزشک به تومان. اگر خالی بماند، «هزینه‌ی پیش‌فرض ویزیت» از تنظیمات سایت استفاده می‌شود؛ عدد ۰ یعنی ویزیت رایگان."
+        ),
     )
 
     class Meta:
@@ -74,16 +95,25 @@ class DoctorAvailability(models.Model):
         on_delete=models.CASCADE,
         related_name="availabilities",
         verbose_name="پزشک",
+        help_text="پزشکی که این شیفت متعلق به اوست.",
     )
 
     day_of_week = models.PositiveSmallIntegerField(
         choices=DAYS_OF_WEEK,
         verbose_name="روز هفته",
+        help_text="روزی از هفته که این شیفت هر هفته تکرار می‌شود.",
     )
 
-    time = models.TimeField(verbose_name="ساعت")
+    time = models.TimeField(
+        verbose_name="ساعت",
+        help_text="ساعت شروع نوبت. برای ساخت سریع همه‌ی شیفت‌ها از لینک «برنامه‌ی هفتگی» در فهرست پزشکان استفاده کنید.",
+    )
 
-    is_active = models.BooleanField(default=True, verbose_name="فعال")
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="فعال",
+        help_text="اگر غیرفعال شود، این ساعت دیگر برای رزرو نمایش داده نمی‌شود؛ نوبت‌های قبلی آن باقی می‌مانند.",
+    )
 
     class Meta:
         constraints = [
@@ -141,6 +171,7 @@ class Appointment(models.Model):
         related_name="appointments",
         limit_choices_to={"is_active": True},
         verbose_name="شیفت",
+        help_text="شیفت هفتگی پزشک (روز و ساعت) که این نوبت در آن گرفته شده است.",
     )
 
     patient = models.ForeignKey(
@@ -148,24 +179,54 @@ class Appointment(models.Model):
         on_delete=models.PROTECT,
         related_name="appointments",
         verbose_name="بیمار",
+        help_text="حساب کاربری بیماری که نوبت را گرفته است.",
     )
 
-    date = models.DateField(verbose_name="تاریخ")
+    date = models.DateField(
+        verbose_name="تاریخ",
+        help_text="تاریخ مراجعه‌ی بیمار.",
+    )
 
     # کپی ساعت شیفت برای قید یکتایی «یک بیمار، یک نوبت در هر ساعت»
-    start_time = models.TimeField(verbose_name="ساعت")
+    start_time = models.TimeField(
+        verbose_name="ساعت",
+        help_text="ساعت شروع نوبت؛ از شیفت پزشک برداشته می‌شود.",
+    )
 
-    fee = models.PositiveIntegerField(default=0, verbose_name="هزینه‌ی ویزیت (تومان)")
+    fee = models.PositiveIntegerField(
+        default=0,
+        verbose_name="هزینه‌ی ویزیت (تومان)",
+        help_text="کل هزینه‌ی ویزیت در لحظه‌ی رزرو. تغییر بعدی قیمت پزشک روی این نوبت اثری ندارد.",
+    )
     # snapshot بیعانه در لحظه‌ی رزرو؛ همین مبلغ آنلاین پرداخت می‌شود
-    deposit = models.PositiveIntegerField(default=0, verbose_name="بیعانه (تومان)")
+    deposit = models.PositiveIntegerField(
+        default=0,
+        verbose_name="بیعانه (تومان)",
+        help_text=(
+            "مبلغی که بیمار هنگام رزرو به‌صورت آنلاین پرداخت می‌کند (طبق «درصد بیعانه» در تنظیمات سایت). مابقی در مطب دریافت می‌شود."
+        ),
+    )
     # مبلغ واقعاً دریافت‌شده (آنلاین یا در مطب)؛ مبنای بازپرداخت
-    paid_amount = models.PositiveIntegerField(default=0, verbose_name="مبلغ دریافت‌شده (تومان)")
+    paid_amount = models.PositiveIntegerField(
+        default=0,
+        verbose_name="مبلغ دریافت‌شده (تومان)",
+        help_text=(
+            "مجموع مبلغی که واقعاً از بیمار دریافت شده است (آنلاین یا در مطب). در صورت لغو، همین مبلغ بازپرداخت می‌شود."
+        ),
+    )
 
     payment_status = models.CharField(
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
         default=PAYMENT_UNPAID,
         verbose_name="وضعیت پرداخت",
+        help_text=(
+            "رایگان: ویزیت هزینه ندارد · پرداخت‌نشده: هنوز پولی پرداخت نشده · "
+            "بیعانه پرداخت‌شده: بیعانه آنلاین پرداخت شده و مابقی در مطب گرفته می‌شود · "
+            "پرداخت‌شده (کامل): کل هزینه دریافت شده · "
+            "در انتظار بازپرداخت: نوبت لغو شده و باید وجه به بیمار برگردانده شود · "
+            "بازپرداخت‌شده: وجه به بیمار برگردانده شده است. این وضعیت فقط با دکمه‌های «عملیات» در فهرست نوبت‌ها تغییر می‌کند."
+        ),
     )
 
     status = models.CharField(
@@ -174,14 +235,25 @@ class Appointment(models.Model):
         default="pending",
         blank=True,
         verbose_name="وضعیت",
+        help_text=(
+            "در انتظار پرداخت: نوبت موقتاً رزرو شده و بیمار باید تا پایان مهلت پرداخت کند، وگرنه خودکار لغو می‌شود · "
+            "تأیید شده: نوبت قطعی است · لغو شده: نوبت لغو شده و آن ساعت دوباره آزاد است · "
+            "انجام شده: بیمار مراجعه کرده است · "
+            "عدم حضور: بیمار نیامده و بیعانه بازگردانده نمی‌شود. این وضعیت فقط با دکمه‌های «عملیات» در فهرست نوبت‌ها تغییر می‌کند."
+        ),
     )
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ثبت")
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="زمان ثبت",
+        help_text="زمان ثبت نوبت در سایت؛ به‌طور خودکار ثبت می‌شود.",
+    )
     
     payment_deadline = models.DateTimeField(
         null=True,
         blank=True,
         verbose_name="مهلت پرداخت",
+        help_text="اگر تا این زمان پرداخت انجام نشود، نوبت خودکار لغو و ساعت آن آزاد می‌شود.",
     )
 
     class Meta:

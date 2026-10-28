@@ -1,0 +1,23 @@
+{% extends "admin/index.html" %}
+{% load admin_help_tags %}
+{% comment %}
+صفحه‌ی اول ادمین: کادر «کارهای امروز» بالای فهرست بخش‌ها (فقط بخش‌هایی که کاربر اجازه‌ی دیدنشان را دارد).
+{% endcomment %}
+
+{% block content %}
+{% admin_daily_tasks as tasks %}
+{% if tasks %}
+<div class="clinic-daily-tasks">
+    <h2>کارهای امروز</h2>
+    <p>هر مورد را باز کنید تا فهرست همان کارها را ببینید. موارد با عدد صفر کاری ندارند.</p>
+    <ul>
+        {% for task in tasks %}
+        <li class="{% if task.count %}has-items{% endif %}">
+            <a href="{{ task.url }}"><span class="count">{{ task.count }}</span>{{ task.label }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{{ block.super }}
+{% endblock %}

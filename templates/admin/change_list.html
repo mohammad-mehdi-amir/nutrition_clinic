@@ -1,0 +1,21 @@
+{% extends "admin/change_list.html" %}
+{% load admin_help_tags %}
+{% comment %}
+همان فهرست پیش‌فرض Django؛ فقط کادر راهنمای این بخش (apps/core/admin_guides.py) بالای آن اضافه می‌شود.
+{% endcomment %}
+
+{% block object-tools %}
+{{ block.super }}
+{% admin_guide cl.opts as guide %}
+{% if guide %}
+<details class="clinic-admin-guide" open>
+    <summary>راهنمای این بخش</summary>
+    <p>{{ guide.intro }}</p>
+    {% if guide.tips %}
+    <ul>
+        {% for tip in guide.tips %}<li>{{ tip }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+</details>
+{% endif %}
+{% endblock %}

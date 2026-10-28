@@ -31,6 +31,14 @@ class PrivateMediaStorage(FileSystemStorage):
         # لینک ادمین به view مخصوص کارکنان؛ آدرس مستقیم فایل وجود ندارد
         return reverse("diet:staff_file", kwargs={"path": name})
 
+    # تنظیمات همه‌ی نمونه‌ها یکی است؛ بدون این، autodetector هر بار فیلد فایل را «تغییرکرده» می‌بیند
+    # و روی SQLite جدول را بازسازی می‌کند
+    def __eq__(self, other):
+        return isinstance(other, PrivateMediaStorage)
+
+    def __hash__(self):
+        return hash(PrivateMediaStorage)
+
 
 private_storage = PrivateMediaStorage()
 

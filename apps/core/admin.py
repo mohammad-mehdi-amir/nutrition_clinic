@@ -9,17 +9,38 @@ from .models import FAQ, ContactMessage, Service, SiteSettings, TransformationCa
 class SiteSettingsAdmin(admin.ModelAdmin):
     list_display = ("clinic_name", "phone", "email")
     fieldsets = (
-        ("اطلاعات کلینیک", {"fields": ("clinic_name", "tagline", "logo", "about_text")}),
-        ("تماس", {"fields": ("phone", "email", "address", "map_embed_url")}),
-        ("ساعات کاری", {"fields": ("working_days", "open_at", "close_at")}),
-        ("شبکه‌های اجتماعی", {"fields": ("instagram_url", "telegram_url", "whatsapp_url")}),
-        ("صفحات حقوقی", {"fields": ("terms_text", "privacy_text")}),
+        ("اطلاعات کلینیک", {
+            "fields": ("clinic_name", "tagline", "logo", "about_text"),
+            "description": "این اطلاعات در هدر، فوتر، صفحه‌ی «درباره ما» و عنوان صفحات سایت نمایش داده می‌شود.",
+        }),
+        ("تماس", {
+            "fields": ("phone", "email", "address", "map_embed_url"),
+            "description": "راه‌های تماس که در فوتر و صفحه‌ی «تماس با ما» نمایش داده می‌شود.",
+        }),
+        ("ساعات کاری", {
+            "fields": ("working_days", "open_at", "close_at"),
+            "description": "فقط برای نمایش در سایت است؛ ساعت‌های قابل رزرو هر پزشک در «برنامه‌ی هفتگی» پزشکان تعیین می‌شود.",
+        }),
+        ("شبکه‌های اجتماعی", {
+            "fields": ("instagram_url", "telegram_url", "whatsapp_url"),
+            "description": "آدرس کامل هر صفحه را وارد کنید؛ موارد خالی در سایت نمایش داده نمی‌شوند.",
+        }),
+        ("صفحات حقوقی", {
+            "fields": ("terms_text", "privacy_text"),
+            "description": "متن صفحات «قوانین و مقررات» و «حریم خصوصی». پیش از راه‌اندازی سایت حتماً بازبینی شود.",
+        }),
         ("تصاویر سایت", {
             "fields": ("favicon", "hero_image", "about_image", "page_banner_image", "faq_image", "bmi_image", "cta_image"),
-            "description": "در صورت خالی بودن هر مورد، تصویر پیش‌فرض قالب نمایش داده می‌شود.",
+            "description": "در صورت خالی بودن هر مورد، تصویر پیش‌فرض قالب نمایش داده می‌شود. حجم هر تصویر حداکثر ۵ مگابایت.",
         }),
-        ("نوبت‌دهی", {"fields": ("default_visit_fee", "deposit_percent", "payment_timeout_minutes", "cancellation_deadline_hours")}),
-        ("فروشگاه", {"fields": ("shipping_cost", "free_shipping_threshold", "order_payment_timeout_minutes")}),
+        ("نوبت‌دهی", {
+            "fields": ("default_visit_fee", "deposit_percent", "payment_timeout_minutes", "cancellation_deadline_hours"),
+            "description": "قوانین پرداخت و لغو نوبت. تغییر این مقادیر فقط روی نوبت‌های جدید اثر دارد؛ مبالغ نوبت‌های ثبت‌شده تغییر نمی‌کند.",
+        }),
+        ("فروشگاه", {
+            "fields": ("shipping_cost", "free_shipping_threshold", "order_payment_timeout_minutes"),
+            "description": "هزینه‌ی ارسال و مهلت پرداخت سفارش‌های فروشگاه (مبالغ به تومان).",
+        }),
         ("اعلان‌های پیامکی", {
             "fields": ("sms_appointment_confirmed", "sms_appointment_cancelled", "sms_order_paid", "sms_order_shipped", "sms_diet_ready"),
             "description": "هر پیامک فقط وقتی ارسال می‌شود که روشن باشد و نام قالب آن در تنظیمات سرور (.env) وارد شده باشد.",
@@ -61,7 +82,7 @@ class ContactMessageAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
-    @admin.action(description="علامت‌گذاری به‌عنوان خوانده شده")
+    @admin.action(description="علامت‌گذاری به‌عنوان خوانده شده (پس از رسیدگی به پیام)")
     def mark_as_read(self, request, queryset):
         queryset.update(is_read=True)
 

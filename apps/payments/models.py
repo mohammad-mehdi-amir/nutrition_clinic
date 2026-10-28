@@ -32,7 +32,13 @@ class Payment(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="payments", verbose_name="کاربر")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="payments",
+        verbose_name="کاربر",
+        help_text="کاربری که پرداخت را انجام داده است.",
+    )
 
     appointment = models.ForeignKey(
         "appointments.Appointment",
@@ -41,6 +47,7 @@ class Payment(models.Model):
         blank=True,
         related_name="payments",
         verbose_name="نوبت",
+        help_text="نوبتی که این پرداخت بابت آن است (اگر پرداخت برای نوبت باشد).",
     )
     order = models.ForeignKey(
         "shop.Order",
@@ -49,25 +56,78 @@ class Payment(models.Model):
         blank=True,
         related_name="payments",
         verbose_name="سفارش",
+        help_text="سفارشی که این پرداخت بابت آن است (اگر پرداخت برای سفارش باشد).",
     )
 
-    gateway = models.CharField(max_length=20, choices=GATEWAY_CHOICES, verbose_name="درگاه")
-    amount = models.PositiveIntegerField(verbose_name="مبلغ (تومان)")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_INITIATED, verbose_name="وضعیت")
+    gateway = models.CharField(
+        max_length=20,
+        choices=GATEWAY_CHOICES,
+        verbose_name="درگاه",
+        help_text="درگاه بانکی که پرداخت از طریق آن انجام شده است.",
+    )
+    amount = models.PositiveIntegerField(
+        verbose_name="مبلغ (تومان)",
+        help_text="مبلغ پرداخت به تومان.",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_INITIATED,
+        verbose_name="وضعیت",
+        help_text=(
+            "ایجاد شده: پرداخت ساخته شده ولی کاربر هنوز به درگاه نرفته · "
+            "در حال پرداخت: کاربر به درگاه رفته و نتیجه هنوز مشخص نیست (سایت هر ۵ دقیقه خودکار از درگاه استعلام می‌گیرد) · "
+            "موفق: پول دریافت و تأیید شده · ناموفق: پرداخت انجام نشده · "
+            "انصراف کاربر: کاربر پرداخت را لغو کرده است."
+        ),
+    )
 
-    authority = models.CharField(max_length=100, null=True, blank=True, unique=True, verbose_name="شناسه‌ی درگاه (Authority)")
-    ref_id = models.CharField(max_length=100, blank=True, verbose_name="شماره‌ی پیگیری")
-    card_pan = models.CharField(max_length=30, blank=True, verbose_name="کارت (ماسک‌شده)")
-    gateway_message = models.CharField(max_length=255, blank=True, verbose_name="پیام درگاه")
+    authority = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        unique=True,
+        verbose_name="شناسه‌ی درگاه (Authority)",
+        help_text="شناسه‌ای که درگاه برای این تراکنش ساخته است؛ برای پیگیری با پشتیبانی درگاه.",
+    )
+    ref_id = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="شماره‌ی پیگیری",
+        help_text="شماره‌ی پیگیری بانکی پرداخت موفق؛ برای پیگیری و بازپرداخت.",
+    )
+    card_pan = models.CharField(
+        max_length=30,
+        blank=True,
+        verbose_name="کارت (ماسک‌شده)",
+        help_text="چند رقم از شماره‌ی کارت پرداخت‌کننده (بقیه‌ی ارقام پنهان است).",
+    )
+    gateway_message = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="پیام درگاه",
+        help_text="آخرین پیامی که درگاه درباره‌ی این تراکنش برگردانده است.",
+    )
 
     needs_review = models.BooleanField(
         default=False,
         verbose_name="نیاز به بررسی",
-        help_text="پرداخت موفق بوده اما نوبت/سفارش دیگر قابل تأیید نبود (مثلاً منقضی شده بود).",
+        help_text=(
+            "پرداخت موفق بوده ولی نوبت یا سفارش دیگر قابل تأیید نبود (مثلاً مهلت آن تمام شده بود). باید وجه را به کاربر برگردانید و سپس این تیک را بردارید."
+        ),
     )
 
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ایجاد")
-    verified_at = models.DateTimeField(null=True, blank=True, verbose_name="زمان تأیید")
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="زمان ایجاد",
+        help_text="زمان شروع پرداخت.",
+    )
+    verified_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="زمان تأیید",
+        help_text="زمان تأیید نهایی پرداخت توسط درگاه.",
+    )
 
     class Meta:
         ordering = ["-created_at"]

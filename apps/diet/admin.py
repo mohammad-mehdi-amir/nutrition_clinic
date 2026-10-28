@@ -25,7 +25,13 @@ class DietTemplateAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     list_filter = ("is_active", "goal")
     search_fields = ("title", "description")
     readonly_fields = ("created_by", "created_at", "updated_at")
-    fields = ("title", "goal", "calories", "description", "file", "is_active", "created_by", "created_at", "updated_at")
+    fieldsets = (
+        (None, {
+            "fields": ("title", "goal", "calories", "description", "file", "is_active"),
+            "description": "پس از ذخیره، این رژیم در صفحه‌ی هر «درخواست رژیم» در فهرست «انتخاب از رژیم‌های آماده» قابل انتخاب است.",
+        }),
+        ("سوابق", {"fields": ("created_by", "created_at", "updated_at")}),
+    )
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(deliveries_total=Count("deliveries"))
@@ -58,7 +64,6 @@ class PatientDietInlineForm(forms.ModelForm):
         self.fields["file"].required = False
         self.fields["file"].label = "یا آپلود PDF جدید"
         self.fields["title"].required = False
-        self.fields["title"].help_text = "خالی ⇒ عنوان رژیم آماده. این عنوان را بیمار می‌بیند."
         self.fields["note"].widget.attrs["rows"] = 2
 
     def clean(self):

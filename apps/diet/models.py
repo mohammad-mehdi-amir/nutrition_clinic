@@ -133,17 +133,45 @@ class BodyMeasurement(models.Model):
 class DietTemplate(models.Model):
     """کتابخانه‌ی رژیم‌های آماده (PDF) که کارشناس می‌تواند برای بیماران بفرستد."""
 
-    title = models.CharField(max_length=150, verbose_name="عنوان")
-    goal = models.CharField(max_length=20, choices=GOAL_CHOICES, blank=True, verbose_name="هدف")
-    calories = models.PositiveIntegerField(null=True, blank=True, verbose_name="کالری روزانه")
-    description = models.TextField(blank=True, verbose_name="توضیح (فقط برای کارشناس)")
+    title = models.CharField(
+        max_length=150,
+        verbose_name="عنوان",
+        help_text=(
+            "نامی که با آن رژیم را در فهرست پیدا می‌کنید؛ اگر هنگام ارسال عنوان دیگری وارد نشود، بیمار نیز همین عنوان را می‌بیند. مثال: رژیم کاهش وزن ۱۵۰۰ کالری"
+        ),
+    )
+    goal = models.CharField(
+        max_length=20,
+        choices=GOAL_CHOICES,
+        blank=True,
+        verbose_name="هدف",
+        help_text="هدف این رژیم؛ برای پیدا کردن سریع‌تر رژیم مناسب.",
+    )
+    calories = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="کالری روزانه",
+        help_text="کالری روزانه‌ی این رژیم (اختیاری). مثال: 1500",
+    )
+    description = models.TextField(
+        blank=True,
+        verbose_name="توضیح (فقط برای کارشناس)",
+        help_text="توضیح برای همکاران (مثلاً مناسب چه کسانی است)؛ بیمار آن را نمی‌بیند.",
+    )
     file = models.FileField(
         storage=private_storage,
         upload_to=template_upload_to,
         validators=PDF_VALIDATORS,
         verbose_name="فایل PDF",
+        help_text="فایل PDF رژیم، حداکثر ۱۰ مگابایت. هنگام ارسال برای بیمار یک نسخه از آن کپی می‌شود.",
     )
-    is_active = models.BooleanField(default=True, verbose_name="فعال")
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="فعال",
+        help_text=(
+            "اگر غیرفعال شود، این رژیم در فهرست انتخاب هنگام ارسال نمایش داده نمی‌شود. رژیم‌هایی که قبلاً برای بیماران ارسال شده‌اند تغییری نمی‌کنند."
+        ),
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -151,9 +179,18 @@ class DietTemplate(models.Model):
         blank=True,
         related_name="+",
         verbose_name="ایجادکننده",
+        help_text="کارمندی که این رژیم را اضافه کرده است؛ به‌طور خودکار ثبت می‌شود.",
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ایجاد")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="آخرین تغییر")
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="زمان ایجاد",
+        help_text="زمان افزودن؛ به‌طور خودکار ثبت می‌شود.",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="آخرین تغییر",
+        help_text="زمان آخرین تغییر؛ به‌طور خودکار ثبت می‌شود.",
+    )
 
     class Meta:
         ordering = ["title"]
@@ -180,14 +217,20 @@ class DietRequest(models.Model):
         on_delete=models.PROTECT,
         related_name="diet_requests",
         verbose_name="بیمار",
+        help_text="بیماری که پکیج را خریده و منتظر رژیم است.",
     )
     order_item = models.OneToOneField(
         "shop.OrderItem",
         on_delete=models.PROTECT,
         related_name="diet_request",
         verbose_name="قلم سفارش",
+        help_text="قلم سفارشی که این درخواست از آن ساخته شده است.",
     )
-    package_name = models.CharField(max_length=150, verbose_name="پکیج")
+    package_name = models.CharField(
+        max_length=150,
+        verbose_name="پکیج",
+        help_text="نام پکیجی که بیمار خریده است (در لحظه‌ی خرید).",
+    )
     doctor = models.ForeignKey(
         "appointments.Doctor",
         on_delete=models.SET_NULL,
@@ -195,13 +238,31 @@ class DietRequest(models.Model):
         blank=True,
         related_name="diet_requests",
         verbose_name="کارشناس مسئول",
+        help_text="کارشناسی که مسئول نوشتن رژیم این بیمار است (اختیاری).",
     )
     status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING, verbose_name="وضعیت"
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING, verbose_name="وضعیت",
+        help_text=(
+            "در انتظار رژیم: هنوز فایلی برای بیمار ارسال نشده · "
+            "تحویل‌شده: حداقل یک فایل رژیم در پنل بیمار قرار گرفته است. این وضعیت با ارسال رژیم خودکار تغییر می‌کند."
+        ),
     )
-    staff_note = models.TextField(blank=True, verbose_name="یادداشت داخلی (بیمار نمی‌بیند)")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ثبت")
-    delivered_at = models.DateTimeField(null=True, blank=True, verbose_name="زمان تحویل")
+    staff_note = models.TextField(
+        blank=True,
+        verbose_name="یادداشت داخلی (بیمار نمی‌بیند)",
+        help_text="یادداشت داخلی برای همکاران؛ بیمار آن را نمی‌بیند.",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="زمان ثبت",
+        help_text="زمان ثبت درخواست (زمان پرداخت پکیج).",
+    )
+    delivered_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="زمان تحویل",
+        help_text="زمان ارسال اولین رژیم برای بیمار؛ به‌طور خودکار ثبت می‌شود.",
+    )
 
     class Meta:
         ordering = ["-created_at"]
@@ -222,14 +283,24 @@ class PatientDiet(models.Model):
         on_delete=models.CASCADE,
         related_name="diets",
         verbose_name="درخواست",
+        help_text="درخواست رژیمی که این فایل برای آن ارسال شده است.",
     )
-    title = models.CharField(max_length=150, verbose_name="عنوان")
+    title = models.CharField(
+        max_length=150,
+        verbose_name="عنوان",
+        help_text=(
+            "عنوانی که بیمار در «رژیم‌های من» می‌بیند. اگر رژیم آماده انتخاب کنید و خالی بگذارید، عنوان رژیم آماده استفاده می‌شود."
+        ),
+    )
     # snapshot: نسخه‌ی مستقل از فایل؛ تغییر یا حذف رژیم آماده روی آن اثر ندارد
     file = models.FileField(
         storage=private_storage,
         upload_to=patient_diet_upload_to,
         validators=PDF_VALIDATORS,
         verbose_name="فایل PDF",
+        help_text=(
+            "یک فایل PDF جدید آپلود کنید (حداکثر ۱۰ مگابایت)، یا به‌جای آن از «انتخاب از رژیم‌های آماده» استفاده کنید؛ فقط یکی از این دو."
+        ),
     )
     template = models.ForeignKey(
         DietTemplate,
@@ -238,8 +309,14 @@ class PatientDiet(models.Model):
         blank=True,
         related_name="deliveries",
         verbose_name="از رژیم آماده",
+        help_text="یکی از رژیم‌های آماده را انتخاب کنید، یا به‌جای آن فایل PDF جدید آپلود کنید؛ فقط یکی از این دو.",
     )
-    note = models.TextField(max_length=2000, blank=True, verbose_name="پیام کارشناس به بیمار")
+    note = models.TextField(
+        max_length=2000,
+        blank=True,
+        verbose_name="پیام کارشناس به بیمار",
+        help_text="پیامی که بیمار کنار فایل رژیم می‌بیند (اختیاری). مثال: روزانه ۸ لیوان آب بنوشید.",
+    )
     delivered_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -247,8 +324,13 @@ class PatientDiet(models.Model):
         blank=True,
         related_name="+",
         verbose_name="تحویل‌دهنده",
+        help_text="کارمندی که رژیم را ارسال کرده است؛ به‌طور خودکار ثبت می‌شود.",
     )
-    delivered_at = models.DateTimeField(default=timezone.now, verbose_name="زمان تحویل")
+    delivered_at = models.DateTimeField(
+        default=timezone.now,
+        verbose_name="زمان تحویل",
+        help_text="زمان ارسال رژیم؛ به‌طور خودکار ثبت می‌شود.",
+    )
 
     class Meta:
         ordering = ["-delivered_at"]

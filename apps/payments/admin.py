@@ -13,6 +13,20 @@ class PaymentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     search_fields = ("ref_id", "authority", "user__username", "user__phone_number")
     readonly_fields = [f.name for f in Payment._meta.fields if f.name != "needs_review"]
     actions = ["inquire_from_gateway"]
+    fieldsets = (
+        ("پرداخت", {
+            "fields": ("user", "appointment", "order", "amount", "status", "created_at", "verified_at"),
+            "description": "این بخش فقط‌خواندنی است و سوابق مالی را نگه می‌دارد.",
+        }),
+        ("اطلاعات درگاه", {
+            "fields": ("gateway", "authority", "ref_id", "card_pan", "gateway_message"),
+            "description": "برای پیگیری با بانک یا پشتیبانی درگاه از «شماره‌ی پیگیری» استفاده کنید.",
+        }),
+        ("بازپرداخت", {
+            "fields": ("needs_review",),
+            "description": "اگر این تیک خورده است، وجه را به کاربر برگردانید و سپس تیک را بردارید و ذخیره کنید.",
+        }),
+    )
 
     def has_add_permission(self, request):
         return False
@@ -24,7 +38,7 @@ class PaymentAdmin(ModelAdminJalaliMixin, admin.ModelAdmin):
     def target_display(self, obj):
         return obj.description
 
-    @admin.action(description="استعلام وضعیت از درگاه (تراکنش‌های «در حال پرداخت»)")
+    @admin.action(description="استعلام وضعیت از درگاه (برای تراکنش‌های «در حال پرداخت»)")
     def inquire_from_gateway(self, request, queryset):
         results = [reconcile_payment(pk) for pk in queryset.filter(status=Payment.STATUS_REDIRECTED).values_list("pk", flat=True)]
         self.message_user(

@@ -10,10 +10,28 @@ from utils.fields import WebPImageField
 
 
 class PostCategory(models.Model):
-    name = models.CharField(max_length=100, verbose_name="نام")
-    slug = models.SlugField(max_length=110, unique=True, allow_unicode=True, verbose_name="نامک (آدرس)")
-    order = models.PositiveIntegerField(default=0, verbose_name="ترتیب")
-    is_active = models.BooleanField(default=True, verbose_name="فعال")
+    name = models.CharField(
+        max_length=100,
+        verbose_name="نام",
+        help_text="نام دسته که در سایت نمایش داده می‌شود. مثال: کاهش وزن",
+    )
+    slug = models.SlugField(
+        max_length=110,
+        unique=True,
+        allow_unicode=True,
+        verbose_name="نامک (آدرس)",
+        help_text="بخشی از آدرس صفحه‌ی دسته؛ از روی نام پر می‌شود. فقط حروف، عدد و خط تیره، بدون فاصله.",
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name="ترتیب",
+        help_text="ترتیب نمایش؛ عدد کوچک‌تر بالاتر نمایش داده می‌شود.",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="فعال",
+        help_text="اگر غیرفعال شود، دسته در سایت نمایش داده نمی‌شود.",
+    )
 
     class Meta:
         ordering = ["order", "name"]
@@ -44,8 +62,20 @@ class Post(models.Model):
         (STATUS_PUBLISHED, "منتشرشده"),
     ]
 
-    title = models.CharField(max_length=200, verbose_name="عنوان")
-    slug = models.SlugField(max_length=210, unique=True, allow_unicode=True, verbose_name="نامک (آدرس)")
+    title = models.CharField(
+        max_length=200,
+        verbose_name="عنوان",
+        help_text="عنوان مقاله که در سایت و نتایج جست‌وجوی گوگل نمایش داده می‌شود.",
+    )
+    slug = models.SlugField(
+        max_length=210,
+        unique=True,
+        allow_unicode=True,
+        verbose_name="نامک (آدرس)",
+        help_text=(
+            "بخشی از آدرس صفحه‌ی مقاله؛ از روی عنوان پر می‌شود. فقط حروف، عدد و خط تیره، بدون فاصله. پس از انتشار تغییر ندهید."
+        ),
+    )
     category = models.ForeignKey(
         PostCategory,
         on_delete=models.PROTECT,
@@ -53,6 +83,7 @@ class Post(models.Model):
         blank=True,
         related_name="posts",
         verbose_name="دسته‌بندی",
+        help_text="دسته‌ای که مقاله در آن نمایش داده می‌شود.",
     )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -61,8 +92,14 @@ class Post(models.Model):
         blank=True,
         related_name="posts",
         verbose_name="نویسنده",
+        help_text="نویسنده‌ی مقاله؛ نام او در صفحه‌ی مقاله نمایش داده می‌شود.",
     )
-    image = WebPImageField(upload_to="blog/", blank=True, verbose_name="تصویر شاخص")
+    image = WebPImageField(
+        upload_to="blog/",
+        blank=True,
+        verbose_name="تصویر شاخص",
+        help_text="تصویر بالای مقاله و روی کارت آن؛ افقی، حدود ۱۲۰۰×۸۰۰ پیکسل، حداکثر ۵ مگابایت.",
+    )
     summary = models.CharField(
         max_length=300,
         verbose_name="خلاصه",
@@ -72,14 +109,31 @@ class Post(models.Model):
         verbose_name="متن مقاله",
         help_text="بین پاراگراف‌ها یک خط خالی بگذارید. «## » در ابتدای خط = تیتر، «- » = آیتم فهرست.",
     )
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_DRAFT, verbose_name="وضعیت")
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default=STATUS_DRAFT,
+        verbose_name="وضعیت",
+        help_text=(
+            "پیش‌نویس: فقط کارکنان آن را می‌بینند · "
+            "منتشرشده: برای همه نمایش داده می‌شود (از «زمان انتشار» به بعد)."
+        ),
+    )
     published_at = models.DateTimeField(
         default=timezone.now,
         verbose_name="زمان انتشار",
         help_text="مقاله‌ی منتشرشده تا این زمان در سایت نمایش داده نمی‌شود (انتشار زمان‌بندی‌شده).",
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="زمان ایجاد")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="آخرین تغییر")
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="زمان ایجاد",
+        help_text="زمان ایجاد مقاله؛ به‌طور خودکار ثبت می‌شود.",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="آخرین تغییر",
+        help_text="زمان آخرین ویرایش؛ به‌طور خودکار ثبت می‌شود.",
+    )
 
     objects = PostQuerySet.as_manager()
 

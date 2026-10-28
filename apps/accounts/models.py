@@ -9,6 +9,9 @@ class User(AbstractUser):
         null=True,
         blank=True,
         verbose_name="شماره موبایل",
+        help_text=(
+            "شماره‌ی موبایل کاربر که نام کاربری او نیز هست؛ ۱۱ رقم و با ۰۹ شروع شود. پیامک‌های سایت به این شماره ارسال می‌شود."
+        ),
     )
 
     class Meta(AbstractUser.Meta):
@@ -38,14 +41,47 @@ class PasswordResetCode(models.Model):
 class ShippingAddress(models.Model):
     """نشانی پیش‌فرض کاربر برای پیش‌پر کردن فرم تسویه‌حساب."""
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="shipping_address", verbose_name="کاربر")
-    recipient_name = models.CharField(max_length=100, verbose_name="نام گیرنده")
-    recipient_phone = models.CharField(max_length=11, verbose_name="موبایل گیرنده")
-    province = models.CharField(max_length=50, verbose_name="استان")
-    city = models.CharField(max_length=50, verbose_name="شهر")
-    address = models.TextField(verbose_name="نشانی")
-    postal_code = models.CharField(max_length=10, verbose_name="کد پستی")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="آخرین تغییر")
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="shipping_address",
+        verbose_name="کاربر",
+        help_text="حسابی که این نشانی متعلق به آن است.",
+    )
+    recipient_name = models.CharField(
+        max_length=100,
+        verbose_name="نام گیرنده",
+        help_text="نام و نام خانوادگی کسی که بسته را تحویل می‌گیرد.",
+    )
+    recipient_phone = models.CharField(
+        max_length=11,
+        verbose_name="موبایل گیرنده",
+        help_text="شماره‌ی موبایل گیرنده برای هماهنگی ارسال؛ ۱۱ رقم و با ۰۹ شروع شود. مثال: 09121234567",
+    )
+    province = models.CharField(
+        max_length=50,
+        verbose_name="استان",
+        help_text="استان مقصد ارسال.",
+    )
+    city = models.CharField(
+        max_length=50,
+        verbose_name="شهر",
+        help_text="شهر مقصد ارسال.",
+    )
+    address = models.TextField(
+        verbose_name="نشانی",
+        help_text="نشانی کامل پستی شامل خیابان، کوچه، پلاک و واحد.",
+    )
+    postal_code = models.CharField(
+        max_length=10,
+        verbose_name="کد پستی",
+        help_text="کد پستی ۱۰ رقمی، بدون فاصله و خط تیره.",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="آخرین تغییر",
+        help_text="زمان آخرین تغییر این نشانی؛ به‌طور خودکار ثبت می‌شود.",
+    )
 
     class Meta:
         verbose_name = "نشانی پیش‌فرض"
