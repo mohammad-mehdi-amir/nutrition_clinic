@@ -26,7 +26,7 @@ media/
 private_media/
 staticfiles/
 *.log
-
+graphify-out/
 # --- Frontend build ---
 node_modules/
 
@@ -39,3 +39,4 @@ Thumbs.db
 
 # --- Purchased template package (licensed; local design reference only) ---
 /Tailwind-ClinicMaster-Dieting-v1.1-06_July_2026/
+
